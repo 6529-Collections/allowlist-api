@@ -3,7 +3,6 @@ import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlis
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
 import { Time } from './time';
-import { Timeout } from '@nestjs/schedule';
 
 @Injectable()
 export class AppService {
@@ -12,7 +11,7 @@ export class AppService {
     @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
   ) {}
 
-  @Timeout(0)
+  //@Timeout(0)
   async run() {
     try {
       const operations: AllowlistOperation[] = [
