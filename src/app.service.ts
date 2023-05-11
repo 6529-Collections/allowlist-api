@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Timeout } from '@nestjs/schedule';
-import { AllowlistOperationCode } from '@analyticsflowee/allowlist-lib/allowlist/allowlist-operation-code';
-import { AllowlistOperation } from '@analyticsflowee/allowlist-lib/allowlist/allowlist-operation';
-import { AllowlistCreator } from '@analyticsflowee/allowlist-lib/allowlist/allowlist-creator';
+import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
+import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
+import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
 import { Time } from './time';
 
 @Injectable()

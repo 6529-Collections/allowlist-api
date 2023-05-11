@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@6529-collections/allowlist-lib@0.0.30":
+  version "0.0.30"
+  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.30/1acb60756a4e33b6db2152dde727cf212d20cfc8#1acb60756a4e33b6db2152dde727cf212d20cfc8"
+  integrity sha512-rqz22+SVvmiysq3ZypAvATsheU64tNpVbliHbSYjljKcfpiRG6+Tyo5IZedalxFwyiuJYZqIXxodtKO914B9Ag==
+  dependencies:
+    axios "^1.4.0"
+
 "@ampproject/remapping@^2.2.0":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@ampproject/remapping/-/remapping-2.2.1.tgz#99e8e11851128b8702cd57c33684f1d0f260b630"
@@ -9,13 +16,6 @@
   dependencies:
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
-
-"@analyticsflowee/allowlist-lib@^0.0.26":
-  version "0.0.26"
-  resolved "https://npm.pkg.github.com/download/@analyticsflowee/allowlist-lib/0.0.26/b5431e6d5a095cdbea8bba99ed01971eef000990#b5431e6d5a095cdbea8bba99ed01971eef000990"
-  integrity sha512-0CWDjMjeK5auSI2Ripf6D/LFvlWc7TuAvmy8AwaM2zw/EyrI5OEwZG8w87E1WXSaDJ1OfZrELK0WIGHEPaloiA==
-  dependencies:
-    axios "^1.4.0"
 
 "@angular-devkit/core@15.2.4":
   version "15.2.4"

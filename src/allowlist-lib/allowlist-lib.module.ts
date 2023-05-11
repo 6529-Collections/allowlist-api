@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { RepositoriesModule } from '../repositories/repositories.module';
 import { ConfigService } from '@nestjs/config';
-import { AllowlistCreator } from '@analyticsflowee/allowlist-lib/allowlist/allowlist-creator';
+import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
 import { TransferRepository } from '../repositories/transfer/transfer.repository';
 
 @Module({

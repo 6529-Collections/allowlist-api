@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { TransferModel } from './transfer.model';
 import { InjectModel } from '@nestjs/mongoose';
-import { TransfersStorage } from '@analyticsflowee/allowlist-lib/services/transfers.storage';
-import { Transfer } from '@analyticsflowee/allowlist-lib/allowlist/state-types/transfer';
+import { TransfersStorage } from '@6529-collections/allowlist-lib/services/transfers.storage';
+import { Transfer } from '@6529-collections/allowlist-lib/allowlist/state-types/transfer';
 
 @Injectable()
 export class TransferRepository implements TransfersStorage {

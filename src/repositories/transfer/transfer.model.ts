@@ -1,4 +1,4 @@
-import { Transfer } from '@analyticsflowee/allowlist-lib/allowlist/state-types/transfer';
+import { Transfer } from '@6529-collections/allowlist-lib/allowlist/state-types/transfer';
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ModelDto } from '../model.dto';
