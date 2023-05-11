@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { RepositoriesModule } from '../repositories/repositories.module';
-import { AllowlistController } from './allowlist-controller';
+import { AllowlistsController } from './allowlists.controller';
+import { AllowlistOperationsService } from './services/allowlist-operations.service';
+import { AllowlistOperationsController } from './allowlist-operations.controller';
 
 @Module({
   imports: [RepositoriesModule],
-  controllers: [AllowlistController],
+  providers: [AllowlistOperationsService],
+  controllers: [AllowlistsController, AllowlistOperationsController],
 })
 export class ApiModule {}

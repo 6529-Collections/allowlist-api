@@ -16,6 +16,9 @@ export class AllowlistModel extends Document implements ModelDto<AllowlistDto> {
 
   @Prop({ required: true, type: Number })
   readonly createdAt: number;
+
+  @Prop({ required: false, type: Object })
+  readonly activeRun?: { id: string; createdAt: number };
 }
 
 export const AllowlistRequestSchema =

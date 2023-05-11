@@ -6,7 +6,7 @@ import { mapModelToDto } from '../model.dto';
 import { AllowlistDto } from './allowlist.dto';
 
 @Injectable()
-export class AllowlistRequestRepository {
+export class AllowlistsRepository {
   constructor(
     @InjectModel(AllowlistModel.name)
     private readonly allowlistRequests: Model<AllowlistModel>,

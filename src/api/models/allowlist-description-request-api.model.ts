@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { DescribableEntity } from '@6529-collections/allowlist-lib/allowlist/state-types/describable-entity';
 import { IsString, MaxLength, MinLength } from 'class-validator';
 
-export class AllowlistDescriptionApiModel implements DescribableEntity {
+export class AllowlistDescriptionRequestApiModel implements DescribableEntity {
   @ApiProperty({
     description:
       'ID of the allowlist. ID must be unique across all allowlists and over all this allowlist operations',

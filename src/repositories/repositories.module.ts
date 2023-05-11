@@ -6,7 +6,12 @@ import {
   AllowlistModel,
   AllowlistRequestSchema,
 } from './allowlist/allowlist.model';
-import { AllowlistRequestRepository } from './allowlist/allowlist-request.repository';
+import { AllowlistsRepository } from './allowlist/allowlists.repository';
+import {
+  AllowlistOperationModel,
+  AllowlistOperationSchema,
+} from './allowlist-operations/allowlist-operation.model';
+import { AllowlistOperationsRepository } from './allowlist-operations/allowlist-operations.repository';
 
 @Module({
   imports: [
@@ -19,9 +24,21 @@ import { AllowlistRequestRepository } from './allowlist/allowlist-request.reposi
         name: AllowlistModel.name,
         schema: AllowlistRequestSchema,
       },
+      {
+        name: AllowlistOperationModel.name,
+        schema: AllowlistOperationSchema,
+      },
     ]),
   ],
-  providers: [TransferRepository, AllowlistRequestRepository],
-  exports: [TransferRepository, AllowlistRequestRepository],
+  providers: [
+    TransferRepository,
+    AllowlistsRepository,
+    AllowlistOperationsRepository,
+  ],
+  exports: [
+    TransferRepository,
+    AllowlistsRepository,
+    AllowlistOperationsRepository,
+  ],
 })
 export class RepositoriesModule {}

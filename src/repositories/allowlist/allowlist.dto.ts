@@ -2,4 +2,5 @@ import { DescribableEntity } from '@6529-collections/allowlist-lib/allowlist/sta
 
 export interface AllowlistDto extends DescribableEntity {
   readonly createdAt: number;
+  readonly activeRun?: { id: string; createdAt: number };
 }
