@@ -1,5 +1,4 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Timeout } from '@nestjs/schedule';
 import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
@@ -12,7 +11,7 @@ export class AppService {
     @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
   ) {}
 
-  @Timeout(0)
+  //@Timeout(0)
   async run() {
     const operations: AllowlistOperation[] = [
       {

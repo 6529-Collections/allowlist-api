@@ -16,16 +16,17 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
     "@6529-collections/allowlist-lib": "0.0.30",
     "@nestjs/common": "^9.0.0",
-    "@nestjs/core": "^9.0.0",
-    "@nestjs/platform-express": "^9.0.0",
     "@nestjs/config": "^2.3.1",
+    "@nestjs/core": "^9.0.0",
     "@nestjs/mongoose": "^9.2.2",
+    "@nestjs/platform-express": "^9.0.0",
     "@nestjs/schedule": "^2.2.1",
+    "@nestjs/swagger": "^6.3.0",
     "mongoose": "^7.0.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
