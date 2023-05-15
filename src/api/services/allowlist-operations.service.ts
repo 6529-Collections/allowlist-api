@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { AllowlistOperationRequestApiModel } from '../models/allowlist-operation-request-api.model';
 import { AllowlistOperationsRepository } from '../../repositories/allowlist-operations/allowlist-operations.repository';
 import { AllowlistsRepository } from '../../repositories/allowlist/allowlists.repository';
@@ -6,6 +7,7 @@ import { AllowlistOperationResponseApiModel } from '../models/allowlist-operatio
 import { Time } from '../../time';
 import { ClientSession, Connection } from 'mongoose';
 import { InjectConnection } from '@nestjs/mongoose';
+import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
 
 @Injectable()
 export class AllowlistOperationsService {
@@ -14,7 +16,19 @@ export class AllowlistOperationsService {
     private readonly allowlistOperationsRepository: AllowlistOperationsRepository,
     @InjectConnection()
     private readonly connection: Connection,
+    @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
   ) {}
+
+  private validateOperation(params: {
+    code: AllowlistOperationCode;
+    params: any;
+  }) {
+    try {
+      this.allowlistCreator.validateOperation(params);
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
 
   async add({
     code,
@@ -30,6 +44,8 @@ export class AllowlistOperationsService {
         `Allowlist with ID ${allowlistId} does not exist`,
       );
     }
+
+    await this.validateOperation({ code, params });
     const session: ClientSession = await this.connection.startSession();
     session.startTransaction();
     try {
