@@ -1,13 +1,12 @@
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ModelDto } from '../model.dto';
 import { AllowlistDto } from './allowlist.dto';
 
 @Schema({ collection: 'allowlists' })
-export class AllowlistModel extends Document implements ModelDto<AllowlistDto> {
-  @Prop({ required: true, type: String })
-  readonly id: string;
-
+export class AllowlistModel
+  extends Document
+  implements Omit<AllowlistDto, 'id'>
+{
   @Prop({ required: true, type: String })
   readonly description: string;
 
@@ -23,5 +22,3 @@ export class AllowlistModel extends Document implements ModelDto<AllowlistDto> {
 
 export const AllowlistRequestSchema =
   SchemaFactory.createForClass(AllowlistModel);
-
-AllowlistRequestSchema.index({ id: 1 }, { unique: true });

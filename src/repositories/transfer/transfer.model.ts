@@ -1,10 +1,9 @@
 import { Transfer } from '@6529-collections/allowlist-lib/allowlist/state-types/transfer';
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ModelDto } from '../model.dto';
 
 @Schema({ collection: 'transfers' })
-export class TransferModel extends Document implements ModelDto<Transfer> {
+export class TransferModel extends Document implements Transfer {
   @Prop({ required: true, type: Number })
   readonly amount: number;
   @Prop({ required: true, type: Number })

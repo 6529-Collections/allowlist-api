@@ -12,13 +12,14 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import { AllowlistsRepository } from '../repositories/allowlist/allowlists.repository';
 import { Time } from '../time';
 import { AllowlistDescriptionResponseApiModel } from './models/allowlist-description-response-api.model';
+import { AllowlistsService } from './services/allowlists.service';
+import { AllowlistRunResponseApiModel } from './models/allowlist-run-response-api.model';
 
 @Controller('/allowlists')
 export class AllowlistsController {
-  constructor(private readonly allowlistsRepository: AllowlistsRepository) {}
+  constructor(private readonly allowlistsService: AllowlistsService) {}
 
   @ApiOperation({
     summary:
@@ -32,15 +33,7 @@ export class AllowlistsController {
   async create(
     @Body() request: AllowlistDescriptionRequestApiModel,
   ): Promise<AllowlistDescriptionResponseApiModel> {
-    const id = request.id;
-    const existingEntity = await this.allowlistsRepository.findById(id);
-    if (existingEntity) {
-      throw new BadRequestException(`Allowlist with ID ${id} already exists`);
-    }
-    return this.allowlistsRepository.save({
-      ...request,
-      createdAt: Time.currentMillis(),
-    });
+    return await this.allowlistsService.create(request);
   }
 
   @ApiOperation({
@@ -54,10 +47,18 @@ export class AllowlistsController {
   async get(
     @Param('id') id: string,
   ): Promise<AllowlistDescriptionResponseApiModel> {
-    const entity = await this.allowlistsRepository.findById(id);
-    if (!entity) {
-      throw new BadRequestException(`Allowlist with ID ${id} does not exist`);
-    }
-    return entity;
+    return await this.allowlistsService.get(id);
+  }
+
+  @ApiOperation({
+    summary: 'Run allowlist',
+  })
+  @ApiOkResponse({
+    type: AllowlistDescriptionRequestApiModel,
+    isArray: true,
+  })
+  @Post(':id/runs')
+  async run(@Param('id') id: string): Promise<AllowlistRunResponseApiModel> {
+    return await this.allowlistsService.run(id);
   }
 }

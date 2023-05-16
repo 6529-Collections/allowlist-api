@@ -38,6 +38,8 @@ export class TransferRepository implements TransfersStorage {
     contract: string,
     transfers: Transfer[],
   ): Promise<void> {
-    await this.transfers.insertMany(transfers);
+    await this.transfers.insertMany(transfers, {
+      ordered: false,
+    });
   }
 }

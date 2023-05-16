@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 import { AllowlistLibModule } from './allowlist-lib/allowlist-lib.module';
 import { ApiModule } from './api/api.module';
+import { RunsModule } from './runs/runs.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ApiModule } from './api/api.module';
     MongooseModule.forRoot(process.env.DB_CONNECTION_URI),
     ApiModule,
     AllowlistLibModule,
+    RunsModule,
   ],
   controllers: [],
   providers: [AppService],

@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model } from 'mongoose';
 import { AllowlistOperationModel } from './allowlist-operation.model';
 import { AllowlistOperationDto } from './allowlist-operation.dto';
-import { mapModelToDto } from '../model.dto';
+import { ModelDto } from '../model.dto';
 
 @Injectable()
 export class AllowlistOperationsRepository {
@@ -12,12 +12,24 @@ export class AllowlistOperationsRepository {
     private readonly allowlistOperations: Model<AllowlistOperationModel>,
   ) {}
 
+  private mapModelToDto(model: AllowlistOperationModel): AllowlistOperationDto {
+    return {
+      id: model._id.toString(),
+      allowlistId: model.allowlistId,
+      createdAt: model.createdAt,
+      order: model.order,
+      code: model.code,
+      params: model.params,
+      activeRunId: model.activeRunId,
+    };
+  }
+
   async save(
-    dto: AllowlistOperationDto,
+    dto: ModelDto<AllowlistOperationDto>,
     session?: ClientSession,
   ): Promise<AllowlistOperationDto> {
     const model = await this.allowlistOperations.create([dto], { session });
-    return mapModelToDto(model[0]);
+    return this.mapModelToDto(model[0]);
   }
 
   async getAllRanForAllowlistSinceOrder(
@@ -39,7 +51,7 @@ export class AllowlistOperationsRepository {
       null,
       { sort: { order: 1 }, session },
     );
-    return models.map(mapModelToDto);
+    return models.map(this.mapModelToDto);
   }
 
   async updateAllForAllowlistToNeverRan(
@@ -86,5 +98,28 @@ export class AllowlistOperationsRepository {
       { $inc: { order: -1 } },
       { session },
     );
+  }
+
+  async setRun(param: {
+    allowlistId: string;
+    runId: string;
+    session: ClientSession;
+  }): Promise<void> {
+    await this.allowlistOperations.updateMany(
+      { allowlistId: param.allowlistId },
+      { activeRunId: param.runId },
+      { session: param.session },
+    );
+  }
+
+  async getOperationsForRun(runId: string): Promise<AllowlistOperationDto[]> {
+    const models = await this.allowlistOperations.find(
+      {
+        activeRunId: runId,
+      },
+      null,
+      { sort: { order: 1 } },
+    );
+    return models.map(this.mapModelToDto);
   }
 }

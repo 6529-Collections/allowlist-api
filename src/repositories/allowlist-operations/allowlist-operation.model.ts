@@ -1,8 +1,8 @@
 import { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ModelDto } from '../model.dto';
 import { AllowlistOperationDto } from './allowlist-operation.dto';
 import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
+import { ModelDto } from '../model.dto';
 
 @Schema({ collection: 'allowlist-operations' })
 export class AllowlistOperationModel
