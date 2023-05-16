@@ -11,7 +11,7 @@ export class TokenPoolsRepository {
     private readonly tokenPoolModel: Model<TokenPoolModel>,
   ) {}
 
-  mapModelToDto(model: TokenPoolModel): TokenPoolDto {
+  private mapModelToDto(model: TokenPoolModel): TokenPoolDto {
     return {
       id: model._id.toString(),
       tokenPoolId: model.tokenPoolId,

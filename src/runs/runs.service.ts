@@ -16,6 +16,15 @@ import { TransferPoolTransfersRepository } from '../repositories/transfer-pool-t
 import { TokenPoolsRepository } from '../repositories/token-pools/token-pools.repository';
 import { TokenPoolTokensRepository } from '../repositories/token-pool-tokens/token-pool-tokens.repository';
 import { CustomTokenPoolsRepository } from '../repositories/custom-token-pools/custom-token-pools.repository';
+import { CustomTokenPoolTokensRepository } from '../repositories/custom-token-pool-tokens/custom-token-pool-tokens.repository';
+import { WalletPoolsRepository } from '../repositories/wallet-pools/wallet-pools.repository';
+import { WalletPoolWalletsRepository } from '../repositories/wallet-pool-wallets/wallet-pool-wallets.repository';
+import { PhasesRepository } from '../repositories/phases/phases.repository';
+import { PhaseComponentsRepository } from '../repositories/phase-components/phase-components.repository';
+import { PhaseComponentWinnersRepository } from '../repositories/phase-component-winners/phase-component-winners.repository';
+import { PhaseComponentItemsRepository } from '../repositories/phase-component-items/phase-component-items.repository';
+import { PhaseComponentItemTokensRepository } from '../repositories/phase-component-item-tokens/phase-component-item-tokens.repository';
+import * as fs from 'fs';
 
 @Injectable()
 export class RunsService {
@@ -31,6 +40,14 @@ export class RunsService {
     private readonly tokenPoolsRepository: TokenPoolsRepository,
     private readonly tokenPoolTokensRepository: TokenPoolTokensRepository,
     private readonly customTokenPoolsRepository: CustomTokenPoolsRepository,
+    private readonly customTokenPoolTokensRepository: CustomTokenPoolTokensRepository,
+    private readonly walletPoolsRepository: WalletPoolsRepository,
+    private readonly walletPoolWalletsRepository: WalletPoolWalletsRepository,
+    private readonly phasesRepository: PhasesRepository,
+    private readonly phaseComponentsRepository: PhaseComponentsRepository,
+    private readonly phaseComponentWinnersRepository: PhaseComponentWinnersRepository,
+    private readonly phaseComponentItemsRepository: PhaseComponentItemsRepository,
+    private readonly phaseComponentItemTokensRepository: PhaseComponentItemTokensRepository,
   ) {}
 
   private async claimRun(): Promise<{
@@ -84,7 +101,8 @@ export class RunsService {
   }): Promise<void> {
     const { run, allowlist, results } = param;
     const { id: runId } = run;
-    const { transferPools, tokenPools } = results;
+    const { transferPools, tokenPools, customTokenPools, walletPools, phases } =
+      results;
     await Promise.all([
       this.transferPoolsRepository.createMany(
         Object.values(transferPools).map((transferPool) => ({
@@ -151,6 +169,111 @@ export class RunsService {
           description: tokenPool.description,
         })),
       ),
+      this.customTokenPoolTokensRepository.createMany(
+        Object.values(customTokenPools).flatMap((customTokenPool) =>
+          customTokenPool.tokens.map((token, i) => ({
+            allowlistId: allowlist.id,
+            customTokenPoolId: customTokenPool.id,
+            activeRunId: runId,
+            order: i,
+            tokenId: token.id,
+            owner: token.owner,
+            since: token.since,
+          })),
+        ),
+      ),
+      this.walletPoolsRepository.createMany(
+        Object.values(walletPools).map((walletPool) => ({
+          allowlistId: allowlist.id,
+          walletPoolId: walletPool.id,
+          activeRunId: runId,
+          name: walletPool.name,
+          description: walletPool.description,
+        })),
+      ),
+      this.walletPoolWalletsRepository.createMany(
+        Object.values(walletPools).flatMap((walletPool) =>
+          walletPool.wallets.map((wallet, i) => ({
+            allowlistId: allowlist.id,
+            walletPoolId: walletPool.id,
+            activeRunId: runId,
+            order: i,
+            wallet,
+          })),
+        ),
+      ),
+      this.phasesRepository.createMany(
+        Object.values(phases).map((phase) => ({
+          allowlistId: allowlist.id,
+          phaseId: phase.id,
+          activeRunId: runId,
+          name: phase.name,
+          description: phase.description,
+          insertionOrder: phase._insertionOrder,
+        })),
+      ),
+      this.phaseComponentsRepository.createMany(
+        Object.values(phases).flatMap((phase) =>
+          Object.values(phase.components).map((component, i) => ({
+            allowlistId: allowlist.id,
+            phaseId: phase.id,
+            componentId: component.id,
+            activeRunId: runId,
+            insertionOrder: component._insertionOrder,
+            name: component.name,
+            description: component.description,
+          })),
+        ),
+      ),
+      this.phaseComponentWinnersRepository.createMany(
+        Object.values(phases).flatMap((phase) =>
+          Object.values(phase.components).flatMap((component) =>
+            Object.entries(component.winners).map(([wallet, amount]) => ({
+              allowlistId: allowlist.id,
+              phaseId: phase.id,
+              componentId: component.id,
+              activeRunId: runId,
+              wallet,
+              amount,
+            })),
+          ),
+        ),
+      ),
+      this.phaseComponentItemsRepository.createMany(
+        Object.values(phases).flatMap((phase) =>
+          Object.values(phase.components).flatMap((component) =>
+            Object.values(component.items).map((item) => ({
+              allowlistId: allowlist.id,
+              phaseId: phase.id,
+              phaseComponentId: component.id,
+              phaseComponentItemId: item.id,
+              activeRunId: runId,
+              name: item.name,
+              description: item.description,
+              insertionOrder: item._insertionOrder,
+            })),
+          ),
+        ),
+      ),
+      this.phaseComponentItemTokensRepository.createMany(
+        Object.values(phases).flatMap((phase) =>
+          Object.values(phase.components).flatMap((component) =>
+            Object.values(component.items).flatMap((item) =>
+              item.tokens.map((token, i) => ({
+                allowlistId: allowlist.id,
+                phaseId: phase.id,
+                phaseComponentId: component.id,
+                phaseComponentItemId: item.id,
+                activeRunId: runId,
+                order: i,
+                tokenId: token.id,
+                owner: token.owner,
+                since: token.since,
+              })),
+            ),
+          ),
+        ),
+      ),
     ]);
   }
 
@@ -192,6 +315,7 @@ export class RunsService {
     if (!params || !params.run || !params.allowlist) {
       return;
     }
+    console.time('AllowlistRunService');
     await Promise.all([
       this.transferPoolTransfersRepository.deleteByAllowlistId({
         allowlistId: params.run.allowlistId,
@@ -208,15 +332,44 @@ export class RunsService {
       this.customTokenPoolsRepository.deleteByAllowlistId({
         allowlistId: params.run.allowlistId,
       }),
+      this.customTokenPoolTokensRepository.deleteByAllowlistId({
+        allowlistId: params.run.allowlistId,
+      }),
+      this.walletPoolsRepository.deleteByAllowlistId({
+        allowlistId: params.run.allowlistId,
+      }),
+      this.walletPoolWalletsRepository.deleteByAllowlistId({
+        allowlistId: params.run.allowlistId,
+      }),
+      this.phasesRepository.deleteByAllowlistId({
+        allowlistId: params.run.allowlistId,
+      }),
+      this.phaseComponentsRepository.deleteByAllowlistId({
+        allowlistId: params.run.allowlistId,
+      }),
+      this.phaseComponentWinnersRepository.deleteByAllowlistId({
+        allowlistId: params.run.allowlistId,
+      }),
+      this.phaseComponentItemsRepository.deleteByAllowlistId({
+        allowlistId: params.run.allowlistId,
+      }),
+      this.phaseComponentItemTokensRepository.deleteByAllowlistId({
+        allowlistId: params.run.allowlistId,
+      }),
     ]);
     this.logger.log(`running ${params.run.id}`);
     const results = await this.run(params);
     this.logger.log(`Inserting results for run ${params.run.id}`);
+    // fs.writeFileSync(
+    //   `./results/${params.run.id}.json`,
+    //   JSON.stringify(results, null, 2),
+    // );
     await this.insertResults({
       run: params.run,
       allowlist: params.allowlist,
       results,
     });
     this.logger.log(`Run ${params.run.id} finished`);
+    console.timeEnd('AllowlistRunService');
   }
 }

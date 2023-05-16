@@ -42,6 +42,43 @@ import {
   CustomTokenPoolSchema,
 } from './custom-token-pools/custom-token-pool.model';
 import { CustomTokenPoolsRepository } from './custom-token-pools/custom-token-pools.repository';
+import {
+  CustomTokenPoolTokenModel,
+  CustomTokenPoolTokenSchema,
+} from './custom-token-pool-tokens/custom-token-pool-token.model';
+import { CustomTokenPoolTokensRepository } from './custom-token-pool-tokens/custom-token-pool-tokens.repository';
+import {
+  WalletPoolModel,
+  WalletPoolSchema,
+} from './wallet-pools/wallet-pool.model';
+import { WalletPoolsRepository } from './wallet-pools/wallet-pools.repository';
+import {
+  WalletPoolWalletModel,
+  WalletPoolWalletSchema,
+} from './wallet-pool-wallets/wallet-pool-wallet.model';
+import { WalletPoolWalletsRepository } from './wallet-pool-wallets/wallet-pool-wallets.repository';
+import { PhaseModel, PhaseSchema } from './phases/phase.model';
+import { PhasesRepository } from './phases/phases.repository';
+import {
+  PhaseComponentModel,
+  PhaseComponentSchema,
+} from './phase-components/phase-component.model';
+import { PhaseComponentsRepository } from './phase-components/phase-components.repository';
+import {
+  PhaseComponentWinnerModel,
+  PhaseComponentWinnerSchema,
+} from './phase-component-winners/phase-component-winner.model';
+import { PhaseComponentWinnersRepository } from './phase-component-winners/phase-component-winners.repository';
+import {
+  PhaseComponentItemModel,
+  PhaseComponentItemSchema,
+} from './phase-component-items/phase-component-item.model';
+import { PhaseComponentItemsRepository } from './phase-component-items/phase-component-items.repository';
+import {
+  PhaseComponentItemTokenModel,
+  PhaseComponentItemTokenSchema,
+} from './phase-component-item-tokens/phase-component-item-token.model';
+import { PhaseComponentItemTokensRepository } from './phase-component-item-tokens/phase-component-item-tokens.repository';
 
 @Module({
   imports: [
@@ -82,6 +119,38 @@ import { CustomTokenPoolsRepository } from './custom-token-pools/custom-token-po
         name: CustomTokenPoolModel.name,
         schema: CustomTokenPoolSchema,
       },
+      {
+        name: CustomTokenPoolTokenModel.name,
+        schema: CustomTokenPoolTokenSchema,
+      },
+      {
+        name: WalletPoolModel.name,
+        schema: WalletPoolSchema,
+      },
+      {
+        name: WalletPoolWalletModel.name,
+        schema: WalletPoolWalletSchema,
+      },
+      {
+        name: PhaseModel.name,
+        schema: PhaseSchema,
+      },
+      {
+        name: PhaseComponentModel.name,
+        schema: PhaseComponentSchema,
+      },
+      {
+        name: PhaseComponentWinnerModel.name,
+        schema: PhaseComponentWinnerSchema,
+      },
+      {
+        name: PhaseComponentItemModel.name,
+        schema: PhaseComponentItemSchema,
+      },
+      {
+        name: PhaseComponentItemTokenModel.name,
+        schema: PhaseComponentItemTokenSchema,
+      },
     ]),
   ],
   providers: [
@@ -94,6 +163,14 @@ import { CustomTokenPoolsRepository } from './custom-token-pools/custom-token-po
     TokenPoolsRepository,
     TokenPoolTokensRepository,
     CustomTokenPoolsRepository,
+    CustomTokenPoolTokensRepository,
+    WalletPoolsRepository,
+    WalletPoolWalletsRepository,
+    PhasesRepository,
+    PhaseComponentsRepository,
+    PhaseComponentWinnersRepository,
+    PhaseComponentItemsRepository,
+    PhaseComponentItemTokensRepository,
   ],
   exports: [
     TransferRepository,
@@ -105,6 +182,14 @@ import { CustomTokenPoolsRepository } from './custom-token-pools/custom-token-po
     TokenPoolsRepository,
     TokenPoolTokensRepository,
     CustomTokenPoolsRepository,
+    CustomTokenPoolTokensRepository,
+    WalletPoolsRepository,
+    WalletPoolWalletsRepository,
+    PhasesRepository,
+    PhaseComponentsRepository,
+    PhaseComponentWinnersRepository,
+    PhaseComponentItemsRepository,
+    PhaseComponentItemTokensRepository,
   ],
 })
 export class RepositoriesModule {}

@@ -11,7 +11,11 @@ import { RunsModule } from './runs/runs.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
-    MongooseModule.forRoot(process.env.DB_CONNECTION_URI),
+    MongooseModule.forRoot(process.env.DB_CONNECTION_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      connectTimeoutMS: 5 * 60 * 1000, // 5min
+    }),
     ApiModule,
     AllowlistLibModule,
     RunsModule,
