@@ -32,6 +32,16 @@ export class AllowlistOperationsRepository {
     return this.mapModelToDto(model[0]);
   }
 
+  async findByAllowlistId(
+    allowlistId: string,
+    session?: ClientSession,
+  ): Promise<AllowlistOperationDto[]> {
+    const models = await this.allowlistOperations.find({ allowlistId }, null, {
+      session,
+    });
+    return models.map(this.mapModelToDto);
+  }
+
   async getAllRanForAllowlistSinceOrder(
     {
       allowlistId,

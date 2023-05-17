@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { AllowlistModel } from './allowlist.model';
 import { ClientSession, Model } from 'mongoose';
 import { AllowlistDto } from './allowlist.dto';
-import { AllowlistRunDto } from '../allowlist-runs/allowlist-runs.dto';
 
 @Injectable()
 export class AllowlistsRepository {
@@ -20,6 +19,10 @@ export class AllowlistsRepository {
       createdAt: model.createdAt,
       activeRun: model.activeRun,
     };
+  }
+
+  async getAll(): Promise<AllowlistDto[]> {
+    return (await this.allowlistRequests.find()).map(this.mapModelToDto);
   }
 
   async save(request: Omit<AllowlistDto, 'id'>): Promise<AllowlistDto> {
@@ -49,10 +52,10 @@ export class AllowlistsRepository {
     const allowlist = await this.allowlistRequests.findOneAndUpdate(
       {
         _id: param.id,
-        // $or: [
-        //   { activeRun: null },
-        //   { 'activeRun.createdAt': { $lt: param.runCreatedAt } },
-        // ],
+        $or: [
+          { activeRun: null },
+          { 'activeRun.createdAt': { $lt: param.runCreatedAt } },
+        ],
       },
       { activeRun: { id: param.runId, createdAt: param.runCreatedAt } },
       { new: true, session: param.session },
@@ -63,6 +66,4 @@ export class AllowlistsRepository {
     }
     return null;
   }
-
-  
 }

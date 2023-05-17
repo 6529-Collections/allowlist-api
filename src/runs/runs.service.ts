@@ -88,6 +88,7 @@ export class RunsService {
     } catch (e) {
       this.logger.error(`Error running run ${run.id}`, e);
       await session.abortTransaction();
+      this.allowlistRunsRepository.fail(run.id);
       return null;
     } finally {
       session.endSession();
@@ -358,18 +359,26 @@ export class RunsService {
       }),
     ]);
     this.logger.log(`running ${params.run.id}`);
-    const results = await this.run(params);
-    this.logger.log(`Inserting results for run ${params.run.id}`);
-    // fs.writeFileSync(
-    //   `./results/${params.run.id}.json`,
-    //   JSON.stringify(results, null, 2),
-    // );
-    await this.insertResults({
-      run: params.run,
-      allowlist: params.allowlist,
-      results,
-    });
-    this.logger.log(`Run ${params.run.id} finished`);
+    try {
+      const results = await this.run(params);
+      this.logger.log(`Inserting results for run ${params.run.id}`);
+      // fs.writeFileSync(
+      //   `./results/${params.run.id}.json`,
+      //   JSON.stringify(results, null, 2),
+      // );
+      await this.insertResults({
+        run: params.run,
+        allowlist: params.allowlist,
+        results,
+      });
+      this.logger.log(`Run ${params.run.id} finished`);
+      await this.allowlistRunsRepository.complete(params.run.id);
+    } catch (e) {
+      console.log(e);
+      this.logger.error(`Error running ${params.run.id}`);
+      await this.allowlistRunsRepository.fail(params.run.id);
+    }
+
     console.timeEnd('AllowlistRunService');
   }
 }

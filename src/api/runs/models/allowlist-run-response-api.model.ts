@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   AllowlistRunDto,
   AllowlistRunStatus,
-} from '../../repositories/allowlist-runs/allowlist-runs.dto';
+} from '../../../repositories/allowlist-runs/allowlist-runs.dto';
 
 export class AllowlistRunResponseApiModel implements AllowlistRunDto {
   @ApiProperty({

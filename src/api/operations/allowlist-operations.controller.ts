@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
 } from '@nestjs/common';
@@ -11,9 +12,9 @@ import {
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import { AllowlistOperationResponseApiModel } from './models/allowlist-operation-response-api.model';
 import { AllowlistOperationRequestApiModel } from './models/allowlist-operation-request-api.model';
-import { AllowlistOperationsService } from './services/allowlist-operations.service';
+import { AllowlistOperationsService } from './allowlist-operations.service';
+import { AllowlistOperationResponseApiModel } from './models/allowlist-operation-response-api.model';
 
 @Controller('/allowlists/:allowlistId/operations')
 export class AllowlistOperationsController {
@@ -33,6 +34,13 @@ export class AllowlistOperationsController {
     @Param('allowlistId') allowlistId: string,
   ): Promise<AllowlistOperationResponseApiModel> {
     return this.allowlistOperationsService.add({ ...request, allowlistId });
+  }
+
+  @Get()
+  async getAll(
+    @Param('allowlistId') allowlistId: string,
+  ): Promise<AllowlistOperationResponseApiModel[]> {
+    return this.allowlistOperationsService.findByAllowlistId(allowlistId);
   }
 
   @ApiOperation({

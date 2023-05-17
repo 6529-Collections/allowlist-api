@@ -1,21 +1,13 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AllowlistDescriptionRequestApiModel } from './models/allowlist-description-request-api.model';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
-import { Time } from '../time';
+
+import { AllowlistsService } from './allowlists.service';
 import { AllowlistDescriptionResponseApiModel } from './models/allowlist-description-response-api.model';
-import { AllowlistsService } from './services/allowlists.service';
-import { AllowlistRunResponseApiModel } from './models/allowlist-run-response-api.model';
 
 @Controller('/allowlists')
 export class AllowlistsController {
@@ -37,28 +29,28 @@ export class AllowlistsController {
   }
 
   @ApiOperation({
+    summary: 'Get all allowlists',
+  })
+  @ApiOkResponse({
+    type: AllowlistDescriptionRequestApiModel,
+    isArray: true,
+  })
+  @Get()
+  async getAll(): Promise<AllowlistDescriptionResponseApiModel[]> {
+    return await this.allowlistsService.getAll();
+  }
+
+  @ApiOperation({
     summary: 'Get allowlist description',
   })
   @ApiOkResponse({
     type: AllowlistDescriptionRequestApiModel,
     isArray: true,
   })
-  @Get(':id')
+  @Get(':allowlistId')
   async get(
-    @Param('id') id: string,
+    @Param('allowlistId') allowlistId: string,
   ): Promise<AllowlistDescriptionResponseApiModel> {
-    return await this.allowlistsService.get(id);
-  }
-
-  @ApiOperation({
-    summary: 'Run allowlist',
-  })
-  @ApiOkResponse({
-    type: AllowlistDescriptionRequestApiModel,
-    isArray: true,
-  })
-  @Post(':id/runs')
-  async run(@Param('id') id: string): Promise<AllowlistRunResponseApiModel> {
-    return await this.allowlistsService.run(id);
+    return await this.allowlistsService.get(allowlistId);
   }
 }

@@ -1,15 +1,16 @@
 import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { AllowlistOperationRequestApiModel } from '../models/allowlist-operation-request-api.model';
+import { AllowlistOperationRequestApiModel } from './models/allowlist-operation-request-api.model';
 import { AllowlistOperationsRepository } from '../../repositories/allowlist-operations/allowlist-operations.repository';
 import { AllowlistsRepository } from '../../repositories/allowlist/allowlists.repository';
-import { AllowlistOperationResponseApiModel } from '../models/allowlist-operation-response-api.model';
 import { Time } from '../../time';
 import { ClientSession, Connection } from 'mongoose';
 import { InjectConnection } from '@nestjs/mongoose';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { Pool } from '@6529-collections/allowlist-lib/app-types';
+import { AllowlistOperationResponseApiModel } from './models/allowlist-operation-response-api.model';
+import { AllowlistOperationDto } from '../../repositories/allowlist-operations/allowlist-operation.dto';
 
 @Injectable()
 export class AllowlistOperationsService {
@@ -282,19 +283,19 @@ export class AllowlistOperationsService {
       }
       await session.commitTransaction();
 
-      return {
-        code: dto.code,
-        params: dto.params,
-        order: dto.order,
-        createdAt: dto.createdAt,
-        hasRan: false,
-      };
+      return dto;
     } catch (e) {
       await session.abortTransaction();
       throw e;
     } finally {
       await session.endSession();
     }
+  }
+
+  async findByAllowlistId(
+    allowlistId: string,
+  ): Promise<AllowlistOperationResponseApiModel[]> {
+    return this.allowlistOperationsRepository.findByAllowlistId(allowlistId);
   }
 
   async delete({

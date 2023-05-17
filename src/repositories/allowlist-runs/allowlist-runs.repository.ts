@@ -32,16 +32,63 @@ export class AllowlistRunsRepository {
     );
   }
 
+  async findById(runId: string): Promise<AllowlistRunDto | null> {
+    const model = await this.allowlistRuns.findById(runId);
+    if (model) {
+      return this.mapModelToDto(model);
+    }
+    return null;
+  }
+
+  async getAllForAllowlist(allowlistId: string): Promise<AllowlistRunDto[]> {
+    return this.allowlistRuns
+      .find({ allowlistId })
+      .sort({ createdAt: -1 })
+      .then((models) => models.map(this.mapModelToDto));
+  }
+
   async claim(): Promise<AllowlistRunDto | null> {
     const model = await this.allowlistRuns.findOneAndUpdate(
       {
-       // status: AllowlistRunStatus.PENDING,
+        status: AllowlistRunStatus.PENDING,
       },
       {
         claimedAt: Time.currentMillis(),
         status: AllowlistRunStatus.CLAIMED,
       },
       { sort: { status: 1, createdAt: 1 }, hint: { status: 1, createdAt: 1 } },
+    );
+    if (model) {
+      return this.mapModelToDto(model);
+    }
+    return null;
+  }
+
+  async complete(runId: string): Promise<AllowlistRunDto | null> {
+    const model = await this.allowlistRuns.findOneAndUpdate(
+      {
+        _id: runId,
+        status: AllowlistRunStatus.CLAIMED,
+      },
+      {
+        status: AllowlistRunStatus.COMPLETED,
+      },
+    );
+    if (model) {
+      return this.mapModelToDto(model);
+    }
+    return null;
+  }
+
+  async fail(runId: string): Promise<AllowlistRunDto | null> {
+    const model = await this.allowlistRuns.findOneAndUpdate(
+      {
+        _id: runId,
+        status: AllowlistRunStatus.CLAIMED,
+      },
+      {
+        status: AllowlistRunStatus.FAILED,
+      },
     );
     if (model) {
       return this.mapModelToDto(model);
