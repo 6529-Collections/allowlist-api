@@ -22,6 +22,23 @@ export class WalletPoolsRepository {
     };
   }
 
+  async getByAllowlistId(allowlistId: string): Promise<WalletPoolDto[]> {
+    const models = await this.walletPoolModel.find({ allowlistId });
+    return models.map((model) => this.mapModelToDto(model));
+  }
+
+  async getAllowlistWalletPool(param: {
+    allowlistId: string;
+    walletPoolId: string;
+  }): Promise<WalletPoolDto | null> {
+    const { allowlistId, walletPoolId } = param;
+    const model = await this.walletPoolModel.findOne({
+      walletPoolId,
+      allowlistId,
+    });
+    return model ? this.mapModelToDto(model) : null;
+  }
+
   async createMany(walletPools: Omit<WalletPoolDto, 'id'>[]): Promise<void> {
     await this.walletPoolModel.insertMany(walletPools, {
       ordered: false,

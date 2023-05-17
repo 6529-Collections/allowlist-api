@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { WalletPoolWalletDto } from './wallet-pool-wallet.dto';
 
-@Schema({ collection: 'wallet-pools' })
+@Schema({ collection: 'wallet-pool-wallets' })
 export class WalletPoolWalletModel
   extends Document
   implements Omit<WalletPoolWalletDto, 'id'>

@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { TransferPoolModel } from './transfer-pool.model';
-import { ClientSession, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { TransferPoolDto } from './transfer-pool.dto';
 
 @Injectable()
 export class TransferPoolsRepository {
   constructor(
     @InjectModel(TransferPoolModel.name)
-    private readonly transferPoolMoldel: Model<TransferPoolModel>,
+    private readonly transferPoolModel: Model<TransferPoolModel>,
   ) {}
 
   private mapModelToDto(model: TransferPoolModel): TransferPoolDto {
@@ -24,15 +24,32 @@ export class TransferPoolsRepository {
     };
   }
 
+  async getByAllowlistId(allowlistId: string): Promise<TransferPoolDto[]> {
+    const models = await this.transferPoolModel.find({ allowlistId });
+    return models.map((model) => this.mapModelToDto(model));
+  }
+
+  async getAllowlistTransferPool(param: {
+    allowlistId: string;
+    transferPoolId: string;
+  }): Promise<TransferPoolDto | null> {
+    const { allowlistId, transferPoolId } = param;
+    const model = await this.transferPoolModel.findOne({
+      transferPoolId,
+      allowlistId,
+    });
+    return model ? this.mapModelToDto(model) : null;
+  }
+
   async deleteByAllowlistId(param: { allowlistId: string }): Promise<void> {
     const { allowlistId } = param;
-    await this.transferPoolMoldel.deleteMany({ allowlistId });
+    await this.transferPoolModel.deleteMany({ allowlistId });
   }
 
   async createMany(
     transferPools: Omit<TransferPoolDto, 'id'>[],
   ): Promise<void> {
-    await this.transferPoolMoldel.insertMany(transferPools, {
+    await this.transferPoolModel.insertMany(transferPools, {
       ordered: false,
     });
   }

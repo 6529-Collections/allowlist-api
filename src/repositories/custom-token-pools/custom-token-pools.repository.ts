@@ -22,6 +22,23 @@ export class CustomTokenPoolsRepository {
     };
   }
 
+  async getByAllowlistId(allowlistId: string): Promise<CustomTokenPoolDto[]> {
+    const models = await this.customTokenPoolModel.find({ allowlistId });
+    return models.map((model) => this.mapModelToDto(model));
+  }
+
+  async getAllowlistCustomTokenPool(param: {
+    allowlistId: string;
+    customTokenPoolId: string;
+  }): Promise<CustomTokenPoolDto | null> {
+    const { allowlistId, customTokenPoolId } = param;
+    const model = await this.customTokenPoolModel.findOne({
+      customTokenPoolId,
+      allowlistId,
+    });
+    return model ? this.mapModelToDto(model) : null;
+  }
+
   async deleteByAllowlistId(param: { allowlistId: string }): Promise<void> {
     const { allowlistId } = param;
     await this.customTokenPoolModel.deleteMany({ allowlistId });

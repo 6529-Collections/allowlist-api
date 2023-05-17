@@ -23,6 +23,23 @@ export class PhasesRepository {
     };
   }
 
+  async getByAllowlistId(allowlistId: string): Promise<PhaseDto[]> {
+    const models = await this.phaseModel.find({ allowlistId });
+    return models.map((model) => this.mapModelToDto(model));
+  }
+
+  async getAllowlistPhase(param: {
+    allowlistId: string;
+    phaseId: string;
+  }): Promise<PhaseDto | null> {
+    const { allowlistId, phaseId } = param;
+    const model = await this.phaseModel.findOne({
+      phaseId,
+      allowlistId,
+    });
+    return model ? this.mapModelToDto(model) : null;
+  }
+
   async createMany(phases: Omit<PhaseDto, 'id'>[]): Promise<void> {
     await this.phaseModel.insertMany(phases, {
       ordered: false,

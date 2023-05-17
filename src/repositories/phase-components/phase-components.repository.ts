@@ -24,6 +24,32 @@ export class PhaseComponentsRepository {
     };
   }
 
+  async getByPhaseId(param: {
+    allowlistId: string;
+    phaseId: string;
+  }): Promise<PhaseComponentDto[]> {
+    const { allowlistId, phaseId } = param;
+    const models = await this.phaseComponentModel.find({
+      allowlistId,
+      phaseId,
+    });
+    return models.map((model) => this.mapModelToDto(model));
+  }
+
+  async getAllowlistPhaseComponent(param: {
+    allowlistId: string;
+    phaseId: string;
+    componentId: string;
+  }): Promise<PhaseComponentDto | null> {
+    const { allowlistId, phaseId, componentId } = param;
+    const model = await this.phaseComponentModel.findOne({
+      allowlistId,
+      phaseId,
+      componentId,
+    });
+    return model ? this.mapModelToDto(model) : null;
+  }
+
   async createMany(components: Omit<PhaseComponentDto, 'id'>[]): Promise<void> {
     await this.phaseComponentModel.insertMany(components, {
       ordered: false,

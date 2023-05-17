@@ -25,6 +25,37 @@ export class PhaseComponentItemsRepository {
     };
   }
 
+  async getByPhaseComponentId(param: {
+    allowlistId: string;
+    phaseId: string;
+    phaseComponentId: string;
+  }): Promise<PhaseComponentItemDto[]> {
+    const { allowlistId, phaseId, phaseComponentId } = param;
+    const models = await this.phaseComponentItemModel.find({
+      allowlistId,
+      phaseId,
+      phaseComponentId,
+    });
+    return models.map((model) => this.mapModelToDto(model));
+  }
+
+  async getAllowlistPhaseComponentItem(param: {
+    allowlistId: string;
+    phaseId: string;
+    phaseComponentId: string;
+    phaseComponentItemId: string;
+  }): Promise<PhaseComponentItemDto | null> {
+    const { allowlistId, phaseId, phaseComponentId, phaseComponentItemId } =
+      param;
+    const model = await this.phaseComponentItemModel.findOne({
+      allowlistId,
+      phaseId,
+      phaseComponentId,
+      phaseComponentItemId,
+    });
+    return model ? this.mapModelToDto(model) : null;
+  }
+
   async createMany(items: Omit<PhaseComponentItemDto, 'id'>[]): Promise<void> {
     await this.phaseComponentItemModel.insertMany(items, {
       ordered: false,
