@@ -1,6 +1,5 @@
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Timeout } from '@nestjs/schedule';
 import { AllowlistRunsRepository } from '../repositories/allowlist-runs/allowlist-runs.repository';
 import { InjectConnection } from '@nestjs/mongoose';
 import { ClientSession, Connection } from 'mongoose';
@@ -24,7 +23,6 @@ import { PhaseComponentsRepository } from '../repositories/phase-components/phas
 import { PhaseComponentWinnersRepository } from '../repositories/phase-component-winners/phase-component-winners.repository';
 import { PhaseComponentItemsRepository } from '../repositories/phase-component-items/phase-component-items.repository';
 import { PhaseComponentItemTokensRepository } from '../repositories/phase-component-item-tokens/phase-component-item-tokens.repository';
-import * as fs from 'fs';
 
 @Injectable()
 export class RunsService {
@@ -310,7 +308,7 @@ export class RunsService {
     ]);
   }
 
-  @Timeout(0)
+  //@Timeout(0)
   async start(): Promise<void> {
     const params = await this.claimRun();
     if (!params || !params.run || !params.allowlist) {

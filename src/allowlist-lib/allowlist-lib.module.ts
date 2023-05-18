@@ -17,8 +17,12 @@ import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-e
         transferRepository: TransferRepository,
         allowlistLibLogListener: AllowlistLibLogListener,
       ): AllowlistCreator => {
+        const etherscanApiKey = configService.get(
+          'ALLOWLIST_ETHERSCAN_API_KEY',
+        );
+        console.log(etherscanApiKey);
         return AllowlistCreator.getInstance({
-          etherscanApiKey: configService.get('ETHERSCAN_API_KEY'),
+          etherscanApiKey,
           storage: {
             transfersStorage: transferRepository,
           },
