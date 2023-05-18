@@ -11,8 +11,15 @@ const path = require('path');
 
 const logger = new Logger('env');
 
+let initialized = false;
+let nodeEnv = null;
+
 export async function initEnv() {
-  if (!process.env.NODE_ENV) {
+  if (!initialized) {
+    nodeEnv = process.env.NODE_ENV;
+  }
+  initialized = true;
+  if (!nodeEnv) {
     await initEnvFromSecrets();
   } else {
     await initEnvFromLocal();
@@ -48,7 +55,7 @@ async function initEnvFromSecrets() {
 }
 
 async function initEnvFromLocal() {
-  const envPath = path.join(__dirname, '..', `.env.${process.env.NODE_ENV}`);
+  const envPath = path.join(__dirname, '..', `.env.${nodeEnv}`);
   const dotenvConfigOutput = dotenv.config({
     path: envPath,
   });

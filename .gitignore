@@ -1,6 +1,8 @@
 /results
 /transfers-data
 
+/.serverless
+
 # compiled output
 /dist
 /node_modules

@@ -4,10 +4,41 @@ plugins:
   - 'serverless-plugin-typescript'
   - serverless-plugin-optimize
   - serverless-offline
+  - serverless-plugin-warmup
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs18.x
+
+custom:
+  warmup:
+    default:
+      enabled: false
+  optimize:
+    external:
+      [
+        'axios',
+        'form-data',
+        'combined-stream',
+        'delayed-stream',
+        'mime-types',
+        'mime-db',
+        'asynckit',
+        'proxy-from-env',
+        'follow-redirects',
+      ]
+    includePaths:
+      [
+        'node_modules/axios',
+        'node_modules/form-data',
+        'node_modules/combined-stream',
+        'node_modules/delayed-stream',
+        'node_modules/mime-types',
+        'node_modules/mime-db',
+        'node_modules/asynckit',
+        'node_modules/proxy-from-env',
+        'node_modules/follow-redirects',
+      ]
 
 functions:
   main:
