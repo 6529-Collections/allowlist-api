@@ -52,10 +52,10 @@ export class AllowlistsRepository {
     const allowlist = await this.allowlistRequests.findOneAndUpdate(
       {
         _id: param.id,
-        $or: [
+        /* $or: [
           { activeRun: null },
           { 'activeRun.createdAt': { $lt: param.runCreatedAt } },
-        ],
+        ],*/
       },
       { activeRun: { id: param.runId, createdAt: param.runCreatedAt } },
       { new: true, session: param.session },

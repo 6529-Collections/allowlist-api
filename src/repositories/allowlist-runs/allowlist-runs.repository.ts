@@ -50,7 +50,7 @@ export class AllowlistRunsRepository {
   async claim(): Promise<AllowlistRunDto | null> {
     const model = await this.allowlistRuns.findOneAndUpdate(
       {
-        status: AllowlistRunStatus.PENDING,
+        //status: AllowlistRunStatus.PENDING,
       },
       {
         claimedAt: Time.currentMillis(),
