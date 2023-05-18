@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@6529-collections/allowlist-lib@0.0.36":
-  version "0.0.36"
-  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.36/6b3ff41f5e41dda2fe6353bd65c98fd351274b68#6b3ff41f5e41dda2fe6353bd65c98fd351274b68"
-  integrity sha512-N8uRpzDBnXI2Cu1tat69uIhI/5+M0OLrkoTIepdU+lf5noB819SMcs63iSruWOgGkH5l+tRaluBukdow3PMvnA==
+"@6529-collections/allowlist-lib@0.0.37":
+  version "0.0.37"
+  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.37/39bbc62ad326e94a7d08636bab072c7a519b247d#39bbc62ad326e94a7d08636bab072c7a519b247d"
+  integrity sha512-XOZZNAYewz3Huwohv11FG53r07fn+Uf8IeUuQcBz5WcN+MnxxrW1+JJm0RAaTpG24b3PuvQnYz6ZPYDVAWfFHg==
   dependencies:
     axios "^1.4.0"
 
