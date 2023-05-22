@@ -27,11 +27,12 @@ import { PhaseComponentsController } from './phase-components/phase-components.c
 
 import { PhaseComponentItemsService } from './phase-component-items/phase-component-items.service';
 import { PhaseComponentItemsController } from './phase-component-items/phase-component-items.controller';
+import { RunsModule } from '../runs/runs.module';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
 @Module({
-  imports: [RepositoriesModule, AllowlistLibModule],
+  imports: [RepositoriesModule, AllowlistLibModule, RunsModule],
   providers: [
     AllowlistOperationsService,
     AllowlistsService,

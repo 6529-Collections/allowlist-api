@@ -20,7 +20,6 @@ import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-e
         const etherscanApiKey = configService.get(
           'ALLOWLIST_ETHERSCAN_API_KEY',
         );
-        console.log(etherscanApiKey);
         return AllowlistCreator.getInstance({
           etherscanApiKey,
           storage: {

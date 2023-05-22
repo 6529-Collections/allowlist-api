@@ -11,7 +11,6 @@ export class AppService {
     @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
   ) {}
 
-  //@Timeout(0)
   async run() {
     try {
       const operations: AllowlistOperation[] = [

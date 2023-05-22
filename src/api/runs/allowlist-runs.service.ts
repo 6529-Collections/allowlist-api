@@ -2,12 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { AllowlistsRepository } from '../../repositories/allowlist/allowlists.repository';
 import { AllowlistRunsRepository } from '../../repositories/allowlist-runs/allowlist-runs.repository';
 import { AllowlistRunResponseApiModel } from './models/allowlist-run-response-api.model';
+import { RunnerProxy } from '../../runs/runner-proxy';
 
 @Injectable()
 export class AllowlistRunsService {
   constructor(
     private readonly allowlistsRepository: AllowlistsRepository,
     private readonly allowlistRunsRepository: AllowlistRunsRepository,
+    private readonly runnerProxy: RunnerProxy,
   ) {}
 
   async create(allowlistId: string): Promise<AllowlistRunResponseApiModel> {
@@ -17,7 +19,11 @@ export class AllowlistRunsService {
         `Allowlist with ID ${allowlistId} does not exist`,
       );
     }
-    return await this.allowlistRunsRepository.save(allowlistId);
+    const allowlistRunDto = await this.allowlistRunsRepository.save(
+      allowlistId,
+    );
+    await this.runnerProxy.start(allowlistRunDto.id);
+    return allowlistRunDto;
   }
 
   async get(

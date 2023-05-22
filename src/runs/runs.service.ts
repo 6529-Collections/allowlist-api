@@ -48,11 +48,11 @@ export class RunsService {
     private readonly phaseComponentItemTokensRepository: PhaseComponentItemTokensRepository,
   ) {}
 
-  private async claimRun(): Promise<{
+  private async claimRun(id: string): Promise<{
     run: AllowlistRunDto;
     allowlist: AllowlistDto;
   } | null> {
-    const run = await this.allowlistRunsRepository.claim();
+    const run = await this.allowlistRunsRepository.findById(id);
     if (!run) {
       this.logger.log(`No runs to claim`);
       return null;
@@ -86,10 +86,10 @@ export class RunsService {
     } catch (e) {
       this.logger.error(`Error running run ${run.id}`, e);
       await session.abortTransaction();
-      this.allowlistRunsRepository.fail(run.id);
+      await this.allowlistRunsRepository.fail(run.id);
       return null;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
 
@@ -308,9 +308,8 @@ export class RunsService {
     ]);
   }
 
-  //@Timeout(0)
-  async start(): Promise<void> {
-    const params = await this.claimRun();
+  async start(id: string): Promise<void> {
+    const params = await this.claimRun(id);
     if (!params || !params.run || !params.allowlist) {
       return;
     }
