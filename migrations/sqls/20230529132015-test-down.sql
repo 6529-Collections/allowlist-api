@@ -1,1 +1,1 @@
-drop table test;/* Replace with your SQL commands */test
+drop table test;

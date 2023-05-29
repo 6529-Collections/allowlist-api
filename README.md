@@ -1,25 +1,16 @@
 # API for creating allowlists
 
-To run local DB:
+To run local DB, make sure you have docker installed and run:
 ```
-docker pull mariadb
-docker run --name mariadbtest -e MYSQL_ROOT_PASSWORD=mypass -p 3306:3306 -d mariadb
-```
-
-Log in to your local DB (user: root, pass: mypass) and execute:
-
-```
-CREATE USER allowlist IDENTIFIED BY 'allowlist';
-create database allowlist;
-grant all privileges on allowlist.* TO 'allowlist'
+docker-compose up -d
 ```
 
-To install dependencies run `yarn`
+This makes sure that the DB is running on port 5432 and the DB is named `allowlist` (user: allowlist; password: allowlist)
 
-To create database schema run:
+To install app dependencies run `yarn`
 
-```
-node node_modules/db-migrate/bin/db-migrate up -e dev
-```
+To run database migrations run: `yarn migrate up`
 
 To start the app run `yarn start`
+
+To create new migrations run `yarn migrate create <migration-name>`. This created up an down migration SQL's in migrations/sqls.
