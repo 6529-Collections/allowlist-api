@@ -12,7 +12,6 @@ export default class SnsService {
 
   async publishMessage(payload: any) {
     const topicArn = process.env.SNS_TOPIC_ARN;
-    console.log(topicArn);
     const input = {
       TopicArn: topicArn,
       Message: JSON.stringify(payload),

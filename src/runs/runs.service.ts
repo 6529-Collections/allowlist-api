@@ -309,10 +309,13 @@ export class RunsService {
   }
 
   async start(id: string): Promise<void> {
+    this.logger.log(`Claiming run ${id}`);
     const params = await this.claimRun(id);
     if (!params || !params.run || !params.allowlist) {
+      this.logger.log(`Run ${id} not found. Finishing`);
       return;
     }
+    this.logger.log(`Starting run ${id}`);
     console.time('AllowlistRunService');
     await Promise.all([
       this.transferPoolTransfersRepository.deleteByAllowlistId({
