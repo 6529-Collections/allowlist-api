@@ -1,0 +1,1 @@
+drop table transfer_pool;
