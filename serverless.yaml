@@ -28,6 +28,10 @@ provider:
             - "secretsmanager:ListSecretVersionIds"
             - "secretsmanager:ListSecrets"
           Resource: "*"
+        - Effect: "Allow"
+          Action:
+            - "sns:Publish"
+          Resource: "arn:aws:sns:us-east-1:987989283142:simoteam-test.fifo"
 
 custom:
   warmup:
