@@ -3,7 +3,7 @@ create table token_ownership
     id            varchar(255) primary key not null,
     contract      varchar(255)             not null,
     owner         varchar(255)             not null,
-    tokenId       varchar(512)             not null,
+    token_id       varchar(512)             not null,
     op_order      int                      not null,
     since         bigint                   not null,
     token_pool_id varchar(255)             not null,
