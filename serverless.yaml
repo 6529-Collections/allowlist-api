@@ -9,6 +9,8 @@ plugins:
 provider:
   name: aws
   runtime: nodejs18.x
+  memorySize: 1024
+  timeout: 900
   iam:
     role:
       statements:
