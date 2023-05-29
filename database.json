@@ -1,0 +1,10 @@
+{
+  "dev": {
+    "driver": "mysql",
+    "user": "allowlist",
+    "password": "allowlist",
+    "database": "allowlist",
+    "host": "localhost"
+  },
+  "sql-file" : true
+}

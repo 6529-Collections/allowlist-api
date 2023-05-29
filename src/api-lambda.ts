@@ -8,6 +8,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { initEnv } from './env';
+import { closePool } from './repositories/mariadb';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const express = require('express');
@@ -36,5 +37,6 @@ export const handler: Handler = async (event: any, context: Context) => {
   cachedServer = await bootstrapServer();
   const resp = await proxy(cachedServer, event, context, 'PROMISE').promise;
   cachedServer.close();
+  await closePool();
   return resp;
 };
