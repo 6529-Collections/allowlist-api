@@ -24,6 +24,7 @@
   "dependencies": {
     "@6529-collections/allowlist-lib": "0.0.37",
     "@aws-sdk/client-secrets-manager": "^3.334.0",
+    "@aws-sdk/client-sns": "^3.335.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
@@ -37,7 +38,8 @@
     "dotenv": "^16.0.3",
     "mongoose": "^7.0.3",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "serverless-http": "^3.2.0"
   },
   "devDependencies": {
     "@hewmen/serverless-plugin-typescript": "^1.1.17",

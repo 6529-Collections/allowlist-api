@@ -1,4 +1,3 @@
-// lambda.ts
 import { Context, Handler } from 'aws-lambda';
 import { Server } from 'http';
 import { createServer, proxy } from 'aws-serverless-express';
@@ -13,10 +12,6 @@ import { initEnv } from './env';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const express = require('express');
 
-// NOTE: If you get ERR_CONTENT_DECODING_FAILED in your browser, this is likely
-// due to a compressed response (e.g. gzip) which has not been handled correctly
-// by aws-serverless-express and/or API Gateway. Add the necessary MIME types to
-// binaryMimeTypes below
 const binaryMimeTypes: string[] = [];
 
 let cachedServer: Server;

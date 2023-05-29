@@ -9,6 +9,25 @@ plugins:
 provider:
   name: aws
   runtime: nodejs18.x
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "sqs:SendMessage"
+            - "sqs:ReceiveMessage"
+            - "sqs:GetQueueAttributes"
+            - "sqs:DeleteMessage"
+          Resource: arn:aws:sqs:*:*:*
+        - Effect: "Allow"
+          Action:
+            - "secretsmanager:GetRandomPassword"
+            - "secretsmanager:GetResourcePolicy"
+            - "secretsmanager:GetSecretValue"
+            - "secretsmanager:DescribeSecret"
+            - "secretsmanager:ListSecretVersionIds"
+            - "secretsmanager:ListSecrets"
+          Resource: "*"
 
 custom:
   warmup:
@@ -42,8 +61,10 @@ custom:
 
 functions:
   main:
-    handler: ./src/lambda.handler
+    handler: ./src/api-lambda.handler
     events:
       - http:
           method: any
           path: /{any+}
+  queue:
+    handler: src/worker-lambda.handler
