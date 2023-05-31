@@ -52,7 +52,7 @@ export class RunsService {
     run: AllowlistRunDto;
     allowlist: AllowlistDto;
   } | null> {
-    const run = await this.allowlistRunsRepository.findById(id);
+    const run = await this.allowlistRunsRepository.claim(id);
     if (!run) {
       this.logger.log(`No runs to claim`);
       return null;
@@ -309,7 +309,6 @@ export class RunsService {
   }
 
   async start(id: string): Promise<void> {
-    this.logger.log(`Claiming run ${id}`);
     const params = await this.claimRun(id);
     if (!params || !params.run || !params.allowlist) {
       this.logger.log(`Run ${id} not found. Finishing`);
@@ -318,6 +317,10 @@ export class RunsService {
     this.logger.log(`Starting run ${id}`);
     console.time('AllowlistRunService');
     await Promise.all([
+      this.allowlistRunsRepository.deleteByAllowlistIdSkipRun({
+        allowlistId: params.run.allowlistId,
+        runId: params.run.id,
+      }),
       this.transferPoolTransfersRepository.deleteByAllowlistId({
         allowlistId: params.run.allowlistId,
       }),

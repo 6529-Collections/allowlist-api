@@ -47,10 +47,11 @@ export class AllowlistRunsRepository {
       .then((models) => models.map(this.mapModelToDto));
   }
 
-  async claim(): Promise<AllowlistRunDto | null> {
+  async claim(runId): Promise<AllowlistRunDto | null> {
     const model = await this.allowlistRuns.findOneAndUpdate(
       {
-        //status: AllowlistRunStatus.PENDING,
+        _id: runId,
+        status: AllowlistRunStatus.PENDING,
       },
       {
         claimedAt: Time.currentMillis(),
@@ -94,5 +95,26 @@ export class AllowlistRunsRepository {
       return this.mapModelToDto(model);
     }
     return null;
+  }
+
+  async deleteByAllowlistId({
+    allowlistId,
+  }: {
+    allowlistId: string;
+  }): Promise<void> {
+    await this.allowlistRuns.deleteMany({ allowlistId });
+  }
+
+  async deleteByAllowlistIdSkipRun({
+    allowlistId,
+    runId,
+  }: {
+    allowlistId: string;
+    runId: string;
+  }): Promise<void> {
+    await this.allowlistRuns.deleteMany({
+      allowlistId,
+      _id: { $ne: runId },
+    });
   }
 }

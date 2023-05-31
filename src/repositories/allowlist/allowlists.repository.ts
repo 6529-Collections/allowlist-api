@@ -62,4 +62,8 @@ export class AllowlistsRepository {
     }
     return null;
   }
+
+  async delete(id: string): Promise<void> {
+    await this.allowlistRequests.findByIdAndDelete(id);
+  }
 }

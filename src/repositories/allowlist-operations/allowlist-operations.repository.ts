@@ -132,4 +132,12 @@ export class AllowlistOperationsRepository {
     );
     return models.map(this.mapModelToDto);
   }
+
+  async deleteByAllowlistId({
+    allowlistId,
+  }: {
+    allowlistId: string;
+  }): Promise<void> {
+    await this.allowlistOperations.deleteMany({ allowlistId });
+  }
 }

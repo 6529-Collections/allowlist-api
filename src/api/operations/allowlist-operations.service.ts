@@ -10,7 +10,6 @@ import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allo
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { Pool } from '@6529-collections/allowlist-lib/app-types';
 import { AllowlistOperationResponseApiModel } from './models/allowlist-operation-response-api.model';
-import { AllowlistOperationDto } from '../../repositories/allowlist-operations/allowlist-operation.dto';
 
 @Injectable()
 export class AllowlistOperationsService {
@@ -226,7 +225,7 @@ export class AllowlistOperationsService {
         code: operation.code,
         params: operation.params,
         order: order++,
-        allowlistId: '64621fac7ea9f9b2010d2fc1',
+        allowlistId: '64775749178e87aefe49dd79',
       });
     }
   }

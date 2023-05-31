@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AllowlistDescriptionRequestApiModel } from './models/allowlist-description-request-api.model';
 import {
   ApiCreatedResponse,
@@ -52,5 +52,14 @@ export class AllowlistsController {
     @Param('allowlistId') allowlistId: string,
   ): Promise<AllowlistDescriptionResponseApiModel> {
     return await this.allowlistsService.get(allowlistId);
+  }
+
+  @ApiOperation({
+    summary: 'Delete allowlist',
+  })
+  @ApiOkResponse()
+  @Delete(':allowlistId')
+  async delete(@Param('allowlistId') allowlistId: string): Promise<void> {
+    await this.allowlistsService.delete(allowlistId);
   }
 }
