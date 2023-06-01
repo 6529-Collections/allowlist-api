@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AllowlistLibModule } from './allowlist-lib/allowlist-lib.module';
 import { ApiModule } from './api/api.module';
 import { RunsModule } from './runs/runs.module';
+import { OtherModule } from './api/other/other.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RunsModule } from './runs/runs.module';
     ApiModule,
     AllowlistLibModule,
     RunsModule,
+    OtherModule,
   ],
   controllers: [],
   providers: [AppService],
