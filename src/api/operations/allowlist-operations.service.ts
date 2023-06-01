@@ -32,7 +32,10 @@ export class AllowlistOperationsService {
     }
   }
 
-  async mock() {
+  async mock(allowlistId: string) {
+    await this.allowlistOperationsRepository.deleteByAllowlistId({
+      allowlistId,
+    });
     const operations: AllowlistOperation[] = [
       {
         code: AllowlistOperationCode.GET_COLLECTION_TRANSFERS,
@@ -225,7 +228,7 @@ export class AllowlistOperationsService {
         code: operation.code,
         params: operation.params,
         order: order++,
-        allowlistId: '64775749178e87aefe49dd79',
+        allowlistId,
       });
     }
   }

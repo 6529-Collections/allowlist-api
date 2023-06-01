@@ -40,6 +40,7 @@ export class AllowlistOperationsController {
   async getAll(
     @Param('allowlistId') allowlistId: string,
   ): Promise<AllowlistOperationResponseApiModel[]> {
+    // await this.allowlistOperationsService.mock(allowlistId)
     return this.allowlistOperationsService.findByAllowlistId(allowlistId);
   }
 

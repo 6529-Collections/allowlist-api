@@ -114,26 +114,26 @@ export class RunsService {
           description: transferPool.description,
         })),
       ),
-      this.transferPoolTransfersRepository.createMany(
-        Object.values(transferPools).flatMap((transferPool) =>
-          transferPool.transfers.map((transfer, i) => ({
-            allowlistId: allowlist.id,
-            transferPoolId: transferPool.id,
-            activeRunId: runId,
-            order: i,
-            contract: transfer.contract,
-            tokenID: transfer.tokenID,
-            blockNumber: transfer.blockNumber,
-            timeStamp: transfer.timeStamp,
-            logIndex: transfer.logIndex,
-            from: transfer.from,
-            to: transfer.to,
-            amount: transfer.amount,
-            transactionHash: transfer.transactionHash,
-            transactionIndex: transfer.transactionIndex,
-          })),
-        ),
-      ),
+      // this.transferPoolTransfersRepository.createMany(
+      //   Object.values(transferPools).flatMap((transferPool) =>
+      //     transferPool.transfers.map((transfer, i) => ({
+      //       allowlistId: allowlist.id,
+      //       transferPoolId: transferPool.id,
+      //       activeRunId: runId,
+      //       order: i,
+      //       contract: transfer.contract,
+      //       tokenID: transfer.tokenID,
+      //       blockNumber: transfer.blockNumber,
+      //       timeStamp: transfer.timeStamp,
+      //       logIndex: transfer.logIndex,
+      //       from: transfer.from,
+      //       to: transfer.to,
+      //       amount: transfer.amount,
+      //       transactionHash: transfer.transactionHash,
+      //       transactionIndex: transfer.transactionIndex,
+      //     })),
+      //   ),
+      // ),
       this.tokenPoolsRepository.createMany(
         Object.values(tokenPools).map((tokenPool) => ({
           allowlistId: allowlist.id,
@@ -145,20 +145,20 @@ export class RunsService {
           tokenIds: tokenPool.tokenIds,
         })),
       ),
-      this.tokenPoolTokensRepository.createMany(
-        Object.values(tokenPools).flatMap((tokenPool) =>
-          tokenPool.tokens.map((token, i) => ({
-            allowlistId: allowlist.id,
-            tokenPoolId: tokenPool.id,
-            activeRunId: runId,
-            order: i,
-            tokenId: token.id,
-            contract: token.contract,
-            owner: token.owner,
-            since: token.since,
-          })),
-        ),
-      ),
+      // this.tokenPoolTokensRepository.createMany(
+      //   Object.values(tokenPools).flatMap((tokenPool) =>
+      //     tokenPool.tokens.map((token, i) => ({
+      //       allowlistId: allowlist.id,
+      //       tokenPoolId: tokenPool.id,
+      //       activeRunId: runId,
+      //       order: i,
+      //       tokenId: token.id,
+      //       contract: token.contract,
+      //       owner: token.owner,
+      //       since: token.since,
+      //     })),
+      //   ),
+      // ),
       this.customTokenPoolsRepository.createMany(
         Object.values(tokenPools).map((tokenPool) => ({
           allowlistId: allowlist.id,
@@ -168,19 +168,19 @@ export class RunsService {
           description: tokenPool.description,
         })),
       ),
-      this.customTokenPoolTokensRepository.createMany(
-        Object.values(customTokenPools).flatMap((customTokenPool) =>
-          customTokenPool.tokens.map((token, i) => ({
-            allowlistId: allowlist.id,
-            customTokenPoolId: customTokenPool.id,
-            activeRunId: runId,
-            order: i,
-            tokenId: token.id,
-            owner: token.owner,
-            since: token.since,
-          })),
-        ),
-      ),
+      // this.customTokenPoolTokensRepository.createMany(
+      //   Object.values(customTokenPools).flatMap((customTokenPool) =>
+      //     customTokenPool.tokens.map((token, i) => ({
+      //       allowlistId: allowlist.id,
+      //       customTokenPoolId: customTokenPool.id,
+      //       activeRunId: runId,
+      //       order: i,
+      //       tokenId: token.id,
+      //       owner: token.owner,
+      //       since: token.since,
+      //     })),
+      //   ),
+      // ),
       this.walletPoolsRepository.createMany(
         Object.values(walletPools).map((walletPool) => ({
           allowlistId: allowlist.id,
@@ -190,17 +190,17 @@ export class RunsService {
           description: walletPool.description,
         })),
       ),
-      this.walletPoolWalletsRepository.createMany(
-        Object.values(walletPools).flatMap((walletPool) =>
-          walletPool.wallets.map((wallet, i) => ({
-            allowlistId: allowlist.id,
-            walletPoolId: walletPool.id,
-            activeRunId: runId,
-            order: i,
-            wallet,
-          })),
-        ),
-      ),
+      // this.walletPoolWalletsRepository.createMany(
+      //   Object.values(walletPools).flatMap((walletPool) =>
+      //     walletPool.wallets.map((wallet, i) => ({
+      //       allowlistId: allowlist.id,
+      //       walletPoolId: walletPool.id,
+      //       activeRunId: runId,
+      //       order: i,
+      //       wallet,
+      //     })),
+      //   ),
+      // ),
       this.phasesRepository.createMany(
         Object.values(phases).map((phase) => ({
           allowlistId: allowlist.id,
@@ -254,25 +254,25 @@ export class RunsService {
           ),
         ),
       ),
-      this.phaseComponentItemTokensRepository.createMany(
-        Object.values(phases).flatMap((phase) =>
-          Object.values(phase.components).flatMap((component) =>
-            Object.values(component.items).flatMap((item) =>
-              item.tokens.map((token, i) => ({
-                allowlistId: allowlist.id,
-                phaseId: phase.id,
-                phaseComponentId: component.id,
-                phaseComponentItemId: item.id,
-                activeRunId: runId,
-                order: i,
-                tokenId: token.id,
-                owner: token.owner,
-                since: token.since,
-              })),
-            ),
-          ),
-        ),
-      ),
+      // this.phaseComponentItemTokensRepository.createMany(
+      //   Object.values(phases).flatMap((phase) =>
+      //     Object.values(phase.components).flatMap((component) =>
+      //       Object.values(component.items).flatMap((item) =>
+      //         item.tokens.map((token, i) => ({
+      //           allowlistId: allowlist.id,
+      //           phaseId: phase.id,
+      //           phaseComponentId: component.id,
+      //           phaseComponentItemId: item.id,
+      //           activeRunId: runId,
+      //           order: i,
+      //           tokenId: token.id,
+      //           owner: token.owner,
+      //           since: token.since,
+      //         })),
+      //       ),
+      //     ),
+      //   ),
+      // ),
     ]);
   }
 
