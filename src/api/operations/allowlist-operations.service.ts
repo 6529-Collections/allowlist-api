@@ -236,7 +236,7 @@ export class AllowlistOperationsService {
   async add({
     code,
     params,
-    order,
+    order: orderParam,
     allowlistId,
   }: AllowlistOperationRequestApiModel & {
     allowlistId: string;
@@ -251,6 +251,12 @@ export class AllowlistOperationsService {
     await this.validateOperation({ code, params });
     const session: ClientSession = await this.connection.startSession();
     session.startTransaction();
+    const order =
+      orderParam ??
+      (await this.allowlistOperationsRepository.getLatestOrderForAllowlist(
+        allowlistId,
+        session,
+      )) + 1;
     try {
       await this.allowlistOperationsRepository.incOrdersForAllowlistSinceOrder(
         {

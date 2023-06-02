@@ -29,6 +29,8 @@ import { PhaseComponentItemsService } from './phase-component-items/phase-compon
 import { PhaseComponentItemsController } from './phase-component-items/phase-component-items.controller';
 import { RunsModule } from '../runs/runs.module';
 import { CommonModule } from '../common/common.module';
+import { PhasesWithComponentsAndItemsService } from './phases-with-components-and-items/phases-with-components-and-items.service';
+import { PhasesWithComponentsAndItemsController } from './phases-with-components-and-items/phases-with-components-and-items.controller';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
@@ -45,6 +47,7 @@ import { CommonModule } from '../common/common.module';
     PhasesService,
     PhaseComponentsService,
     PhaseComponentItemsService,
+    PhasesWithComponentsAndItemsService,
     // Placeholder for future services, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
   controllers: [
@@ -58,6 +61,7 @@ import { CommonModule } from '../common/common.module';
     PhasesController,
     PhaseComponentsController,
     PhaseComponentItemsController,
+    PhasesWithComponentsAndItemsController,
     // Placeholder for future controllers, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
 })

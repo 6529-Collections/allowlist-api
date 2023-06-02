@@ -60,4 +60,9 @@ export class PhaseComponentsRepository {
     const { allowlistId } = param;
     await this.phaseComponentModel.deleteMany({ allowlistId });
   }
+
+  async getByAllowlistId(allowlistId: string): Promise<PhaseComponentDto[]> {
+    const models = await this.phaseComponentModel.find({ allowlistId });
+    return models.map((model) => this.mapModelToDto(model));
+  }
 }

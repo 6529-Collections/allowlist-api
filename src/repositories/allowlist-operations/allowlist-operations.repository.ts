@@ -140,4 +140,14 @@ export class AllowlistOperationsRepository {
   }): Promise<void> {
     await this.allowlistOperations.deleteMany({ allowlistId });
   }
+
+  async getLatestOrderForAllowlist(
+    allowlistId: string,
+    session?: ClientSession,
+  ): Promise<number> {
+    const model = await this.allowlistOperations
+      .findOne({ allowlistId }, null, { session })
+      .sort({ order: -1 });
+    return model ? model.order : 0;
+  }
 }

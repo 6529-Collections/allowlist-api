@@ -1,6 +1,5 @@
 import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
 import { ApiProperty } from '@nestjs/swagger';
-import { Min } from 'class-validator';
 import { AllowlistOperationDto } from '../../../repositories/allowlist-operations/allowlist-operation.dto';
 
 export class AllowlistOperationResponseApiModel

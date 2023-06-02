@@ -4,11 +4,23 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
 
 export class AllowlistOperationRequestApiModel implements AllowlistOperation {
-  @ApiProperty({ enum: Object.keys(AllowlistOperationCode) })
+  @ApiProperty({
+    description: 'Code of the operation.',
+    enum: Object.keys(AllowlistOperationCode),
+  })
   @IsEnum(AllowlistOperationCode)
   readonly code: AllowlistOperationCode;
-  @ApiProperty({ type: Object })
+
+  @ApiProperty({
+    description: 'Parameters of the operation.',
+    type: Object,
+  })
   readonly params: any;
-  @ApiProperty({ type: Number })
-  readonly order: number;
+
+  @ApiProperty({
+    description: 'Order of the operation in the allowlist.',
+    type: Number,
+    required: false,
+  })
+  readonly order?: number;
 }
