@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PhaseComponentItemDto } from '../../../repositories/phase-component-items/phase-component-item.dto';
+import { Pool } from '@6529-collections/allowlist-lib/app-types';
 
 export class PhaseComponentItemResponseApiModel
   implements PhaseComponentItemDto
@@ -48,4 +49,15 @@ export class PhaseComponentItemResponseApiModel
     description: 'Description of the component item.',
   })
   readonly description: string;
+
+  @ApiProperty({
+    description: 'ID of the pool.',
+  })
+  readonly poolId: string;
+
+  @ApiProperty({
+    description: 'Type of the pool.',
+    enum: Pool,
+  })
+  readonly poolType: Pool;
 }

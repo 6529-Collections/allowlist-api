@@ -22,6 +22,8 @@ export class PhaseComponentItemsRepository {
       insertionOrder: model.insertionOrder,
       name: model.name,
       description: model.description,
+      poolId: model.poolId,
+      poolType: model.poolType,
     };
   }
 

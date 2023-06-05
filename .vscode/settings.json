@@ -12,5 +12,8 @@
             "database": "default",
             "username": "root"
         }
+    ],
+    "cSpell.words": [
+        "nestjs"
     ]
 }

@@ -160,7 +160,7 @@ export class RunsService {
       //   ),
       // ),
       this.customTokenPoolsRepository.createMany(
-        Object.values(tokenPools).map((tokenPool) => ({
+        Object.values(customTokenPools).map((tokenPool) => ({
           allowlistId: allowlist.id,
           customTokenPoolId: tokenPool.id,
           activeRunId: runId,
@@ -249,6 +249,8 @@ export class RunsService {
               activeRunId: runId,
               name: item.name,
               description: item.description,
+              poolId: item.poolId,
+              poolType: item.poolType,
               insertionOrder: item._insertionOrder,
             })),
           ),

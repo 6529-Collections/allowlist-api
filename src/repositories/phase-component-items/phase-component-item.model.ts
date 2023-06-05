@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { PhaseComponentItemDto } from './phase-component-item.dto';
+import { Pool } from '@6529-collections/allowlist-lib/app-types';
 
 @Schema({ collection: 'phase-component-items' })
 export class PhaseComponentItemModel
@@ -30,6 +31,12 @@ export class PhaseComponentItemModel
 
   @Prop({ required: true, type: String })
   readonly description: string;
+
+  @Prop({ required: true, type: String })
+  readonly poolId: string;
+
+  @Prop({ required: true, type: String, enum: Pool })
+  readonly poolType: Pool;
 }
 
 export const PhaseComponentItemSchema = SchemaFactory.createForClass(
