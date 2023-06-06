@@ -10,12 +10,15 @@ import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allo
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { Pool } from '@6529-collections/allowlist-lib/app-types';
 import { AllowlistOperationResponseApiModel } from './models/allowlist-operation-response-api.model';
+import { AllowlistRunsRepository } from '../../repositories/allowlist-runs/allowlist-runs.repository';
+import { AllowlistRunStatus } from '../../repositories/allowlist-runs/allowlist-runs.dto';
 
 @Injectable()
 export class AllowlistOperationsService {
   constructor(
     private readonly allowlistsRepository: AllowlistsRepository,
     private readonly allowlistOperationsRepository: AllowlistOperationsRepository,
+    private readonly allowlistRunsRepository: AllowlistRunsRepository,
     @InjectConnection()
     private readonly connection: Connection,
     @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
@@ -233,6 +236,34 @@ export class AllowlistOperationsService {
     }
   }
 
+  private async validateAllowlistState(allowlistId: string): Promise<void> {
+    const allowlist = await this.allowlistsRepository.findById(allowlistId);
+    if (!allowlist) {
+      throw new BadRequestException(
+        `Allowlist with ID ${allowlistId} does not exist`,
+      );
+    }
+    if (allowlist.activeRun) {
+      const activeRun = await this.allowlistRunsRepository.findById(
+        allowlist.activeRun.id,
+      );
+      if (!activeRun) {
+        throw new BadRequestException(
+          `Allowlist with ID ${allowlistId} has an active run but it does not exist`,
+        );
+      }
+      if (
+        [AllowlistRunStatus.PENDING, AllowlistRunStatus.CLAIMED].includes(
+          activeRun.status,
+        )
+      ) {
+        throw new BadRequestException(
+          `Allowlist with ID ${allowlistId} has an active run`,
+        );
+      }
+    }
+  }
+
   async add({
     code,
     params,
@@ -241,14 +272,8 @@ export class AllowlistOperationsService {
   }: AllowlistOperationRequestApiModel & {
     allowlistId: string;
   }): Promise<AllowlistOperationResponseApiModel> {
-    const allowlist = await this.allowlistsRepository.findById(allowlistId);
-    if (!allowlist) {
-      throw new BadRequestException(
-        `Allowlist with ID ${allowlistId} does not exist`,
-      );
-    }
-
-    await this.validateOperation({ code, params });
+    this.validateOperation({ code, params });
+    await this.validateAllowlistState(allowlistId);
     const session: ClientSession = await this.connection.startSession();
     session.startTransaction();
     const order =
@@ -313,12 +338,7 @@ export class AllowlistOperationsService {
     allowlistId: string;
     operationOrder: number;
   }) {
-    const allowlist = await this.allowlistsRepository.findById(allowlistId);
-    if (!allowlist) {
-      throw new BadRequestException(
-        `Allowlist with ID ${allowlist} does not exist`,
-      );
-    }
+    await this.validateAllowlistState(allowlistId);
     const session: ClientSession = await this.connection.startSession();
     session.startTransaction();
     try {

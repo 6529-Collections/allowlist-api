@@ -1,4 +1,7 @@
-import { AllowlistOperationType } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
+import {
+  AllowlistOperationCode,
+  AllowlistOperationType,
+} from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
 import {
   ALLOWLIST_CODE_DESCRIPTIONS,
   getCodesForType,
@@ -8,7 +11,17 @@ import { OperationDescriptionsResponseApiModel } from './models/operation-descri
 
 @Injectable()
 export class OtherService {
-  getOperationDescriptions(
+  getOperationDescriptions(): OperationDescriptionsResponseApiModel[] {
+    return Object.keys(AllowlistOperationCode).map(
+      (code: AllowlistOperationCode) => ({
+        code,
+        title: ALLOWLIST_CODE_DESCRIPTIONS[code].title,
+        description: ALLOWLIST_CODE_DESCRIPTIONS[code].description,
+      }),
+    );
+  }
+
+  getOperationDescriptionsForType(
     operationType: string,
   ): OperationDescriptionsResponseApiModel[] {
     const operationTypeUpper = operationType.toUpperCase();

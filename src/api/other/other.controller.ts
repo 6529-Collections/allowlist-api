@@ -8,6 +8,18 @@ export class OtherController {
   constructor(private readonly otherService: OtherService) {}
 
   @ApiOperation({
+    summary: 'Get all operation descriptions',
+  })
+  @ApiOkResponse({
+    type: OperationDescriptionsResponseApiModel,
+    isArray: true,
+  })
+  @Get('operations')
+  async getOperations(): Promise<OperationDescriptionsResponseApiModel[]> {
+    return this.otherService.getOperationDescriptions();
+  }
+
+  @ApiOperation({
     summary: 'Get operation descriptions for a given operation type',
   })
   @ApiOkResponse({
@@ -18,6 +30,6 @@ export class OtherController {
   async getOperationsForType(
     @Param('operationType') operationType: string,
   ): Promise<OperationDescriptionsResponseApiModel[]> {
-    return this.otherService.getOperationDescriptions(operationType);
+    return this.otherService.getOperationDescriptionsForType(operationType);
   }
 }
