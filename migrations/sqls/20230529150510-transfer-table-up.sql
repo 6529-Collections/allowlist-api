@@ -1,6 +1,7 @@
 create table transfer
 (
-    transaction_hash  varchar(512) not null primary key,
+    id                varchar(500) not null primary key,
+    transaction_hash  varchar(512)  not null,
     amount            int           not null,
     block_number      bigint        not null,
     contract          varchar(255)  not null,

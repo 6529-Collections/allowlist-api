@@ -1,1 +1,0 @@
-drop table custom_token_pool_token;
