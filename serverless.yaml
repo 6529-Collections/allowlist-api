@@ -13,6 +13,7 @@ provider:
     SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:987989283142:simoteam-test.fifo"
   memorySize: 4086
   timeout: 900
+  cors: true
   iam:
     role:
       statements:
