@@ -5,10 +5,11 @@ let poolInstance: mariadb.Pool;
 export async function getPool(): Promise<mariadb.Pool> {
   if (!poolInstance) {
     poolInstance = await mariadb.createPool({
-      host: 'localhost',
-      user: 'root',
-      password: 'mypass',
-      connectionLimit: 5,
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      port: +process.env.DB_PORT,
+      password: process.env.DB_PASSWORD,
+      connectionLimit: +process.env.DB_CONNECTION_LIMIT || 5,
     });
   }
   return poolInstance;
