@@ -4,11 +4,13 @@ import { Callback, Context, Handler } from 'aws-lambda';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { initEnv } from './env';
+import { migrateDb } from './migrate';
 
 let server: Handler;
 
 async function bootstrap(): Promise<Handler> {
   await initEnv();
+  await migrateDb();
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());

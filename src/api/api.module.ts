@@ -1,67 +1,65 @@
 import { Module } from '@nestjs/common';
-import { RepositoriesModule } from '../repositories/repositories.module';
-import { AllowlistsController } from './allowlist/allowlists.controller';
-import { AllowlistOperationsService } from './operations/allowlist-operations.service';
-import { AllowlistOperationsController } from './operations/allowlist-operations.controller';
+import { RepositoryModule } from '../repository/repository.module';
+import { AllowlistController } from './allowlist/allowlist.controller';
+import { AllowlistOperationService } from './operation/allowlist-operation.service';
+import { AllowlistOperationController } from './operation/allowlist-operation.controller';
 import { AllowlistLibModule } from '../allowlist-lib/allowlist-lib.module';
-import { AllowlistsService } from './allowlist/allowlists.service';
-import { AllowlistRunsService } from './runs/allowlist-runs.service';
-import { AllowlistRunsController } from './runs/allowlist-runs.controller';
-import { TransferPoolsService } from './transfer-pools/transfer-pools.service';
-import { TransferPoolsController } from './transfer-pools/transfer-pools.controller';
+import { AllowlistService } from './allowlist/allowlist.service';
+import { AllowlistRunController } from './runs/allowlist-run.controller';
+import { TransferPoolService } from './transfer-pool/transfer-pool.service';
+import { TransferPoolController } from './transfer-pool/transfer-pool.controller';
 
-import { TokenPoolsService } from './token-pools/token-pools.service';
-import { TokenPoolsController } from './token-pools/token-pools.controller';
+import { TokenPoolService } from './token-pool/token-pool.service';
+import { TokenPoolController } from './token-pool/token-pool.controller';
 
-import { CustomTokenPoolsService } from './custom-token-pools/custom-token-pools.service';
-import { CustomTokenPoolsController } from './custom-token-pools/custom-token-pools.controller';
+import { CustomTokenPoolService } from './custom-token-pool/custom-token-pool.service';
+import { CustomTokenPoolController } from './custom-token-pool/custom-token-pool.controller';
 
-import { WalletPoolsService } from './wallet-pools/wallet-pools.service';
-import { WalletPoolsController } from './wallet-pools/wallet-pools.controller';
+import { WalletPoolService } from './wallet-pool/wallet-pool.service';
+import { WalletPoolController } from './wallet-pool/wallet-pool.controller';
 
-import { PhasesService } from './phases/phases.service';
-import { PhasesController } from './phases/phases.controller';
+import { PhaseService } from './phase/phase.service';
+import { PhaseController } from './phase/phaseController';
 
-import { PhaseComponentsService } from './phase-components/phase-components.service';
-import { PhaseComponentsController } from './phase-components/phase-components.controller';
+import { PhaseComponentService } from './phase-component/phase-component.service';
+import { PhaseComponentController } from './phase-component/phase-component.controller';
 
-import { PhaseComponentItemsService } from './phase-component-items/phase-component-items.service';
-import { PhaseComponentItemsController } from './phase-component-items/phase-component-items.controller';
-import { RunsModule } from '../runs/runs.module';
+import { PhaseComponentItemService } from './phase-component-item/phase-component-item.service';
+import { PhaseComponentItemController } from './phase-component-item/phase-component-item.controller';
+import { RunnerModule } from '../runner/runner.module';
 import { CommonModule } from '../common/common.module';
-import { PhasesWithComponentsAndItemsService } from './phases-with-components-and-items/phases-with-components-and-items.service';
-import { PhasesWithComponentsAndItemsController } from './phases-with-components-and-items/phases-with-components-and-items.controller';
+import { PhaseFullService } from './phase-full/phase-full.service';
+import { PhaseFullController } from './phase-full/phase-full.controller';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
 @Module({
-  imports: [RepositoriesModule, AllowlistLibModule, RunsModule, CommonModule],
+  imports: [RepositoryModule, AllowlistLibModule, RunnerModule, CommonModule],
   providers: [
-    AllowlistOperationsService,
-    AllowlistsService,
-    AllowlistRunsService,
-    TransferPoolsService,
-    TokenPoolsService,
-    CustomTokenPoolsService,
-    WalletPoolsService,
-    PhasesService,
-    PhaseComponentsService,
-    PhaseComponentItemsService,
-    PhasesWithComponentsAndItemsService,
+    AllowlistOperationService,
+    AllowlistService,
+    TransferPoolService,
+    TokenPoolService,
+    CustomTokenPoolService,
+    WalletPoolService,
+    PhaseService,
+    PhaseComponentService,
+    PhaseComponentItemService,
+    PhaseFullService,
     // Placeholder for future services, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
   controllers: [
-    AllowlistsController,
-    AllowlistOperationsController,
-    AllowlistRunsController,
-    TransferPoolsController,
-    TokenPoolsController,
-    CustomTokenPoolsController,
-    WalletPoolsController,
-    PhasesController,
-    PhaseComponentsController,
-    PhaseComponentItemsController,
-    PhasesWithComponentsAndItemsController,
+    AllowlistController,
+    AllowlistOperationController,
+    AllowlistRunController,
+    TransferPoolController,
+    TokenPoolController,
+    CustomTokenPoolController,
+    WalletPoolController,
+    PhaseController,
+    PhaseComponentController,
+    PhaseComponentItemController,
+    PhaseFullController,
     // Placeholder for future controllers, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
 })

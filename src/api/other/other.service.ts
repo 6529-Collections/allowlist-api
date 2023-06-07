@@ -7,7 +7,7 @@ import {
   getCodesForType,
 } from '@6529-collections/allowlist-lib/utils/allowlist-operation-code.utils';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { OperationDescriptionsResponseApiModel } from './models/operation-descriptions-response-api.model';
+import { OperationDescriptionsResponseApiModel } from './model/operation-descriptions-response-api.model';
 
 @Injectable()
 export class OtherService {

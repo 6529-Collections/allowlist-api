@@ -1,9 +1,10 @@
 {
-  "dev": {
+  "main": {
     "driver": "mysql",
-    "user": "allowlist",
-    "password": "allowlist",
-    "database": "allowlist",
-    "host": "localhost"
+    "user": {"ENV": "ALLOWLIST_DB_USER"},
+    "password": {"ENV": "ALLOWLIST_DB_PASSWORD"},
+    "database": {"ENV": "ALLOWLIST_DB_NAME"},
+    "host": {"ENV": "ALLOWLIST_DB_HOST"},
+    "port": {"ENV": "ALLOWLIST_DB_PORT"}
   }
 }

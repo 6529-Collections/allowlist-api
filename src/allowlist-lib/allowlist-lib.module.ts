@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { RepositoriesModule } from '../repositories/repositories.module';
+import { RepositoryModule } from '../repository/repository.module';
 import { ConfigService } from '@nestjs/config';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
-import { TransferRepository } from '../repositories/transfer/transfer.repository';
+import { TransferRepository } from '../repository/transfer/transfer.repository';
 import { AllowlistLibLogListener } from './allowlist-lib-log-listener.service';
 import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-emitter';
 
 @Module({
-  imports: [RepositoriesModule],
+  imports: [RepositoryModule],
   providers: [
     AllowlistLibLogListener,
     {

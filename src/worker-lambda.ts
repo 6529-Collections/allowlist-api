@@ -4,15 +4,17 @@ import { NestFactory } from '@nestjs/core';
 import { INestApplication } from '@nestjs/common';
 import { initEnv } from './env';
 import { WorkerModule } from './worker.module';
-import { RunsService } from './runs/runs.service';
+import { RunnerService } from './runner/runner.service';
+import { migrateDb } from './migrate';
 
 let cachedServer: INestApplication;
 
 async function bootstrap(): Promise<INestApplication> {
   await initEnv();
+  await migrateDb();
   if (!cachedServer) {
     const nestApp = await NestFactory.create(WorkerModule);
-
+    nestApp.enableShutdownHooks();
     await nestApp.init();
     cachedServer = nestApp;
   }
@@ -29,7 +31,7 @@ export const handler: Handler = async (event: any, context: Context) => {
     if (!id) {
       throw new Error('No id provided');
     }
-    const runsService = cachedServer.get(RunsService);
+    const runsService = cachedServer.get(RunnerService);
     await runsService.start(id);
     context.succeed();
   } catch (e) {

@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { OtherService } from './other.service';
-import { OperationDescriptionsResponseApiModel } from './models/operation-descriptions-response-api.model';
+import { OperationDescriptionsResponseApiModel } from './model/operation-descriptions-response-api.model';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 
 @Controller('other')
