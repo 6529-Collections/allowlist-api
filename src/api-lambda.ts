@@ -25,6 +25,7 @@ async function bootstrapServer(): Promise<Server> {
       AppModule,
       new ExpressAdapter(expressApp),
     );
+    nestApp.enableCors();
     nestApp.useGlobalPipes(new ValidationPipe());
     nestApp.use(eventContext());
     await nestApp.init();
