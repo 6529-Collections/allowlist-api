@@ -3351,6 +3351,11 @@
     binary-case "^1.0.0"
     type-is "^1.6.16"
 
+"@vendia/serverless-express@^4.10.4":
+  version "4.10.4"
+  resolved "https://registry.yarnpkg.com/@vendia/serverless-express/-/serverless-express-4.10.4.tgz#041c04cf47a8053392299dee244283fdfe84766e"
+  integrity sha512-OH2cX+LqtrayCIkHAkShiLnvrgqGDvwIQEex5dHc/uJitBQjIz3q7dZtfU7cZ5vcR9Vkide5xJQDBEMbXoWLeA==
+
 "@webassemblyjs/ast@1.11.5", "@webassemblyjs/ast@^1.11.5":
   version "1.11.5"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.11.5.tgz#6e818036b94548c1fb53b754b5cae3c9b208281c"
