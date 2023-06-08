@@ -71,6 +71,7 @@ custom:
 functions:
   main:
     handler: ./src/api-lambda.handler
+    timeout: 120
     events:
       - http:
           method: any
