@@ -39,6 +39,7 @@ export class TransferRepository implements TransfersStorage {
     contract: string,
     blockNo: number,
   ): Promise<Transfer[]> {
+    //
     return this.transfers.find(
       { contract, blockNumber: { $lte: blockNo } },
       null,
