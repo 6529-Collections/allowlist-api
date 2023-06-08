@@ -1,52 +1,26 @@
-import { Context, Handler } from 'aws-lambda';
-import { Server } from 'http';
-import { createServer, proxy } from 'aws-serverless-express';
-import { eventContext } from 'aws-serverless-express/middleware';
-
 import { NestFactory } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
+import serverlessExpress from '@vendia/serverless-express';
+import { Callback, Context, Handler } from 'aws-lambda';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { initEnv } from './env';
-import { closePool } from './repositories/mariadb';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const express = require('express');
+let server: Handler;
 
-const binaryMimeTypes: string[] = [];
+async function bootstrap(): Promise<Handler> {
+  const app = await NestFactory.create(AppModule);
+  app.enableCors();
+  app.useGlobalPipes(new ValidationPipe());
+  await app.init();
 
-let cachedServer: Server;
-
-async function bootstrapServer(): Promise<Server> {
-  await initEnv();
-  if (!cachedServer) {
-    const expressApp = express();
-    const nestApp = await NestFactory.create(
-      AppModule,
-      new ExpressAdapter(expressApp),
-    );
-    nestApp.enableCors();
-    nestApp.useGlobalPipes(new ValidationPipe());
-    nestApp.use(eventContext());
-    await nestApp.init();
-    cachedServer = createServer(expressApp, undefined, binaryMimeTypes);
-  }
-  return cachedServer;
+  const expressApp = app.getHttpAdapter().getInstance();
+  return serverlessExpress({ app: expressApp });
 }
 
-export const handler: Handler = async (event: any, context: Context) => {
-  cachedServer = await bootstrapServer();
-  try {
-    const resp = await proxy(cachedServer, event, context, 'PROMISE').promise;
-    context.succeed(resp);
-  } catch (e) {
-    context.fail(e);
-  } finally {
-    try {
-      cachedServer.close();
-      await closePool();
-    } catch (e) {
-      console.log(`Error closing server`, e);
-    }
-  }
+export const handler: Handler = async (
+  event: any,
+  context: Context,
+  callback: Callback,
+) => {
+  server = server ?? (await bootstrap());
+  return server(event, context, callback);
 };
