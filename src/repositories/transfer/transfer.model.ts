@@ -28,10 +28,11 @@ export class TransferModel extends Document implements Transfer {
 
 export const TransferSchema = SchemaFactory.createForClass(TransferModel);
 
-TransferSchema.index({ contract: 1 });
 TransferSchema.index({
   contract: 1,
-  blockNumber: 1,
-  transactionIndex: 1,
-  logIndex: 1,
+  blockNumber: -1,
+  transactionIndex: -1,
+  transactionHash: 1,
+  logIndex: -1,
+  tokenID: 1,
 });

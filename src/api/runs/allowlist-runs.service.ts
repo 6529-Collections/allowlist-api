@@ -19,6 +19,19 @@ export class AllowlistRunsService {
         `Allowlist with ID ${allowlistId} does not exist`,
       );
     }
+    const runs = await this.allowlistRunsRepository.getAllForAllowlist(
+      allowlistId,
+    );
+    const haveRunningRuns = runs.some(
+      (run) => run.status === 'PENDING' || run.status === 'CLAIMED',
+    );
+
+    if (haveRunningRuns) {
+      throw new BadRequestException(
+        `Allowlist with ID ${allowlistId} has running runs`,
+      );
+    }
+
     const allowlistRunDto = await this.allowlistRunsRepository.save(
       allowlistId,
     );
