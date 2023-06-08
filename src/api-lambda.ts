@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import serverlessExpress from '@vendia/serverless-express';
+import { configure as serverlessExpress } from '@vendia/serverless-express';
 import { Callback, Context, Handler } from 'aws-lambda';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
