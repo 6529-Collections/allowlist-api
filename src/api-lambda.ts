@@ -36,8 +36,17 @@ async function bootstrapServer(): Promise<Server> {
 
 export const handler: Handler = async (event: any, context: Context) => {
   cachedServer = await bootstrapServer();
-  const resp = await proxy(cachedServer, event, context, 'PROMISE').promise;
-  cachedServer.close();
-  await closePool();
-  return resp;
+  try {
+    const resp = await proxy(cachedServer, event, context, 'PROMISE').promise;
+    context.succeed(resp);
+  } catch (e) {
+    context.fail(e);
+  } finally {
+    try {
+      cachedServer.close();
+      await closePool();
+    } catch (e) {
+      console.log(`Error closing server`, e);
+    }
+  }
 };

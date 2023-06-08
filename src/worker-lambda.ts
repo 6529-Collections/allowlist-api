@@ -1,4 +1,4 @@
-import { Handler } from 'aws-lambda';
+import { Context, Handler } from 'aws-lambda';
 
 import { NestFactory } from '@nestjs/core';
 import { INestApplication } from '@nestjs/common';
@@ -19,17 +19,27 @@ async function bootstrap(): Promise<INestApplication> {
   return cachedServer;
 }
 
-export const handler: Handler = async (event: any) => {
+export const handler: Handler = async (event: any, context: Context) => {
   cachedServer = await bootstrap();
-  console.log('Received event', event);
-  const message = event.Records[0];
-  const params = JSON.parse(JSON.parse(message.body).Message);
-  const id = params?.allowlistRunId;
-  if (!id) {
-    throw new Error('No id provided');
+  try {
+    console.log('Received event', event);
+    const message = event.Records[0];
+    const params = JSON.parse(JSON.parse(message.body).Message);
+    const id = params?.allowlistRunId;
+    if (!id) {
+      throw new Error('No id provided');
+    }
+    const runsService = cachedServer.get(RunsService);
+    await runsService.start(id);
+    context.succeed();
+  } catch (e) {
+    context.fail(e);
+  } finally {
+    try {
+      await cachedServer.close();
+    } catch (e) {
+      console.log(`Error closing server`, e);
+    }
+    cachedServer = null;
   }
-  const runsService = cachedServer.get(RunsService);
-  await runsService.start(id);
-  await cachedServer.close();
-  cachedServer = null;
 };
