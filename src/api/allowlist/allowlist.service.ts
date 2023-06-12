@@ -117,6 +117,16 @@ export class AllowlistService {
         `Allowlist with ID ${allowlistId} does not exist`,
       );
     }
+    if (
+      allowlistEntity.run_status &&
+      [AllowlistRunStatus.PENDING, AllowlistRunStatus.CLAIMED].includes(
+        allowlistEntity.run_status as AllowlistRunStatus,
+      )
+    ) {
+      throw new BadRequestException(
+        `Allowlist with ID ${allowlistId} has an active run`,
+      );
+    }
     await this.prepNewRun({ allowlistId });
     await this.runnerProxy.start(allowlistId);
     return this.get(allowlistId);
