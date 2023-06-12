@@ -13,7 +13,6 @@ export class RunnerProxy {
 
   async start(allowlistId: string) {
     const snstopicarn = process.env.SNS_TOPIC_ARN;
-    this.logger.log(`Publishing about ${allowlistId} to ${snstopicarn}`);
     if (snstopicarn) {
       await this.snsService.publishMessage({ allowlistRunId: allowlistId });
     } else {
