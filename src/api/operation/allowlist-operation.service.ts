@@ -385,6 +385,7 @@ export class AllowlistOperationService {
       order: entity.op_order,
       allowlistId: entity.allowlist_id,
       createdAt: bigInt2Number(entity.created_at),
+      hasRan: entity.has_ran,
     };
   }
 }

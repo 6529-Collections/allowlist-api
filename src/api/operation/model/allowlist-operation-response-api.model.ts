@@ -33,4 +33,9 @@ export class AllowlistOperationResponseApiModel implements AllowlistOperation {
     description: 'Params of the allowlist operation.',
   })
   readonly params: any;
+
+  @ApiProperty({
+    description: 'Shows if the operation has already ran.',
+  })
+  readonly hasRan: boolean;
 }
