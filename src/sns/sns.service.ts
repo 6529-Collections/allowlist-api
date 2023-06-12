@@ -13,13 +13,12 @@ export default class SnsService {
 
   async publishMessage(payload: any) {
     const topicArn = process.env.SNS_TOPIC_ARN;
-    payload.randomId = randomUUID();
     const input = {
       TopicArn: topicArn,
       Message: JSON.stringify(payload),
       MessageGroupId: 'messageGroup1',
+      MessageDeduplicationId: randomUUID(),
     };
-    // Create promise and SNS service object
     const response = await this.client.send(new PublishCommand(input));
     this.logger.log(
       `Message ${input.Message} sent to the topic ${input.TopicArn}`,
