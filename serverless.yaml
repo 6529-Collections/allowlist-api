@@ -6,6 +6,11 @@ plugins:
   - serverless-offline
   - serverless-plugin-warmup
 
+package:
+  pattern:
+    - 'migrations/**'
+    - 'config/**'
+
 provider:
   name: aws
   runtime: nodejs18.x

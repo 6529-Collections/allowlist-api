@@ -19,7 +19,7 @@ import { WalletPoolService } from './wallet-pool/wallet-pool.service';
 import { WalletPoolController } from './wallet-pool/wallet-pool.controller';
 
 import { PhaseService } from './phase/phase.service';
-import { PhaseController } from './phase/phaseController';
+import { PhaseController } from './phase/phase.controller';
 
 import { PhaseComponentService } from './phase-component/phase-component.service';
 import { PhaseComponentController } from './phase-component/phase-component.controller';
@@ -29,7 +29,6 @@ import { PhaseComponentItemController } from './phase-component-item/phase-compo
 import { RunnerModule } from '../runner/runner.module';
 import { CommonModule } from '../common/common.module';
 import { PhaseFullService } from './phase-full/phase-full.service';
-import { PhaseFullController } from './phase-full/phase-full.controller';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
@@ -59,7 +58,6 @@ import { PhaseFullController } from './phase-full/phase-full.controller';
     PhaseController,
     PhaseComponentController,
     PhaseComponentItemController,
-    PhaseFullController,
     // Placeholder for future controllers, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
 })

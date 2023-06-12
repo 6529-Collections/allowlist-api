@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PhasesWithComponentsAndItemsResponseApiModel } from './model/phases-with-components-and-items-api.model';
+import { PhasesWithComponentsAndItemsResponseApiModel } from './model/phases-full-api.model';
 import { PhaseComponentItemService } from '../phase-component-item/phase-component-item.service';
 import { PhaseComponentService } from '../phase-component/phase-component.service';
 import { PhaseService } from '../phase/phase.service';

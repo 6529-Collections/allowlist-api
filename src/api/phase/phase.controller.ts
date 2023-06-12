@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { PhaseService } from './phase.service';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { PhaseResponseApiModel } from './model/phase-response-api.model';
-import { PhasesWithComponentsAndItemsResponseApiModel } from '../phase-full/model/phases-with-components-and-items-api.model';
+import { PhasesWithComponentsAndItemsResponseApiModel } from '../phase-full/model/phases-full-api.model';
 import { PhaseFullService } from '../phase-full/phase-full.service';
 
 @Controller('/allowlists/:allowlistId/phases')
