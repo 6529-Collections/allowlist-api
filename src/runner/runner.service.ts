@@ -247,6 +247,7 @@ export class RunnerService {
         results,
       });
       this.logger.log(`Run for ${allowlist} finished`);
+      await this.allowlistOperationRepository.setAllAsRan({ allowlistId });
       await this.allowlistRepository.changeRunStatus({
         allowlistId,
         status: AllowlistRunStatus.COMPLETED,

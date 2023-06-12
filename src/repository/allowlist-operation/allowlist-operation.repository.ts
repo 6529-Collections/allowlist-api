@@ -143,6 +143,23 @@ export class AllowlistOperationRepository {
     );
   }
 
+  async setAllAsRan(
+    {
+      allowlistId,
+    }: {
+      allowlistId: string;
+    },
+    options?: { connection?: mariadb.Connection },
+  ): Promise<void> {
+    await this.db.none(
+      `UPDATE allowlist_operation
+             SET has_ran = true
+             WHERE allowlist_id = ?`,
+      [allowlistId],
+      options,
+    );
+  }
+
   async deleteByAllowlistId({
     allowlistId,
   }: {
