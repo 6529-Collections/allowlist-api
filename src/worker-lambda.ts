@@ -36,8 +36,10 @@ export const handler: Handler = async (event: any, context: Context) => {
     } catch (e) {
       console.error(`Error closing server`, e);
     }
-    context.succeed();
+    await context.succeed();
   } catch (e) {
-    context.fail(e);
+    console.error('Error running worker', e);
+    await context.fail(e);
   }
+  return {};
 };

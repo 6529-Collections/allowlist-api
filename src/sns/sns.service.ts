@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export default class SnsService {
@@ -12,6 +13,7 @@ export default class SnsService {
 
   async publishMessage(payload: any) {
     const topicArn = process.env.SNS_TOPIC_ARN;
+    payload.randomId = randomUUID();
     const input = {
       TopicArn: topicArn,
       Message: JSON.stringify(payload),
