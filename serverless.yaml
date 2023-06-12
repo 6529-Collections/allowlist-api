@@ -7,7 +7,7 @@ plugins:
   - serverless-plugin-warmup
 
 package:
-  pattern:
+  include:
     - 'migrations/**'
     - 'config/**'
 
