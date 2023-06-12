@@ -11,6 +11,19 @@
             "name": "blah",
             "database": "default",
             "username": "root"
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MariaDB",
+            "name": "allowlist",
+            "database": "allowlist",
+            "username": "allowlist",
+            "password": "allowlist"
         }
     ],
     "cSpell.words": [

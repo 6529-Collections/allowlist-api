@@ -242,16 +242,18 @@ export class AllowlistOperationService {
         `Allowlist with ID ${allowlistId} does not exist`,
       );
     }
-    if (allowlist.run_status) {
-      if (
-        [AllowlistRunStatus.PENDING, AllowlistRunStatus.CLAIMED].includes(
-          allowlist.run_status as AllowlistRunStatus,
-        )
-      ) {
-        throw new BadRequestException(
-          `Allowlist with ID ${allowlistId} has an active run`,
-        );
-      }
+    if (!allowlist.run_status) {
+      return;
+    }
+
+    if (
+      [AllowlistRunStatus.PENDING, AllowlistRunStatus.CLAIMED].includes(
+        allowlist.run_status as AllowlistRunStatus,
+      )
+    ) {
+      throw new BadRequestException(
+        `Allowlist with ID ${allowlistId} has an active run`,
+      );
     }
   }
 
