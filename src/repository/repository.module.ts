@@ -23,11 +23,11 @@ import { DB } from './db';
         configService: ConfigService,
       ): Promise<mariadb.Pool> => {
         const config = {
-          host: configService.get('DB_HOST'),
-          user: configService.get('DB_USER'),
-          port: +configService.get('DB_PORT'),
-          database: configService.get('DB_NAME'),
-          password: configService.get('DB_PASSWORD'),
+          host: configService.get('ALLOWLIST_DB_HOST'),
+          user: configService.get('ALLOWLIST_DB_USER'),
+          port: +configService.get('ALLOWLIST_DB_PORT'),
+          database: configService.get('ALLOWLIST_DB_NAME'),
+          password: configService.get('ALLOWLIST_DB_PASSWORD'),
           connectionLimit: 5,
         };
         const pool = await mariadb.createPool(config);
