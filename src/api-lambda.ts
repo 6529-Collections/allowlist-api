@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { initEnv } from './env';
 import { migrateDb } from './migrate';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 let server: Handler;
 
@@ -14,6 +15,13 @@ async function bootstrap(): Promise<Handler> {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
+  const config = new DocumentBuilder()
+    .setTitle('Allowlist API')
+    .setDescription('REST API for creating NFT allowlists')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
   await app.init();
 
   const expressApp = app.getHttpAdapter().getInstance();
