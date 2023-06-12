@@ -18,6 +18,7 @@ async function bootstrap(): Promise<Handler> {
   const config = new DocumentBuilder()
     .setTitle('Allowlist API')
     .setDescription('REST API for creating NFT allowlists')
+    .setBasePath('/dev')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
