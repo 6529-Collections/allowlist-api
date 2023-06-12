@@ -59,6 +59,7 @@ custom:
         'asynckit',
         'proxy-from-env',
         'follow-redirects',
+        'swagger-ui-dist',
       ]
     includePaths:
       [
