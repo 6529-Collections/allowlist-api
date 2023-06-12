@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { AllowlistRepository } from '../../repository/allowlist/allowlist.repository';
@@ -23,6 +24,8 @@ export class AllowlistService {
     private readonly runnerProxy: RunnerProxy,
     private readonly db: DB,
   ) {}
+
+  private readonly logger = new Logger(AllowlistService.name);
 
   private allowlistEntityToResponseModel(
     entity: AllowlistEntity,
@@ -128,6 +131,7 @@ export class AllowlistService {
       );
     }
     await this.prepNewRun({ allowlistId });
+    this.logger.log(`Starting run for allowlist ${allowlistId}`);
     await this.runnerProxy.start(allowlistId);
     return this.get(allowlistId);
   }

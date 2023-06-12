@@ -18,6 +18,7 @@ export default class SnsService {
       MessageGroupId: 'messageGroup1',
     };
     // Create promise and SNS service object
+    this.logger.log(`Publishing ${input.Message} to ${input.TopicArn}`);
     const response = await this.client.send(new PublishCommand(input));
     this.logger.log(
       `Message ${input.Message} sent to the topic ${input.TopicArn}`,
