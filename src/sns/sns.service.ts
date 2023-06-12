@@ -17,7 +17,7 @@ export default class SnsService {
     const input = {
       TopicArn: topicArn,
       Message: JSON.stringify(payload),
-      MessageGroupId: 'messageGroup1',
+      MessageGroupId: randomUUID(),
     };
     const response = await this.client.send(new PublishCommand(input));
     this.logger.log(
