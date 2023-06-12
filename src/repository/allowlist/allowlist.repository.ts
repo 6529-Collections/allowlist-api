@@ -23,7 +23,7 @@ export class AllowlistRepository {
   async save(request: Omit<AllowlistEntity, 'id'>): Promise<AllowlistEntity> {
     const id = randomUUID();
     await this.db.none(
-      'insert into allowlist (id, name, description, created_at) values (?, ?, ?, ?) returning id;',
+      'insert into allowlist (id, name, description, created_at) values (?, ?, ?, ?);',
       [id, request.name, request.description, request.created_at],
     );
     return await this.findById(id);
