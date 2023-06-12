@@ -1,9 +1,9 @@
 import * as mariadb from 'mariadb';
-import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { APP_POOL } from './db.constants';
 
 @Injectable()
-export class DB implements OnModuleDestroy {
+export class DB {
   constructor(@Inject(APP_POOL) private readonly dbPool: mariadb.Pool) {}
 
   async getConnection(): Promise<mariadb.Connection> {
@@ -63,7 +63,7 @@ export class DB implements OnModuleDestroy {
     }
   }
 
-  async onModuleDestroy() {
+  async close() {
     await this.dbPool.end();
   }
 }

@@ -6,23 +6,20 @@ import { initEnv } from './env';
 import { WorkerModule } from './worker.module';
 import { RunnerService } from './runner/runner.service';
 import { migrateDb } from './migrate';
-
-let cachedServer: INestApplication;
+import { DB } from './repository/db';
 
 async function bootstrap(): Promise<INestApplication> {
   await initEnv();
   await migrateDb();
-  if (!cachedServer) {
-    const nestApp = await NestFactory.create(WorkerModule);
-    nestApp.enableShutdownHooks();
-    await nestApp.init();
-    cachedServer = nestApp;
-  }
-  return cachedServer;
+  const nestApp = await NestFactory.create(WorkerModule);
+  nestApp.enableShutdownHooks();
+  await nestApp.init();
+  return nestApp;
 }
 
 export const handler: Handler = async (event: any, context: Context) => {
-  cachedServer = await bootstrap();
+  const nestApp = await bootstrap();
+  const db = nestApp.get(DB);
   try {
     console.log('Received event', event);
     const message = event.Records[0];
@@ -31,17 +28,16 @@ export const handler: Handler = async (event: any, context: Context) => {
     if (!id) {
       throw new Error('No id provided');
     }
-    const runsService = cachedServer.get(RunnerService);
+    const runsService = nestApp.get(RunnerService);
     await runsService.start(id);
+    try {
+      await db.close();
+      await nestApp.close();
+    } catch (e) {
+      console.error(`Error closing server`, e);
+    }
     context.succeed();
   } catch (e) {
     context.fail(e);
-  } finally {
-    try {
-      await cachedServer.close();
-    } catch (e) {
-      console.log(`Error closing server`, e);
-    }
-    cachedServer = null;
   }
 };
