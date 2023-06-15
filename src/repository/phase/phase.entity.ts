@@ -4,4 +4,6 @@ export interface PhaseEntity
   extends Omit<AllowlistPhase, 'components' | '_insertionOrder'> {
   readonly allowlist_id: string;
   readonly insertion_order: number;
+  readonly wallets_count: number;
+  readonly tokens_count: number;
 }

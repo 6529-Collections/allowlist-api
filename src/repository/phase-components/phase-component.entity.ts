@@ -5,4 +5,6 @@ export interface PhaseComponentEntity
   readonly allowlist_id: string;
   readonly phase_id: string;
   readonly insertion_order: number;
+  readonly wallets_count: number;
+  readonly tokens_count: number;
 }

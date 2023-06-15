@@ -38,6 +38,8 @@ export class PhaseService {
       description: entity.description,
       insertionOrder: entity.insertion_order,
       allowlistId: entity.allowlist_id,
+      walletsCount: entity.wallets_count,
+      tokensCount: entity.tokens_count,
     };
   }
 }

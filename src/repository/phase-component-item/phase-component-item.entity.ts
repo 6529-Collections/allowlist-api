@@ -11,4 +11,6 @@ export interface PhaseComponentItemEntity
   readonly insertion_order: number;
   readonly pool_id: string;
   readonly pool_type: string;
+  readonly wallets_count: number;
+  readonly tokens_count: number;
 }

@@ -52,6 +52,8 @@ export class PhaseComponentService {
       insertionOrder: entity.insertion_order,
       allowlistId: entity.allowlist_id,
       phaseId: entity.phase_id,
+      walletsCount: entity.wallets_count,
+      tokensCount: entity.tokens_count,
     };
   }
 }

@@ -33,4 +33,9 @@ export class TransferPoolResponseApiModel
     description: 'Block number of the transfer pool.',
   })
   readonly blockNo: number;
+
+  @ApiProperty({
+    description: 'Number of transfers in the transfer pool.',
+  })
+  readonly transfersCount: number;
 }

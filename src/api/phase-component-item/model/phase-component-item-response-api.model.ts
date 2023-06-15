@@ -50,4 +50,14 @@ export class PhaseComponentItemResponseApiModel
     enum: Pool,
   })
   readonly poolType: Pool;
+
+  @ApiProperty({
+    description: 'Number of wallets in the component.',
+  })
+  readonly walletsCount: number;
+
+  @ApiProperty({
+    description: 'Number of tokens in the component.',
+  })
+  readonly tokensCount: number;
 }

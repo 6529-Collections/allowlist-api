@@ -104,6 +104,7 @@ export class RunnerService {
             block_no: transferPool.blockNo,
             name: transferPool.name,
             description: transferPool.description,
+            transfers_count: transferPool.transfers.length,
           })),
           { connection },
         ),
@@ -115,6 +116,9 @@ export class RunnerService {
             description: tokenPool.description,
             transfer_pool_id: tokenPool.transferPoolId,
             token_ids: tokenPool.tokenIds,
+            tokens_count: tokenPool.tokens.length,
+            wallets_count: new Set(tokenPool.tokens.map((token) => token.owner))
+              .size,
           })),
           { connection },
         ),
@@ -124,6 +128,9 @@ export class RunnerService {
             id: tokenPool.id,
             name: tokenPool.name,
             description: tokenPool.description,
+            tokens_count: tokenPool.tokens.length,
+            wallets_count: new Set(tokenPool.tokens.map((token) => token.owner))
+              .size,
           })),
           options: { connection },
         }),
@@ -133,6 +140,7 @@ export class RunnerService {
             id: walletPool.id,
             name: walletPool.name,
             description: walletPool.description,
+            wallets_count: walletPool.wallets.length,
           })),
           { connection },
         ),
@@ -143,6 +151,22 @@ export class RunnerService {
             name: phase.name,
             description: phase.description,
             insertion_order: phase._insertionOrder,
+            tokens_count: Object.values(phase.components).reduce<number>(
+              (acc, component) =>
+                acc +
+                Object.values(component.items).reduce<number>(
+                  (acc2, item) => acc2 + item.tokens.length,
+                  0,
+                ),
+              0,
+            ),
+            wallets_count: new Set(
+              Object.values(phase.components).flatMap((component) =>
+                Object.values(component.items).flatMap((item) =>
+                  item.tokens.map((token) => token.owner),
+                ),
+              ),
+            ).size,
           })),
           { connection },
         ),
@@ -155,6 +179,15 @@ export class RunnerService {
               insertion_order: component._insertionOrder,
               name: component.name,
               description: component.description,
+              tokens_count: Object.values(component.items).reduce<number>(
+                (acc, item) => acc + item.tokens.length,
+                0,
+              ),
+              wallets_count: new Set(
+                Object.values(component.items).flatMap((item) =>
+                  item.tokens.map((token) => token.owner),
+                ),
+              ).size,
             })),
           ),
           { connection },
@@ -187,6 +220,10 @@ export class RunnerService {
                   pool_id: item.poolId,
                   pool_type: item.poolType,
                   insertion_order: item._insertionOrder,
+                  tokens_count: item.tokens.length,
+                  wallets_count: new Set(
+                    item.tokens.map((token) => token.owner),
+                  ).size,
                 }),
               ),
             ),

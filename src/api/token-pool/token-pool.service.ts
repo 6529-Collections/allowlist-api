@@ -37,6 +37,8 @@ export class TokenPoolService {
       allowlistId: entity.allowlist_id,
       transferPoolId: entity.transfer_pool_id,
       tokenIds: entity.token_ids,
+      walletsCount: entity.wallets_count,
+      tokensCount: entity.tokens_count,
     };
   }
 }

@@ -23,4 +23,14 @@ export class CustomTokenPoolResponseApiModel
     description: 'Description of the custom token pool.',
   })
   readonly description: string;
+
+  @ApiProperty({
+    description: 'Number of wallets in the custom token pool.',
+  })
+  readonly walletsCount: number;
+
+  @ApiProperty({
+    description: 'Number of tokens in the custom token pool.',
+  })
+  readonly tokensCount: number;
 }

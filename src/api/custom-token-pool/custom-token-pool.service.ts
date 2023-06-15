@@ -41,6 +41,8 @@ export class CustomTokenPoolService {
       name: model.name,
       description: model.description,
       allowlistId: model.allowlist_id,
+      walletsCount: model.wallets_count,
+      tokensCount: model.tokens_count,
     };
   }
 }

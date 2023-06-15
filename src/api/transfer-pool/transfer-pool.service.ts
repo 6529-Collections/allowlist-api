@@ -19,6 +19,7 @@ export class TransferPoolService {
       contract: entity.contract,
       blockNo: entity.block_no,
       allowlistId: entity.allowlist_id,
+      transfersCount: entity.transfers_count,
     };
   }
 

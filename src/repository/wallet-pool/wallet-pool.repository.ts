@@ -9,7 +9,7 @@ export class WalletPoolRepository {
 
   async getByAllowlistId(allowlistId: string): Promise<WalletPoolEntity[]> {
     return this.db.many<WalletPoolEntity>(
-      `SELECT external_id as id, name, description, allowlist_id
+      `SELECT external_id as id, name, description, allowlist_id, wallets_count
              FROM wallet_pool
              WHERE allowlist_id = ?`,
       [allowlistId],
@@ -24,7 +24,7 @@ export class WalletPoolRepository {
     walletPoolId: string;
   }): Promise<WalletPoolEntity | null> {
     return this.db.one<WalletPoolEntity>(
-      `SELECT external_id as id, name, description, allowlist_id
+      `SELECT external_id as id, name, description, allowlist_id, wallets_count
              FROM wallet_pool
              WHERE allowlist_id = ?
                AND external_id = ?`,
@@ -38,9 +38,15 @@ export class WalletPoolRepository {
   ): Promise<void> {
     for (const entity of walletPools) {
       await this.db.none(
-        `INSERT INTO wallet_pool (external_id, name, description, allowlist_id)
-                 VALUES (?, ?, ?, ?)`,
-        [entity.id, entity.name, entity.description, entity.allowlist_id],
+        `INSERT INTO wallet_pool (external_id, name, description, allowlist_id, wallets_count)
+                 VALUES (?, ?, ?, ?, ?)`,
+        [
+          entity.id,
+          entity.name,
+          entity.description,
+          entity.allowlist_id,
+          entity.wallets_count,
+        ],
         options,
       );
     }

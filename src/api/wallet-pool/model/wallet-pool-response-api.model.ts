@@ -21,4 +21,9 @@ export class WalletPoolResponseApiModel implements Omit<WalletPool, 'wallets'> {
     description: 'Description of the wallet pool.',
   })
   readonly description: string;
+
+  @ApiProperty({
+    description: 'Number of wallets in the wallet pool.',
+  })
+  readonly walletsCount: number;
 }

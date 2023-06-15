@@ -4,4 +4,5 @@ export interface TransferPoolEntity
   extends Omit<TransferPool, 'transfers' | 'blockNo'> {
   readonly allowlist_id: string;
   readonly block_no: number;
+  readonly transfers_count: number;
 }

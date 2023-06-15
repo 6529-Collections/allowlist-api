@@ -9,7 +9,7 @@ export class TransferPoolRepository {
 
   async getByAllowlistId(allowlistId: string): Promise<TransferPoolEntity[]> {
     return this.db.many<TransferPoolEntity>(
-      `SELECT external_id as id, name, description, contract, block_no, allowlist_id
+      `SELECT external_id as id, name, description, contract, block_no, allowlist_id, transfers_count
              FROM transfer_pool
              WHERE allowlist_id = ?`,
       [allowlistId],
@@ -22,7 +22,7 @@ export class TransferPoolRepository {
   }): Promise<TransferPoolEntity | null> {
     const { allowlistId, transferPoolId } = param;
     return this.db.one<TransferPoolEntity>(
-      `SELECT external_id as id, name, description, contract, block_no, allowlist_id
+      `SELECT external_id as id, name, description, contract, block_no, allowlist_id, transfers_count
              FROM transfer_pool
              WHERE allowlist_id = ?
                AND external_id = ?`,
@@ -37,8 +37,8 @@ export class TransferPoolRepository {
     for (const entity of transferPools) {
       await this.db.none(
         `INSERT INTO transfer_pool (external_id, name, description, contract, block_no,
-                                                           allowlist_id)
-                                VALUES (?, ?, ?, ?, ?, ?)`,
+                                                           allowlist_id, transfers_count)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           entity.id,
           entity.name,
@@ -46,6 +46,7 @@ export class TransferPoolRepository {
           entity.contract,
           entity.block_no,
           entity.allowlist_id,
+          entity.transfers_count,
         ],
         options,
       );

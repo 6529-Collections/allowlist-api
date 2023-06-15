@@ -15,6 +15,7 @@ export class WalletPoolService {
       name: entity.name,
       description: entity.description,
       allowlistId: entity.allowlist_id,
+      walletsCount: entity.wallets_count,
     };
   }
 

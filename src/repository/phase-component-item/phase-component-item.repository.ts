@@ -23,7 +23,9 @@ export class PhaseComponentItemRepository {
                     phase_component_external_id as phase_component_id,
                     allowlist_id,
                     pool_id,
-                    pool_type
+                    pool_type,
+                    wallets_count,
+                    tokens_count
              FROM phase_component_item
              WHERE allowlist_id = ?
                AND phase_external_id = ?
@@ -48,7 +50,9 @@ export class PhaseComponentItemRepository {
                     phase_component_external_id as phase_component_id,
                     allowlist_id,
                     pool_id,
-                    pool_type
+                    pool_type,
+                    wallets_count,
+                    tokens_count
              FROM phase_component_item
              WHERE allowlist_id = ?
                AND phase_external_id = ?
@@ -66,8 +70,8 @@ export class PhaseComponentItemRepository {
       await this.db.none(
         `INSERT INTO phase_component_item (external_id, name, description, insertion_order,
                                                    phase_external_id, allowlist_id,
-                                                   phase_component_external_id, pool_id, pool_type)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                                                   phase_component_external_id, pool_id, pool_type, wallets_count, tokens_count)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           entity.id,
           entity.name,
@@ -78,6 +82,8 @@ export class PhaseComponentItemRepository {
           entity.phase_component_id,
           entity.pool_id,
           entity.pool_type,
+          entity.wallets_count,
+          entity.tokens_count,
         ],
         options,
       );
@@ -96,7 +102,9 @@ export class PhaseComponentItemRepository {
                     phase_component_external_id as phase_component_id,
                     allowlist_id,
                     pool_id,
-                    pool_type
+                    pool_type,
+                    wallets_count,
+                    tokens_count
              FROM phase_component_item
              WHERE allowlist_id = ?
              order by insertion_order`,

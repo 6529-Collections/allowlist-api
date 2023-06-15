@@ -28,4 +28,14 @@ export class PhaseResponseApiModel
     description: 'Insertion order of the phase.',
   })
   readonly insertionOrder: number;
+
+  @ApiProperty({
+    description: 'Number of wallets in the phase.',
+  })
+  readonly walletsCount: number;
+
+  @ApiProperty({
+    description: 'Number of tokens in the phase.',
+  })
+  readonly tokensCount: number;
 }

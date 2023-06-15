@@ -33,4 +33,14 @@ export class TokenPoolResponseApiModel
     description: 'Description of the token pool.',
   })
   readonly description: string;
+
+  @ApiProperty({
+    description: 'Number of wallets in the token pool.',
+  })
+  readonly walletsCount: number;
+
+  @ApiProperty({
+    description: 'Number of tokens in the token pool.',
+  })
+  readonly tokensCount: number;
 }
