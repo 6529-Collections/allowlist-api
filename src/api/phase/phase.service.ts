@@ -40,6 +40,8 @@ export class PhaseService {
       allowlistId: entity.allowlist_id,
       walletsCount: entity.wallets_count,
       tokensCount: entity.tokens_count,
+      winnersWalletsCount: entity.winners_wallets_count,
+      winnersSpotsCount: entity.winners_spots_count,
     };
   }
 }

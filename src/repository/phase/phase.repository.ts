@@ -9,7 +9,7 @@ export class PhaseRepository {
 
   async getByAllowlistId(allowlistId: string): Promise<PhaseEntity[]> {
     return this.db.many<PhaseEntity>(
-      `SELECT external_id as id, name, description, insertion_order, allowlist_id, wallets_count, tokens_count
+      `SELECT external_id as id, name, description, insertion_order, allowlist_id, wallets_count, tokens_count, winners_wallets_count, winners_spots_count
              FROM phase
              WHERE allowlist_id = ?
              ORDER BY insertion_order`,
@@ -25,7 +25,7 @@ export class PhaseRepository {
     phaseId: string;
   }): Promise<PhaseEntity | null> {
     return this.db.one<PhaseEntity>(
-      `SELECT external_id as id, name, description, insertion_order, allowlist_id, wallets_count, tokens_count
+      `SELECT external_id as id, name, description, insertion_order, allowlist_id, wallets_count, tokens_count, winners_wallets_count, winners_spots_count
              FROM phase
              WHERE allowlist_id = ?
                AND external_id = ?`,
@@ -39,8 +39,8 @@ export class PhaseRepository {
   ): Promise<void> {
     for (const phase of phases) {
       await this.db.none(
-        `INSERT INTO phase (external_id, name, description, insertion_order, allowlist_id, wallets_count, tokens_count)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO phase (external_id, name, description, insertion_order, allowlist_id, wallets_count, tokens_count, winners_wallets_count, winners_spots_count)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           phase.id,
           phase.name,
@@ -49,6 +49,8 @@ export class PhaseRepository {
           phase.allowlist_id,
           phase.wallets_count,
           phase.tokens_count,
+          phase.winners_wallets_count,
+          phase.winners_spots_count,
         ],
         options,
       );

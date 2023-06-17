@@ -7,4 +7,6 @@ export interface PhaseComponentEntity
   readonly insertion_order: number;
   readonly wallets_count: number;
   readonly tokens_count: number;
+  readonly winners_wallets_count: number;
+  readonly winners_spots_count: number;
 }

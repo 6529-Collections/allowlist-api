@@ -43,4 +43,14 @@ export class PhaseComponentResponseApiModel
     description: 'Number of tokens in the component.',
   })
   readonly tokensCount: number;
+
+  @ApiProperty({
+    description: 'Number of winners wallets in the component.',
+  })
+  readonly winnersWalletsCount: number;
+
+  @ApiProperty({
+    description: 'Number of winners spots in the component.',
+  })
+  readonly winnersSpotsCount: number;
 }

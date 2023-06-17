@@ -167,6 +167,20 @@ export class RunnerService {
                 ),
               ),
             ).size,
+            winners_wallets_count: new Set(
+              Object.values(phase.components).flatMap((component) =>
+                Object.keys(component.winners),
+              ),
+            ).size,
+            winners_spots_count: Object.values(phase.components).reduce<number>(
+              (acc, component) =>
+                acc +
+                Object.values(component.winners).reduce<number>(
+                  (acc2, winner) => acc2 + winner,
+                  0,
+                ),
+              0,
+            ),
           })),
           { connection },
         ),
@@ -188,6 +202,10 @@ export class RunnerService {
                   item.tokens.map((token) => token.owner),
                 ),
               ).size,
+              winners_wallets_count: Object.keys(component.winners).length,
+              winners_spots_count: Object.values(
+                component.winners,
+              ).reduce<number>((acc, winner) => acc + winner, 0),
             })),
           ),
           { connection },
