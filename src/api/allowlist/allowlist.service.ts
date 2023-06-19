@@ -41,6 +41,7 @@ export class AllowlistService {
             createdAt: bigInt2Number(entity.run_created_at),
             updatedAt: bigInt2Number(entity.run_updated_at),
             status: entity.run_status,
+            errorReason: entity.error_reason,
           }
         : undefined,
     };

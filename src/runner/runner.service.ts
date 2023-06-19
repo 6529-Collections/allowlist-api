@@ -75,9 +75,14 @@ export class RunnerService {
     } catch (e) {
       this.logger.error(`Error running run for allowlist ${allowlistId}`, e);
       await connection.rollback();
-      await this.allowlistRepository.changeRunStatus({
+      await this.allowlistRepository.changeStatusToError({
         allowlistId,
-        status: AllowlistRunStatus.FAILED,
+        errorReason:
+          typeof e === 'string'
+            ? e
+            : typeof e.message === 'string'
+            ? e.message
+            : JSON.stringify(e),
       });
       return null;
     } finally {
@@ -303,16 +308,20 @@ export class RunnerService {
       });
       this.logger.log(`Run for ${allowlist} finished`);
       await this.allowlistOperationRepository.setAllAsRan({ allowlistId });
-      await this.allowlistRepository.changeRunStatus({
+      await this.allowlistRepository.changeStatusToCompleted({
         allowlistId,
-        status: AllowlistRunStatus.COMPLETED,
       });
     } catch (e) {
-      console.log(e);
+      console.log(e.message);
       this.logger.error(`Error running for allowlist ${allowlistId}`);
-      await this.allowlistRepository.changeRunStatus({
+      await this.allowlistRepository.changeStatusToError({
         allowlistId,
-        status: AllowlistRunStatus.FAILED,
+        errorReason:
+          typeof e === 'string'
+            ? e
+            : typeof e.message === 'string'
+            ? e.message
+            : JSON.stringify(e),
       });
     }
 

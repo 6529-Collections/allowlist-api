@@ -14,7 +14,8 @@ export class AllowlistRepository {
       `select allowlist.*,
                     allowlist_run.status     as run_status,
                     allowlist_run.created_at as run_created_at,
-                    allowlist_run.updated_at as run_updated_at
+                    allowlist_run.updated_at as run_updated_at,
+                    allowlist_run.error_reason as error_reason
              from allowlist
                       left join allowlist_run on allowlist.id = allowlist_run.allowlist_id;`,
     );
@@ -37,7 +38,8 @@ export class AllowlistRepository {
       `select allowlist.*,
                     allowlist_run.status     as run_status,
                     allowlist_run.created_at as run_created_at,
-                    allowlist_run.updated_at as run_updated_at
+                    allowlist_run.updated_at as run_updated_at,
+                    allowlist_run.error_reason as error_reason
              from allowlist
                       left join allowlist_run on allowlist.id = allowlist_run.allowlist_id
              where allowlist.id = ?;`,
@@ -82,7 +84,7 @@ export class AllowlistRepository {
   }
 
   async claimRun(
-    allowlistId,
+    allowlistId: string,
     options?: { connection?: mariadb.Connection },
   ): Promise<boolean> {
     const { id: runId } = await this.db.one<{ id: string }>(
@@ -98,7 +100,7 @@ export class AllowlistRepository {
     }
     await this.db.none(
       `update allowlist_run
-             set status = 'CLAIMED'
+             set status = 'CLAIMED', error_reason = null
              where allowlist_id = ?;`,
       [runId],
       options,
@@ -106,18 +108,27 @@ export class AllowlistRepository {
     return true;
   }
 
-  async changeRunStatus({
+  async changeStatusToCompleted({ allowlistId }: { allowlistId: string }) {
+    await this.db.none(
+      `UPDATE allowlist_run
+              SET status = 'COMPLETED', error_reason = null
+              WHERE allowlist_id = ?`,
+      [allowlistId],
+    );
+  }
+
+  async changeStatusToError({
     allowlistId,
-    status,
+    errorReason,
   }: {
     allowlistId: string;
-    status: string;
+    errorReason: string;
   }) {
     await this.db.none(
       `UPDATE allowlist_run
-             SET status = ?
+             SET status = 'FAILED', error_reason = ?
              WHERE allowlist_id = ?`,
-      [status, allowlistId],
+      [errorReason, allowlistId],
     );
   }
 }

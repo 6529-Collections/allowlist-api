@@ -29,5 +29,6 @@ export class AllowlistDescriptionResponseApiModel implements DescribableEntity {
     createdAt: number;
     updatedAt?: number;
     status?: string;
+    errorReason?: string | null;
   };
 }
