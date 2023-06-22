@@ -47,6 +47,7 @@ export class AppService {
       );
       const local = AllowlistCreator.getInstance({
         etherscanApiKey: process.env.ETHERSCAN_API_KEY,
+        seizeApiPath: process.env.ALLOWLIST_SEIZE_API_PATH,
       });
       this.logger.log(`Doing a local prefill`);
       const localPrefillStart = Time.now();
