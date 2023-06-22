@@ -32,12 +32,56 @@ import { PhaseFullService } from './phase-full/phase-full.service';
 
 import { ResultService } from './result/result.service';
 import { ResultController } from './result/result.controller';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { AccessTokenGuard } from './auth/access-token.guard';
+import { APP_GUARD } from '@nestjs/core';
+import { PrivilegeGuard } from './auth/privilege.guard';
+import { AccessTokenStrategy } from './auth/access.token.strategy';
+import { EthereumWalletDataReaderService } from './auth/ethereum-wallet-data-reader.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AUTH_CONFIG, AuthConfig } from './auth/auth.config';
+import { Time } from '../time';
+import { AuthController } from './auth/auth.controller';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
 @Module({
-  imports: [RepositoryModule, AllowlistLibModule, RunnerModule, CommonModule],
+  imports: [
+    ConfigModule,
+    JwtModule.register({}),
+    PassportModule,
+    RepositoryModule,
+    AllowlistLibModule,
+    RunnerModule,
+    CommonModule,
+  ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AccessTokenGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PrivilegeGuard,
+    },
+    {
+      provide: AUTH_CONFIG,
+      useFactory: (configService: ConfigService): AuthConfig => ({
+        authTokenSecret: configService.get('ALLOWLIST_AUTH_TOKEN_SECRET'),
+        refreshTokenSecret: configService.get('ALLOWLIST_REFRESH_TOKEN_SECRET'),
+        authTokenExpiry: Time.seconds(
+          configService.get<number>('ALLOWLIST_AUTH_TOKEN_EXPIRY_SECONDS') ?? 0,
+        ),
+        refreshTokenExpiry: Time.seconds(
+          configService.get<number>('ALLOWLIST_REFRESH_TOKEN_EXPIRY_SECONDS') ??
+            0,
+        ),
+      }),
+      inject: [ConfigService],
+    },
+    AccessTokenStrategy,
+    EthereumWalletDataReaderService,
     AllowlistOperationService,
     AllowlistService,
     TransferPoolService,
@@ -63,6 +107,7 @@ import { ResultController } from './result/result.controller';
     PhaseComponentController,
     PhaseComponentItemController,
     ResultController,
+    AuthController,
     // Placeholder for future controllers, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
 })
