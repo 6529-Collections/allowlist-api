@@ -22,6 +22,7 @@ import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-e
         );
         return AllowlistCreator.getInstance({
           seizeApiPath: configService.get('ALLOWLIST_SEIZE_API_PATH'),
+          seizeApiKey: configService.get('ALLOWLIST_SEIZE_API_KEY'),
           etherscanApiKey,
           storage: {
             transfersStorage: transferRepository,

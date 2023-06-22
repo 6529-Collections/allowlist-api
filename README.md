@@ -32,6 +32,8 @@ ALLOWLIST_DB_USER=allowlist
 ALLOWLIST_DB_NAME=allowlist
 ALLOWLIST_DB_PASSWORD=allowlist
 ALLOWLIST_ETHERSCAN_API_KEY=<your-etherscan-api-key>
+ALLOWLIST_SEIZE_API_PATH=<seize-api-endpoint> (don't put a slash in the end. https://api.seize.io/api for example)
+ALLOWLIST_SEIZE_API_KEY=<seize-api-key> (can omit if using only public endpoints)
 ```
 
 To install app dependencies run `yarn`
