@@ -10,12 +10,13 @@
     d "1"
     es5-ext "^0.10.47"
 
-"@6529-collections/allowlist-lib@0.0.45":
-  version "0.0.45"
-  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.45/063ef919992a428f282c4ba7c43b4bbbf66cabe4#063ef919992a428f282c4ba7c43b4bbbf66cabe4"
-  integrity sha512-vPwTrcy42eHYldC38T9wodU7o9P4tnYKeKRw8F7NTBFKkZ1feyZEsgrRyQ/BGwT7TdZPTJuNEkHBeEWQTqMKKw==
+"@6529-collections/allowlist-lib@0.0.46":
+  version "0.0.46"
+  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.46/0efc25fb362dbf3c744c621e0470b166abcd576b#0efc25fb362dbf3c744c621e0470b166abcd576b"
+  integrity sha512-azNwSedM4dVKOFjm28VRYGGmbajCExbO1Fjs/5R3dweOUWsRU1FyCbLnp32VXHgvOxbUVw9b2gRLAPYZhGC4kg==
   dependencies:
     axios "^1.4.0"
+    csv "^6.3.1"
 
 "@ampproject/remapping@^2.2.0":
   version "2.2.1"
@@ -4951,6 +4952,31 @@ crypto-browserify@^3.0.0:
     randombytes "^2.0.0"
     randomfill "^1.0.3"
 
+csv-generate@^4.2.6:
+  version "4.2.6"
+  resolved "https://registry.yarnpkg.com/csv-generate/-/csv-generate-4.2.6.tgz#7146b41313d7c91d19d99891ef400d7f0931e908"
+  integrity sha512-VtnYqhWLcsUocA346ewFOk+rrqcoT663j11vXzD2uelXq9WguQ3QzDeVD8ISso7hhVtkDSHcWl9psdemeiEHDA==
+
+csv-parse@^5.4.0:
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-5.4.0.tgz#6793210a4a49a9a74b3fde3f9d00f3f52044fd89"
+  integrity sha512-JiQosUWiOFgp4hQn0an+SBoV9IKdqzhROM0iiN4LB7UpfJBlsSJlWl9nq4zGgxgMAzHJ6V4t29VAVD+3+2NJAg==
+
+csv-stringify@^6.4.0:
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/csv-stringify/-/csv-stringify-6.4.0.tgz#6d006dca9194700e44f9fbc541bee8bbbd4f459c"
+  integrity sha512-HQsw0QXiN5fdlO+R8/JzCZnR3Fqp8E87YVnhHlaPtNGJjt6ffbV0LpOkieIb1x6V1+xt878IYq77SpXHWAqKkA==
+
+csv@^6.3.1:
+  version "6.3.1"
+  resolved "https://registry.yarnpkg.com/csv/-/csv-6.3.1.tgz#52fb5d676ea084b2659dacd2b324e420bdd68989"
+  integrity sha512-ZTcWLvr0Ux0IQDz/QzhCToBVIZtF5GDrStMt9I8mRSk0jPnfF9OeYKz0EZTspaAEOK6hf515ag97nKmwoyU8ZA==
+  dependencies:
+    csv-generate "^4.2.6"
+    csv-parse "^5.4.0"
+    csv-stringify "^6.4.0"
+    stream-transform "^3.2.6"
+
 cycle@1.0.x:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/cycle/-/cycle-1.0.3.tgz#21e80b2be8580f98b468f379430662b046c34ad2"
@@ -9852,6 +9878,11 @@ stream-splicer@^2.0.0:
   dependencies:
     inherits "^2.0.1"
     readable-stream "^2.0.2"
+
+stream-transform@^3.2.6:
+  version "3.2.6"
+  resolved "https://registry.yarnpkg.com/stream-transform/-/stream-transform-3.2.6.tgz#7caeaaf68d2bf94fc412a520f2deb3c49b3bc0ab"
+  integrity sha512-/pyOvaCQFqYTmrFhmMbnAEVo3SsTx1H39eUVPOtYeAgbEUc+rDo7GoP8LbHJgU83mKtzJe/7Nq/ipaAnUOHgJQ==
 
 streamsearch@^1.1.0:
   version "1.1.0"
