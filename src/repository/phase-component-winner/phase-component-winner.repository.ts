@@ -8,6 +8,45 @@ import { randomUUID } from 'crypto';
 export class PhaseComponentWinnerRepository {
   constructor(private readonly db: DB) {}
 
+  async getByAllowlistId(
+    allowlistId: string,
+  ): Promise<PhaseComponentWinnerEntity[]> {
+    return this.db.many<PhaseComponentWinnerEntity>(
+      `SELECT id, wallet, phase_external_id as phase_id, allowlist_id, amount, phase_component_external_id as phase_component_id
+              FROM phase_component_winner
+              WHERE allowlist_id = ?`,
+      [allowlistId],
+    );
+  }
+
+  async getByPhaseId(param: {
+    allowlistId: string;
+    phaseId: string;
+  }): Promise<PhaseComponentWinnerEntity[]> {
+    return this.db.many<PhaseComponentWinnerEntity>(
+      `SELECT id, wallet, phase_external_id as phase_id, allowlist_id, amount, phase_component_external_id as phase_component_id
+              FROM phase_component_winner
+              WHERE allowlist_id = ?
+                AND phase_external_id = ?`,
+      [param.allowlistId, param.phaseId],
+    );
+  }
+
+  async getByPhaseComponentId(param: {
+    allowlistId: string;
+    phaseId: string;
+    phaseComponentId: string;
+  }): Promise<PhaseComponentWinnerEntity[]> {
+    return this.db.many<PhaseComponentWinnerEntity>(
+      `SELECT id, wallet, phase_external_id as phase_id, allowlist_id, amount, phase_component_external_id as phase_component_id
+              FROM phase_component_winner
+              WHERE allowlist_id = ?
+                AND phase_external_id = ?
+                AND phase_component_external_id = ?`,
+      [param.allowlistId, param.phaseId, param.phaseComponentId],
+    );
+  }
+
   async createMany(
     entities: Omit<PhaseComponentWinnerEntity, 'id'>[],
     options?: { connection?: mariadb.Connection },

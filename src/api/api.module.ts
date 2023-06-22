@@ -30,6 +30,9 @@ import { RunnerModule } from '../runner/runner.module';
 import { CommonModule } from '../common/common.module';
 import { PhaseFullService } from './phase-full/phase-full.service';
 
+import { ResultService } from './result/result.service';
+import { ResultController } from './result/result.controller';
+
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
 @Module({
@@ -45,6 +48,7 @@ import { PhaseFullService } from './phase-full/phase-full.service';
     PhaseComponentService,
     PhaseComponentItemService,
     PhaseFullService,
+    ResultService,
     // Placeholder for future services, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
   controllers: [
@@ -58,6 +62,7 @@ import { PhaseFullService } from './phase-full/phase-full.service';
     PhaseController,
     PhaseComponentController,
     PhaseComponentItemController,
+    ResultController,
     // Placeholder for future controllers, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
 })
