@@ -54,7 +54,7 @@ custom:
         'node_modules/follow-redirects',
       ]
   customDomain:
-    domainName: '*.seize.io'
+    domainName: 'allowlist-api.staging.seize.io'
     stage: ci
     basePath: ''
     certificateName: '*.seize.io'
