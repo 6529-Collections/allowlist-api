@@ -13,7 +13,7 @@ package:
 
 provider:
   name: aws
-  stage: ${opt:stage, 'staging'}
+  stage: prod
   runtime: nodejs18.x
   environment:
     SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:987989283142:allowlist-creation.fifo"
