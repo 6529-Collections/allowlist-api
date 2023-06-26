@@ -32,9 +32,9 @@ async function initEnvFromSecrets() {
   const secretsManager = new SecretsManager({
     region,
   });
-
+  logger.log(`Secrets manager created. Fetching secrets from ${SECRET}...`);
   const secret = await secretsManager.getSecretValue({ SecretId: SECRET });
-
+  logger.log(`Secrets fetched...`);
   if (secret.SecretString) {
     const secretValue = JSON.parse(secret.SecretString);
 

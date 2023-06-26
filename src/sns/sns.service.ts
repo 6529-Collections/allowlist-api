@@ -9,7 +9,7 @@ export default class SnsService {
 
   constructor() {
     const region = process.env.ALLOWLIST_AWS_REGION;
-    this.logger.log(`Loading secrets from region ${region}`);
+    this.logger.log(`Connecting to SNS in region ${region}`);
     this.client = new SNSClient({ region });
   }
 
