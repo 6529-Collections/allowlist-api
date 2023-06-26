@@ -14,6 +14,7 @@ package:
 provider:
   name: aws
   runtime: nodejs18.x
+  region: us-east-1
   environment:
     SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:987989283142:allowlist-creation.fifo"
   memorySize: 4086
