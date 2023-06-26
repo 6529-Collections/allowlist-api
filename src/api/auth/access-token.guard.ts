@@ -12,6 +12,7 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
   }
 
   canActivate(context: ExecutionContext) {
+    console.log('Auth disabled', this.isAuthDisabled);
     if (this.isAuthDisabled) {
       return true;
     }
