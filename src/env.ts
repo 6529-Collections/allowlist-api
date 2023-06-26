@@ -15,6 +15,9 @@ let initialized = false;
 let nodeEnv = null;
 
 export async function initEnv() {
+  logger.log('Testing outside connectivity');
+  const response = await fetch('https://api.coingecko.com/api/v3/ping');
+  logger.log(`Response status: ${response.status}`);
   if (!initialized) {
     nodeEnv = process.env.NODE_ENV;
   }
