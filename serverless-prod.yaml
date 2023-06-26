@@ -13,7 +13,6 @@ package:
 
 provider:
   name: aws
-  stage: prod
   runtime: nodejs18.x
   environment:
     SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:987989283142:allowlist-creation.fifo"
@@ -55,7 +54,7 @@ custom:
 functions:
   main:
     handler: ./src/api-lambda.handler
-    name: allowlist-api-${self:provider.stage}
+    name: allowlist-api
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
     vpc:
       securityGroupIds:
@@ -71,7 +70,7 @@ functions:
           path: /{any+}
   queue:
     handler: src/worker-lambda.handler
-    name: allowlist-worker-${self:provider.stage}
+    name: allowlist-worker
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
     events:
       - sqs:
