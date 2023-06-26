@@ -64,7 +64,11 @@ functions:
         - sg-07ae80c673eaf7b87
       subnetIds:
         - subnet-0f8bc1ce66e661ee7
+        - subnet-0edc4af6d89391bad
+        - subnet-057a1160e9976bb52
+        - subnet-00dfa69df6e94f877
         - subnet-07ddc88c08df15ad3
+        - subnet-0470704bff1eac2f5
     timeout: 120
     events:
       - http:
@@ -84,4 +88,8 @@ functions:
         - sg-07ae80c673eaf7b87
       subnetIds:
         - subnet-0f8bc1ce66e661ee7
+        - subnet-0edc4af6d89391bad
+        - subnet-057a1160e9976bb52
+        - subnet-00dfa69df6e94f877
         - subnet-07ddc88c08df15ad3
+        - subnet-0470704bff1eac2f5
