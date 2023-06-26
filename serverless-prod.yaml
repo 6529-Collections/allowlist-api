@@ -16,7 +16,7 @@ provider:
   stage: ${opt:stage, 'staging'}
   runtime: nodejs18.x
   environment:
-    SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:987989283142:simoteam-test.fifo"
+    SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:987989283142:allowlist-creation.fifo"
   memorySize: 4086
   timeout: 900
   cors: true
@@ -73,6 +73,10 @@ functions:
     handler: src/worker-lambda.handler
     name: allowlist-worker-${self:provider.stage}
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
+    events:
+      - sqs:
+          arn: arn:aws:sqs:us-east-1:987989283142:allowlist-creation.fifo
+          batchSize: 1
     vpc:
       securityGroupIds:
         - sg-033f6ed509ce4c3a4
