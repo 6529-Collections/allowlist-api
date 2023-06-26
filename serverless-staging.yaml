@@ -5,7 +5,6 @@ plugins:
   - serverless-plugin-optimize
   - serverless-offline
   - serverless-plugin-warmup
-  - serverless-domain-manager
 
 package:
   include:
@@ -53,17 +52,6 @@ custom:
         'node_modules/proxy-from-env',
         'node_modules/follow-redirects',
       ]
-  customDomain:
-    domainName: 'allowlist-api.staging.seize.io'
-    stage: ci
-    basePath: ''
-    certificateName: '*.seize.io'
-    createRoute53Record: true
-    createRoute53IPv6Record: true
-    endpointType: 'regional'
-    securityPolicy: tls_1_2
-    apiType: rest
-    autoDomain: false
 
 functions:
   main:
