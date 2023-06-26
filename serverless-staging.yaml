@@ -1,0 +1,83 @@
+service: allowlist-api
+
+plugins:
+  - 'serverless-plugin-typescript'
+  - serverless-plugin-optimize
+  - serverless-offline
+  - serverless-plugin-warmup
+
+package:
+  include:
+    - 'migrations/**'
+    - 'config/**'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  environment:
+    SNS_TOPIC_ARN: "arn:aws:sns:eu-west-1:987989283142:allowlist-creation.fifo"
+  memorySize: 4086
+  timeout: 900
+  cors: true
+
+custom:
+  warmup:
+    default:
+      enabled: false
+  optimize:
+    external:
+      [
+        'axios',
+        'form-data',
+        'combined-stream',
+        'delayed-stream',
+        'mime-types',
+        'mime-db',
+        'asynckit',
+        'proxy-from-env',
+        'follow-redirects',
+        'swagger-ui-dist',
+      ]
+    includePaths:
+      [
+        'node_modules/axios',
+        'node_modules/form-data',
+        'node_modules/combined-stream',
+        'node_modules/delayed-stream',
+        'node_modules/mime-types',
+        'node_modules/mime-db',
+        'node_modules/asynckit',
+        'node_modules/proxy-from-env',
+        'node_modules/follow-redirects',
+      ]
+
+functions:
+  main:
+    handler: ./src/api-lambda.handler
+    name: allowlist-api
+    role: arn:aws:iam::987989283142:role/lambda-vpc-role
+    vpc:
+      securityGroupIds:
+        - sg-08e10923e6cff59a8
+        - sg-07ae80c673eaf7b87
+      subnetIds:
+        - subnet-0f8bc1ce66e661ee7
+    timeout: 120
+    events:
+      - http:
+          method: any
+          path: /{any+}
+  queue:
+    handler: src/worker-lambda.handler
+    name: allowlist-worker
+    role: arn:aws:iam::987989283142:role/lambda-vpc-role
+    events:
+      - sqs:
+          arn: arn:aws:sqs:eu-west-1:987989283142:allowlist-creation.fifo
+          batchSize: 1
+    vpc:
+      securityGroupIds:
+        - sg-08e10923e6cff59a8
+        - sg-07ae80c673eaf7b87
+      subnetIds:
+        - subnet-0f8bc1ce66e661ee7

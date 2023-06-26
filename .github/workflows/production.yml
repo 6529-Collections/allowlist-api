@@ -1,13 +1,10 @@
-name: Allowlist API Ci
+name: Allowlist API Production CI
 
-on:
-  push:
-    branches:
-      - main
+on: workflow_dispatch
 
 env:
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-  AWS_REGION: eu-north-1
+  AWS_REGION: us-east-1
 
 jobs:
   build-test-and-deploy:
@@ -37,7 +34,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          title: "Allowlist API CI pipeline is broken!!!"
+          title: "Allowlist API production CI pipeline is broken!!!"
           content: "@everyone"
           color: 0xff0000
       - name: Notify about success
@@ -46,5 +43,5 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          title: "New version of allowlist API is deployed"
+          title: "New version of allowlist API is deployed to production"
           color: 0x00ff00

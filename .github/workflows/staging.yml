@@ -1,0 +1,47 @@
+name: Allowlist API Staging CI
+
+on: workflow_dispatch
+
+env:
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  AWS_REGION: eu-west-1
+
+jobs:
+  build-test-and-deploy:
+    name: Build, test and deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: yarn install
+      - name: Build
+        run: yarn build
+      - name: Run unit tests
+        run: yarn test
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+      - name: Deploy
+        run: cp serverless-staging.yaml serverless.yaml && yarn sls:deploy
+      - name: Notify about failure
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          title: "Allowlist API staging CI pipeline is broken!!!"
+          content: "@everyone"
+          color: 0xff0000
+      - name: Notify about success
+        uses: sarisia/actions-status-discord@v1
+        if: success()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          title: "New version of allowlist API is deployed to staging"
+          color: 0x00ff00
