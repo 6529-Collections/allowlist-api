@@ -8,7 +8,9 @@ export default class SnsService {
   private readonly logger = new Logger(SnsService.name);
 
   constructor() {
-    this.client = new SNSClient({ region: 'us-east-1' });
+    const region = process.env.ALLOWLIST_AWS_REGION;
+    this.logger.log(`Loading secrets from region ${region}`);
+    this.client = new SNSClient({ region });
   }
 
   async publishMessage(payload: any) {

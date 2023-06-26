@@ -27,9 +27,11 @@ export async function initEnv() {
 }
 
 async function initEnvFromSecrets() {
-  logger.log('Loading secrets');
-
-  const secretsManager = new SecretsManager({ region: 'us-east-1' });
+  const region = process.env.ALLOWLIST_AWS_REGION;
+  logger.log(`Loading secrets from region ${region}`);
+  const secretsManager = new SecretsManager({
+    region,
+  });
 
   const secret = await secretsManager.getSecretValue({ SecretId: SECRET });
 
