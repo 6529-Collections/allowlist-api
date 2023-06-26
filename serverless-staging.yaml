@@ -16,7 +16,7 @@ provider:
   runtime: nodejs18.x
   region: eu-west-1
   environment:
-    AWS_REGION: "eu-west-1"
+    ALLOWLIST_AWS_REGION: "eu-west-1"
     SNS_TOPIC_ARN: "arn:aws:sns:eu-west-1:987989283142:allowlist-creation.fifo"
   memorySize: 4086
   timeout: 900
