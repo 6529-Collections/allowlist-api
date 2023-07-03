@@ -61,7 +61,6 @@ functions:
     vpc:
       securityGroupIds:
         - sg-08e10923e6cff59a8
-        - sg-07ae80c673eaf7b87
       subnetIds:
         - subnet-00dfa69df6e94f877
         - subnet-07ddc88c08df15ad3
@@ -82,7 +81,6 @@ functions:
     vpc:
       securityGroupIds:
         - sg-08e10923e6cff59a8
-        - sg-07ae80c673eaf7b87
       subnetIds:
         - subnet-00dfa69df6e94f877
         - subnet-07ddc88c08df15ad3
