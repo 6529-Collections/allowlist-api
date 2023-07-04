@@ -15,8 +15,8 @@ import { PhaseComponentWinnerRepository } from '../repository/phase-component-wi
 import { PhaseComponentItemRepository } from '../repository/phase-component-item/phase-component-item.repository';
 import { AllowlistEntity } from '../repository/allowlist/allowlist.entity';
 import { DB } from '../repository/db';
-import { AllowlistRunStatus } from '../api/allowlist/model/allowlist-run-status';
 import { PhaseComponentItemEntity } from '../repository/phase-component-item/phase-component-item.entity';
+import { Time } from '../time';
 
 @Injectable()
 export class RunnerService {
@@ -274,16 +274,25 @@ export class RunnerService {
         ? JSON.parse(operation.params)
         : operation.params,
     }));
-    return await this.allowlistCreator.execute([
-      {
-        code: AllowlistOperationCode.CREATE_ALLOWLIST,
-        params: {
-          id: allowlistId,
-          name: allowlist.name,
-          description: allowlist.description,
+    return await Promise.race([
+      Time.minutes(14)
+        .sleep()
+        .then(() => {
+          throw new Error(
+            `Executing allowlist ${allowlistId} timed out after 14 minutes`,
+          );
+        }),
+      this.allowlistCreator.execute([
+        {
+          code: AllowlistOperationCode.CREATE_ALLOWLIST,
+          params: {
+            id: allowlistId,
+            name: allowlist.name,
+            description: allowlist.description,
+          },
         },
-      },
-      ...operations,
+        ...operations,
+      ]),
     ]);
   }
 
