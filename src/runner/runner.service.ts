@@ -321,7 +321,7 @@ export class RunnerService {
         allowlistId,
       });
     } catch (e) {
-      console.log(e.message);
+      console.error(e);
       this.logger.error(`Error running for allowlist ${allowlistId}`);
       await this.allowlistRepository.changeStatusToError({
         allowlistId,
