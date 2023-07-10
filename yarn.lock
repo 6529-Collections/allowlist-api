@@ -10,10 +10,10 @@
     d "1"
     es5-ext "^0.10.47"
 
-"@6529-collections/allowlist-lib@0.0.53":
-  version "0.0.53"
-  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.53/62c971e40198614e7b9770826bba3fbf4d6ccea3#62c971e40198614e7b9770826bba3fbf4d6ccea3"
-  integrity sha512-y7caotgzVQAdjokwoMPgSq33muENy4eUuVoV8rH2KtpqfNRm0RnImGxQwCilhnIhaek4+iQqH2SKq40PzmOhWA==
+"@6529-collections/allowlist-lib@0.0.54":
+  version "0.0.54"
+  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.54/b16685c765fee50431e0f5758da375a27b0389dc#b16685c765fee50431e0f5758da375a27b0389dc"
+  integrity sha512-vccZBZ3wlTmE+bFMLOlTytDJ+UnrblhkETZ+15VbR+xzCITpmrnsw088nxW4Ej5WQLfzLMcPBx2YmLIwLC2leQ==
   dependencies:
     axios "^1.4.0"
     csv "^6.3.1"
