@@ -10,13 +10,14 @@
     d "1"
     es5-ext "^0.10.47"
 
-"@6529-collections/allowlist-lib@0.0.52":
-  version "0.0.52"
-  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.52/4b4af8d148d052ac169d1905de25cc51a2a11e8b#4b4af8d148d052ac169d1905de25cc51a2a11e8b"
-  integrity sha512-lc+EpD3+iLfshHWxllZ5nlQHGWTLfs9TFN/kbteuesjdOcHz0U933GEvRLENB4HzTeZFD/HfBTa0uGpnr0tAaQ==
+"@6529-collections/allowlist-lib@0.0.53":
+  version "0.0.53"
+  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.53/62c971e40198614e7b9770826bba3fbf4d6ccea3#62c971e40198614e7b9770826bba3fbf4d6ccea3"
+  integrity sha512-y7caotgzVQAdjokwoMPgSq33muENy4eUuVoV8rH2KtpqfNRm0RnImGxQwCilhnIhaek4+iQqH2SKq40PzmOhWA==
   dependencies:
     axios "^1.4.0"
     csv "^6.3.1"
+    seedrandom "^3.0.5"
 
 "@adraffy/ens-normalize@1.9.2":
   version "1.9.2"
@@ -10637,6 +10638,11 @@ schema-utils@^3.1.1, schema-utils@^3.1.2:
     "@types/json-schema" "^7.0.8"
     ajv "^6.12.5"
     ajv-keywords "^3.5.2"
+
+seedrandom@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/seedrandom/-/seedrandom-3.0.5.tgz#54edc85c95222525b0c7a6f6b3543d8e0b3aa0a7"
+  integrity sha512-8OwmbklUNzwezjGInmZ+2clQmExQPvomqjL7LFqOYqtmuxRgQYqOD3mHaU+MvZn5FLUeVxVfQjwLZW/n/JFuqg==
 
 seek-bzip@^1.0.5:
   version "1.0.6"
