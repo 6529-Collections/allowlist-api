@@ -5,15 +5,13 @@ import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class AccessTokenGuard extends AuthGuard('jwt') {
-  private readonly isAuthDisabled = true; // Temporary until frontend and backend auth is fully implemented
-
   constructor(private reflector: Reflector) {
     super();
   }
 
   canActivate(context: ExecutionContext) {
-    console.log('Auth disabled', this.isAuthDisabled);
-    if (this.isAuthDisabled) {
+    const authEnabled = process.env.ALLOWLIST_AUTH_ENABLED === 'true';
+    if (!authEnabled) {
       return true;
     }
     return this.isPublic(context);

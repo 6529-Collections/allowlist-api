@@ -56,12 +56,10 @@ export class AuthController {
     const nonce = this.jwtService.verify(serverSignature, {
       secret: this.authConfig.authTokenSecret,
     });
-    const signingAddress = ethers
-      .verifyMessage(nonce, clientSignature)
-      ?.toLowerCase();
-    if (!signingAddress) {
-      throw new UnauthorizedException('Invalid client signature');
-    }
+    const signingAddress = await this.verifySigningAddress(
+      nonce,
+      clientSignature,
+    );
     const walletData = await this.ethereum.getWalletData({
       wallet: signingAddress,
     });
@@ -82,5 +80,37 @@ export class AuthController {
     return {
       token: authToken,
     };
+  }
+
+  private async verifySigningAddress(
+    nonce,
+    clientSignature: string,
+  ): Promise<string> {
+    let signingAddress: string;
+    try {
+      signingAddress = ethers
+        .verifyMessage(nonce, clientSignature)
+        ?.toLowerCase();
+      if (!signingAddress) {
+        throw new Error('Invalid client signature');
+      }
+    } catch (e) {
+      console.error(e);
+      throw new UnauthorizedException('Invalid client signature');
+    }
+
+    await this.verifyTdh(signingAddress);
+    return signingAddress;
+  }
+
+  async verifyTdh(signingAddress: string) {
+    const response = await fetch(
+      `https://api.seize.io/api/consolidated_owner_metrics/?wallet=${signingAddress}`,
+    ).then((res) => res.json());
+    const memesBalance = response.data?.at(0)?.memes_balance || 0;
+    const memesTdh = response.data?.at(0)?.memes_tdh || 0;
+    if (memesBalance < 1 || memesTdh < 1) {
+      throw new ForbiddenException(`Wallet doesn't have access to this API`);
+    }
   }
 }
