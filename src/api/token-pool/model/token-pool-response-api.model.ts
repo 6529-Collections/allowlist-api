@@ -15,11 +15,6 @@ export class TokenPoolResponseApiModel
   readonly allowlistId: string;
 
   @ApiProperty({
-    description: 'ID of the transfer pool.',
-  })
-  readonly transferPoolId: string;
-
-  @ApiProperty({
     description: 'Token pool token ids, if empty then all.',
   })
   readonly tokenIds?: string;

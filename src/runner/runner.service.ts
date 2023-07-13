@@ -119,7 +119,6 @@ export class RunnerService {
             id: tokenPool.id,
             name: tokenPool.name,
             description: tokenPool.description,
-            transfer_pool_id: tokenPool.transferPoolId,
             token_ids: tokenPool.tokenIds,
             tokens_count: tokenPool.tokens.length,
             wallets_count: new Set(tokenPool.tokens.map((token) => token.owner))

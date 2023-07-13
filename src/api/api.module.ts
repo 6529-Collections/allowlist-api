@@ -43,7 +43,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AUTH_CONFIG, AuthConfig } from './auth/auth.config';
 import { Time } from '../time';
 import { AuthController } from './auth/auth.controller';
-
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
 @Module({
