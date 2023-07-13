@@ -1,0 +1,1 @@
+alter table token_pool drop column transfer_pool_external_id;

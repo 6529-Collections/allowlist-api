@@ -1,0 +1,1 @@
+alter table token_pool add column transfer_pool_external_id varchar(255) not null;

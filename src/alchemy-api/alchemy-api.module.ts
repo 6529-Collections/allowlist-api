@@ -21,6 +21,6 @@ import { AlchemyApiService } from './alchemy-api.module.service';
     },
     AlchemyApiService,
   ],
-  exports: [AlchemyApiService],
+  exports: [AlchemyApiService, Alchemy.name],
 })
 export class AlchemyApiModule {}

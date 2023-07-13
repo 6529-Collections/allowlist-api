@@ -5,9 +5,11 @@ import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allo
 import { TransferRepository } from '../repository/transfer/transfer.repository';
 import { AllowlistLibLogListener } from './allowlist-lib-log-listener.service';
 import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-emitter';
+import { AlchemyApiModule } from '../alchemy-api/alchemy-api.module';
+import { Alchemy } from 'alchemy-sdk';
 
 @Module({
-  imports: [RepositoryModule],
+  imports: [RepositoryModule, AlchemyApiModule],
   providers: [
     AllowlistLibLogListener,
     {
@@ -16,6 +18,7 @@ import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-e
         configService: ConfigService,
         transferRepository: TransferRepository,
         allowlistLibLogListener: AllowlistLibLogListener,
+        alchemy: Alchemy,
       ): AllowlistCreator => {
         const etherscanApiKey = configService.get(
           'ALLOWLIST_ETHERSCAN_API_KEY',
@@ -23,6 +26,7 @@ import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-e
         return AllowlistCreator.getInstance({
           seizeApiPath: configService.get('ALLOWLIST_SEIZE_API_PATH'),
           seizeApiKey: configService.get('ALLOWLIST_SEIZE_API_KEY'),
+          alchemy,
           etherscanApiKey,
           storage: {
             transfersStorage: transferRepository,
@@ -30,7 +34,12 @@ import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-e
           loggerFactory: new LoggerFactory(allowlistLibLogListener),
         });
       },
-      inject: [ConfigService, TransferRepository, AllowlistLibLogListener],
+      inject: [
+        ConfigService,
+        TransferRepository,
+        AllowlistLibLogListener,
+        Alchemy.name,
+      ],
     },
   ],
   exports: [AllowlistCreator.name],
