@@ -3,6 +3,12 @@ import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class SearchContractMetadataResponseApiModel {
   @ApiProperty({
+    description: 'ID of the contract',
+  })
+  @IsString()
+  readonly id: string;
+
+  @ApiProperty({
     description: 'Address of the contract',
   })
   @IsString()

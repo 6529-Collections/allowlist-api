@@ -10,10 +10,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { OperationDescriptionsResponseApiModel } from './model/operation-descriptions-response-api.model';
 import { AlchemyApiService } from '../../alchemy-api/alchemy-api.module.service';
 import { SearchContractMetadataResponseApiModel } from './model/search-contract-metadata-response-api.model';
+import { ReservoirApiService } from '../../reservoir-api/reservoir-api.service';
 
 @Injectable()
 export class OtherService {
-  constructor(private readonly alchemyApiService: AlchemyApiService) {}
+  constructor(
+    private readonly alchemyApiService: AlchemyApiService,
+    private readonly reservoirApiService: ReservoirApiService,
+  ) {}
 
   getOperationDescriptions(): OperationDescriptionsResponseApiModel[] {
     return Object.keys(AllowlistOperationCode).map(
@@ -45,15 +49,19 @@ export class OtherService {
   async searchContractMetadata(
     kw: string,
   ): Promise<SearchContractMetadataResponseApiModel[]> {
-    const contracts = await this.alchemyApiService.searchContractMetadata(kw);
-    return contracts.map((contract) => ({
-      address: contract.address,
-      name: contract.name ?? contract.openSea?.collectionName ?? 'N/A',
-      tokenType: contract.tokenType ?? 'N/A',
-      floorPrice: contract.openSea?.floorPrice ?? null,
-      imageUrl: contract.openSea?.imageUrl ?? null,
-      description: contract.openSea?.description ?? null,
-    }));
+    const reservoirContracts =
+      await this.reservoirApiService.searchContractMetadata(kw);
+    return (
+      reservoirContracts?.collections?.map((contract) => ({
+        id: contract.id,
+        address: contract.primaryContract,
+        name: contract.name ?? contract.name ?? 'N/A',
+        tokenType: contract.contractKind ?? 'N/A',
+        floorPrice: contract.floorAsk?.price?.amount?.native ?? null,
+        imageUrl: contract.image ?? null,
+        description: contract.description ?? null,
+      })) ?? []
+    );
   }
 
   async getLatestBlockNumber(): Promise<number> {
