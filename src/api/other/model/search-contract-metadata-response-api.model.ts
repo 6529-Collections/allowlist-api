@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class SearchContractMetadataResponseApiModel {
   @ApiProperty({
@@ -46,4 +46,17 @@ export class SearchContractMetadataResponseApiModel {
   @IsOptional()
   @IsString()
   readonly description: string | null;
+
+  @ApiProperty({
+    description: 'Total volume of the contract',
+  })
+  @IsOptional()
+  @IsNumber()
+  readonly allTimeVolume: number | null;
+
+  @ApiProperty({
+    description: 'Is the contract verified on OpenSea',
+  })
+  @IsBoolean()
+  readonly openseaVerified: boolean;
 }

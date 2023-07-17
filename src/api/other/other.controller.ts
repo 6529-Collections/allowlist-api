@@ -59,4 +59,18 @@ export class OtherController {
   async getLatestBlockNumber(): Promise<number> {
     return await this.otherService.getLatestBlockNumber();
   }
+
+  @ApiOperation({
+    summary: 'Get memes ecosystem collections',
+  })
+  @ApiOkResponse({
+    type: SearchContractMetadataResponseApiModel,
+    isArray: true,
+  })
+  @Get('memes-collections')
+  async getMemesCollections(): Promise<
+    SearchContractMetadataResponseApiModel[]
+  > {
+    return await this.otherService.getMemesCollections();
+  }
 }

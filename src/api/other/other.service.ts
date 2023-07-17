@@ -11,6 +11,7 @@ import { OperationDescriptionsResponseApiModel } from './model/operation-descrip
 import { AlchemyApiService } from '../../alchemy-api/alchemy-api.module.service';
 import { SearchContractMetadataResponseApiModel } from './model/search-contract-metadata-response-api.model';
 import { ReservoirApiService } from '../../reservoir-api/reservoir-api.service';
+import { ReservoirCollection } from '../../reservoir-api/reservoir-api.types';
 
 @Injectable()
 export class OtherService {
@@ -46,25 +47,69 @@ export class OtherService {
     }));
   }
 
+  private mapContractMetadata(
+    contract: ReservoirCollection,
+  ): SearchContractMetadataResponseApiModel {
+    return {
+      id: contract.id,
+      address: contract.primaryContract,
+      name: contract.name ?? contract.name ?? 'N/A',
+      tokenType: contract.contractKind ?? 'N/A',
+      floorPrice: contract.floorAsk?.price?.amount?.native ?? null,
+      imageUrl: contract.image ?? null,
+      description: contract.description ?? null,
+      allTimeVolume: contract.volume?.allTime ?? null,
+      openseaVerified: contract.openseaVerificationStatus === 'verified',
+    };
+  }
+
   async searchContractMetadata(
     kw: string,
   ): Promise<SearchContractMetadataResponseApiModel[]> {
     const reservoirContracts =
       await this.reservoirApiService.searchContractMetadata(kw);
-    return (
-      reservoirContracts?.collections?.map((contract) => ({
-        id: contract.id,
-        address: contract.primaryContract,
-        name: contract.name ?? contract.name ?? 'N/A',
-        tokenType: contract.contractKind ?? 'N/A',
-        floorPrice: contract.floorAsk?.price?.amount?.native ?? null,
-        imageUrl: contract.image ?? null,
-        description: contract.description ?? null,
-      })) ?? []
+    return (reservoirContracts?.collections ?? []).map(
+      this.mapContractMetadata,
     );
   }
 
   async getLatestBlockNumber(): Promise<number> {
     return await this.alchemyApiService.getBlockNumber();
+  }
+
+  async getMemesCollections(): Promise<
+    SearchContractMetadataResponseApiModel[]
+  > {
+    const results: SearchContractMetadataResponseApiModel[] = [];
+    const defaultContracts: string[] = [
+      '0x33fd426905f149f8376e227d0c9d3340aad17af1',
+      '0x4db52a61dc491e15a2f78f5ac001c14ffe3568cb',
+      '0x0c58ef43ff3032005e472cb5709f8908acb00205',
+      '0x07e24ee32163da59297b5341bef8f8a2eead271e',
+    ];
+    const defaultSubContracts: string[] = [
+      '0x495f947276749ce646f68ac8c248420045cb7b5e:opensea-6529internjpg',
+    ];
+
+    const defaultContractsMetadata =
+      await this.reservoirApiService.getContractsMetadataByAddresses(
+        defaultContracts,
+      );
+
+    for (const contract of defaultContractsMetadata.collections ?? []) {
+      results.push(this.mapContractMetadata(contract));
+    }
+
+    for (const subContractId of defaultSubContracts) {
+      const contractMetadata =
+        await this.reservoirApiService.getContractMetadataById(subContractId);
+      const subContractMetadata = contractMetadata.collections?.find(
+        (collection) => collection.id === subContractId,
+      );
+      if (subContractMetadata) {
+        results.push(this.mapContractMetadata(subContractMetadata));
+      }
+    }
+    return results;
   }
 }

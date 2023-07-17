@@ -27,4 +27,25 @@ export class ReservoirApiService {
     const url = `${this.BASE_URI}collections/v6?name=${kw}`;
     return await this.reservoirGet<ReservoirCollectionsResponse>(url, {});
   }
+
+  async getContractMetadataById(
+    id: string,
+  ): Promise<ReservoirCollectionsResponse> {
+    const url = `${this.BASE_URI}collections/v6?id=${id}`;
+    return await this.reservoirGet<ReservoirCollectionsResponse>(url, {});
+  }
+
+  async getContractsMetadataByAddresses(
+    addresses: string[],
+  ): Promise<ReservoirCollectionsResponse> {
+    const url = `${this.BASE_URI}collections/v6?${addresses
+      .map((address, i) => {
+        if (i === 0) {
+          return `contract=${address}`;
+        }
+        return `&contract=${address}`;
+      })
+      .join('')}`;
+    return await this.reservoirGet<ReservoirCollectionsResponse>(url, {});
+  }
 }
