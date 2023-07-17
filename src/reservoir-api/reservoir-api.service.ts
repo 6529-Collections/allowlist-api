@@ -48,4 +48,14 @@ export class ReservoirApiService {
       .join('')}`;
     return await this.reservoirGet<ReservoirCollectionsResponse>(url, {});
   }
+
+  async getContractsMetadataByAddress(address: string): Promise<any> {
+    const url = `${this.BASE_URI}collections/v6?contract=${address}`;
+    return await this.reservoirGet<ReservoirCollectionsResponse>(url, {});
+  }
+
+  async getContractTokenIds(address: string): Promise<{ tokens: string[] }> {
+    const url = `${this.BASE_URI}tokens/ids/v1?collection=${address}`;
+    return await this.reservoirGet<{ tokens: string[] }>(url, {});
+  }
 }

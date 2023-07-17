@@ -50,6 +50,20 @@ export class OtherController {
   }
 
   @ApiOperation({
+    summary: 'Get contract metadata',
+  })
+  @ApiOkResponse({
+    type: SearchContractMetadataResponseApiModel || null,
+    isArray: false,
+  })
+  @Get('contract-metadata/:contract')
+  async getContractMetadata(
+    @Param('contract') contract: string,
+  ): Promise<SearchContractMetadataResponseApiModel | null> {
+    return await this.otherService.getContractMetadata(contract);
+  }
+
+  @ApiOperation({
     summary: 'Get latest block number',
   })
   @ApiOkResponse({

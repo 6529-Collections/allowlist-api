@@ -60,6 +60,7 @@ export class OtherService {
       description: contract.description ?? null,
       allTimeVolume: contract.volume?.allTime ?? null,
       openseaVerified: contract.openseaVerificationStatus === 'verified',
+      tokenIds: null,
     };
   }
 
@@ -101,8 +102,11 @@ export class OtherService {
     }
 
     for (const subContractId of defaultSubContracts) {
-      const contractMetadata =
-        await this.reservoirApiService.getContractMetadataById(subContractId);
+      const [contractMetadata, tokenIds] = await Promise.all([
+        await this.reservoirApiService.getContractMetadataById(subContractId),
+        await this.reservoirApiService.getContractTokenIds(subContractId),
+      ]);
+      console.log(tokenIds);
       const subContractMetadata = contractMetadata.collections?.find(
         (collection) => collection.id === subContractId,
       );
@@ -111,5 +115,16 @@ export class OtherService {
       }
     }
     return results;
+  }
+
+  async getContractMetadata(
+    contract: string,
+  ): Promise<SearchContractMetadataResponseApiModel | null> {
+    const results =
+      await this.reservoirApiService.getContractsMetadataByAddress(contract);
+    if (results.collections?.length) {
+      return this.mapContractMetadata(results.collections.at(0));
+    }
+    return null;
   }
 }
