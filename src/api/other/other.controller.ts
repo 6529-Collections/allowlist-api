@@ -4,6 +4,7 @@ import { OperationDescriptionsResponseApiModel } from './model/operation-descrip
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { SearchContractMetadataResponseApiModel } from './model/search-contract-metadata-response-api.model';
 import { SearchContractMetadataRequestApiModel } from './model/search-contract-metadata-request-api.model';
+import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
 
 @Controller('other')
 export class OtherController {
@@ -86,5 +87,19 @@ export class OtherController {
     SearchContractMetadataResponseApiModel[]
   > {
     return await this.otherService.getMemesCollections();
+  }
+
+  @ApiOperation({
+    summary: 'Get contract token ids as string',
+  })
+  @ApiOkResponse({
+    type: ContractTokenIdsAsStringResponseApiModel,
+    isArray: false,
+  })
+  @Get('contract-token-ids-as-string/:contractId')
+  async getContractTokenIdsAsString(
+    @Param('contractId') contractId: string,
+  ): Promise<ContractTokenIdsAsStringResponseApiModel> {
+    return await this.otherService.getContractTokenIdsAsString(contractId);
   }
 }

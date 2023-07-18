@@ -59,11 +59,4 @@ export class SearchContractMetadataResponseApiModel {
   })
   @IsBoolean()
   readonly openseaVerified: boolean;
-
-  @ApiProperty({
-    description: 'Token IDs of the contract',
-  })
-  @IsString()
-  @IsOptional()
-  readonly tokenIds: string | null;
 }

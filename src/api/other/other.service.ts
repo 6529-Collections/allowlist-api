@@ -12,6 +12,8 @@ import { AlchemyApiService } from '../../alchemy-api/alchemy-api.module.service'
 import { SearchContractMetadataResponseApiModel } from './model/search-contract-metadata-response-api.model';
 import { ReservoirApiService } from '../../reservoir-api/reservoir-api.service';
 import { ReservoirCollection } from '../../reservoir-api/reservoir-api.types';
+import { formatNumberRange } from '../../app.utils';
+import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
 
 @Injectable()
 export class OtherService {
@@ -60,7 +62,6 @@ export class OtherService {
       description: contract.description ?? null,
       allTimeVolume: contract.volume?.allTime ?? null,
       openseaVerified: contract.openseaVerificationStatus === 'verified',
-      tokenIds: null,
     };
   }
 
@@ -102,11 +103,8 @@ export class OtherService {
     }
 
     for (const subContractId of defaultSubContracts) {
-      const [contractMetadata, tokenIds] = await Promise.all([
-        await this.reservoirApiService.getContractMetadataById(subContractId),
-        await this.reservoirApiService.getContractTokenIds(subContractId),
-      ]);
-      console.log(tokenIds);
+      const contractMetadata =
+        await this.reservoirApiService.getContractMetadataById(subContractId);
       const subContractMetadata = contractMetadata.collections?.find(
         (collection) => collection.id === subContractId,
       );
@@ -126,5 +124,25 @@ export class OtherService {
       return this.mapContractMetadata(results.collections.at(0));
     }
     return null;
+  }
+
+  async getContractTokenIdsAsString(
+    contractId: string,
+  ): Promise<ContractTokenIdsAsStringResponseApiModel> {
+    const tokenIds: string[] = [];
+    let continuation: string | null = null;
+
+    do {
+      const response = await this.reservoirApiService.getContractTokenIds({
+        address: contractId,
+        continuation,
+      });
+      tokenIds.push(...response.tokens);
+      continuation = response.continuation;
+    } while (continuation);
+
+    return {
+      tokenIds: tokenIds.length ? formatNumberRange(tokenIds) : '',
+    };
   }
 }

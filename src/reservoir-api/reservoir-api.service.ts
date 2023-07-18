@@ -54,8 +54,19 @@ export class ReservoirApiService {
     return await this.reservoirGet<ReservoirCollectionsResponse>(url, {});
   }
 
-  async getContractTokenIds(address: string): Promise<{ tokens: string[] }> {
-    const url = `${this.BASE_URI}tokens/ids/v1?collection=${address}`;
-    return await this.reservoirGet<{ tokens: string[] }>(url, {});
+  async getContractTokenIds({
+    address,
+    continuation,
+  }: {
+    address: string;
+    continuation: string | null;
+  }): Promise<{ tokens: string[]; continuation: string | null }> {
+    const url = `${this.BASE_URI}tokens/ids/v1?collection=${address}${
+      continuation ? `&continuation=${continuation}` : ''
+    }&limit=10000`;
+    return await this.reservoirGet<{
+      tokens: string[];
+      continuation: string | null;
+    }>(url, {});
   }
 }
