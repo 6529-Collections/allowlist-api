@@ -118,6 +118,7 @@ export class OtherService {
   async getContractMetadata(
     contract: string,
   ): Promise<SearchContractMetadataResponseApiModel | null> {
+
     const results =
       await this.reservoirApiService.getContractsMetadataByAddress(contract);
     if (results.collections?.length) {
