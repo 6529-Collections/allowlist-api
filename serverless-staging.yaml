@@ -13,7 +13,7 @@ package:
 
 provider:
   name: aws
-  runtime: nodejs19.9.0
+  runtime: nodejs18.x
   region: eu-west-1
   environment:
     ALLOWLIST_AWS_REGION: "eu-west-1"
