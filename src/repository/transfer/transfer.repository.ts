@@ -48,7 +48,7 @@ export class TransferRepository implements TransfersStorage {
       `Pulled ${entities.length} transfers from DB for contract ${contract}`,
     );
     return entities.map((e) => ({
-      amount: e.amount,
+      amount: bigInt2Number(e.amount),
       blockNumber: e.block_number,
       contract: e.contract,
       from: e.from_party,
@@ -66,7 +66,7 @@ export class TransferRepository implements TransfersStorage {
     transfers: Transfer[],
   ): Promise<void> {
     const entities = transfers.map<TransferEntity>((t) => ({
-      amount: t.amount,
+      amount: BigInt(t.amount),
       block_number: t.blockNumber,
       contract: t.contract,
       from_party: t.from,
