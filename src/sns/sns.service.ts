@@ -13,8 +13,13 @@ export default class SnsService {
     this.client = new SNSClient({ region });
   }
 
-  async publishMessage(payload: any) {
-    const topicArn = process.env.SNS_TOPIC_ARN;
+  async publishMessage({
+    payload,
+    topicArn,
+  }: {
+    payload: any;
+    topicArn: string;
+  }) {
     payload.randomId = randomUUID();
     const input = {
       TopicArn: topicArn,

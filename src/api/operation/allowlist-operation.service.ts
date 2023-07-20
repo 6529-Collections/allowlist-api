@@ -11,6 +11,7 @@ import { AllowlistOperationEntity } from '../../repository/allowlist-operation/a
 import { bigInt2Number } from '../../app.utils';
 import { randomUUID } from 'crypto';
 import { DB } from '../../repository/db';
+import { TokenPoolAsyncDownloader } from '../../token-pool/token-pool-async-downloader';
 
 @Injectable()
 export class AllowlistOperationService {
@@ -18,6 +19,7 @@ export class AllowlistOperationService {
     private readonly allowlistRepository: AllowlistRepository,
     private readonly allowlistOperationRepository: AllowlistOperationRepository,
     @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
+    private readonly tokenPoolAsyncDownloader: TokenPoolAsyncDownloader,
     private readonly db: DB,
   ) {}
 
@@ -107,6 +109,16 @@ export class AllowlistOperationService {
         );
       }
       await connection.commit();
+
+      if (code === AllowlistOperationCode.CREATE_TOKEN_POOL) {
+        await this.tokenPoolAsyncDownloader.start({
+          tokenPoolId: params.id,
+          tokenIds: params.tokenIds,
+          contract: params.contract,
+          blockNo: params.blockNo,
+          allowlistId,
+        });
+      }
 
       return this.allowlistOperationEntityToApiModel(entity);
     } catch (e) {

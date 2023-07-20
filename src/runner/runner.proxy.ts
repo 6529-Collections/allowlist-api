@@ -12,9 +12,12 @@ export class RunnerProxy {
   ) {}
 
   async start(allowlistId: string) {
-    const snstopicarn = process.env.SNS_TOPIC_ARN;
-    if (snstopicarn) {
-      await this.snsService.publishMessage({ allowlistRunId: allowlistId });
+    const snsTopicArn = process.env.SNS_TOPIC_ARN;
+    if (snsTopicArn) {
+      await this.snsService.publishMessage({
+        payload: { allowlistRunId: allowlistId },
+        topicArn: snsTopicArn,
+      });
     } else {
       this.logger.log(
         `Starting run for allowlist ${allowlistId} in the same process`,

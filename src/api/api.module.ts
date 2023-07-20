@@ -43,6 +43,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AUTH_CONFIG, AuthConfig } from './auth/auth.config';
 import { Time } from '../time';
 import { AuthController } from './auth/auth.controller';
+import { TokenPoolModule } from '../token-pool/token-pool.module';
+
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
 @Module({
@@ -53,6 +55,7 @@ import { AuthController } from './auth/auth.controller';
     RepositoryModule,
     AllowlistLibModule,
     RunnerModule,
+    TokenPoolModule,
     CommonModule,
   ],
   providers: [

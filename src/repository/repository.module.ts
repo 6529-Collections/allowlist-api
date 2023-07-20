@@ -15,6 +15,7 @@ import { APP_POOL } from './db.constants';
 import * as mariadb from 'mariadb';
 import { DB } from './db';
 import { TokenPoolTokenRepository } from './token-pool-token/token-pool-token.repository';
+import { TokenPoolDownloadRepository } from './token-pool-download/token-pool-download.repository';
 
 const REPOSITORIES = [
   TransferRepository,
@@ -29,6 +30,7 @@ const REPOSITORIES = [
   PhaseComponentWinnerRepository,
   PhaseComponentItemRepository,
   TokenPoolTokenRepository,
+  TokenPoolDownloadRepository,
 ];
 
 @Module({
