@@ -92,7 +92,7 @@ functions:
 
   token-pool-downloader:
     handler: src/token-pool-downloader-lambda.handler
-    name: allowlist-worker
+    name: allowlist-token-pool-downloader
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
     events:
       - sqs:
