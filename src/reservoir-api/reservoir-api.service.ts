@@ -7,7 +7,7 @@ export class ReservoirApiService {
   private readonly BASE_URI = 'https://api.reservoir.tools/';
   private readonly HEADERS = {
     accept: '*/*',
-    'x-api-key': process.env.RESERVOIR_APY_KEY,
+    'x-api-key': process.env.ALLOWLIST_RESERVOIR_APY_KEY,
   };
   constructor(private readonly httpService: HttpService) {}
 
