@@ -1,0 +1,1 @@
+alter table token_pool_token add column id varchar(255) not null primary key;

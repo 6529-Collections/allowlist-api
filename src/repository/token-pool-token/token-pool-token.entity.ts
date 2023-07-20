@@ -1,4 +1,5 @@
 export interface TokenPoolTokenEntity {
+  readonly id: string;
   readonly contract: string;
   readonly token_id: string;
   readonly amount: number;

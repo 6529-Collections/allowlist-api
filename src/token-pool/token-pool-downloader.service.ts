@@ -12,6 +12,7 @@ import { TokenOwnership } from '@6529-collections/allowlist-lib/allowlist/state-
 import { Connection } from 'mariadb';
 import { TokenPoolTokenEntity } from '../repository/token-pool-token/token-pool-token.entity';
 import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-pool-token.repository';
+import { sha256 } from 'js-sha256';
 
 @Injectable()
 export class TokenPoolDownloaderService {
@@ -149,11 +150,14 @@ export class TokenPoolDownloaderService {
       ownerships.reduce((acc, ownership) => {
         const tokenPoolId = ownership.tokenPoolId;
         const { id, contract, owner } = ownership.ownership;
-        const key = `${tokenPoolId}_${owner}_${id}_${contract}`;
+        const key = sha256(
+          `${tokenPoolId}_${owner}_${allowlistId}_${id}_${contract}`,
+        );
         if (acc[key]) {
           acc[key] = { ...acc[key], amount: acc[key].amount + 1 };
         } else {
           acc[key] = {
+            id: key,
             allowlist_id: allowlistId,
             token_pool_id: tokenPoolId,
             token_id: id,
@@ -165,6 +169,6 @@ export class TokenPoolDownloaderService {
         return acc;
       }, {} as Record<string, TokenPoolTokenEntity>),
     );
-    await this.tokenPoolTokenRepository.upsert(entities, { connection });
+    await this.tokenPoolTokenRepository.insert(entities, { connection });
   }
 }
