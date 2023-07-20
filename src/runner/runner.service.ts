@@ -106,16 +106,6 @@ export class RunnerService {
     try {
       await connection.beginTransaction();
       await Promise.all([
-        this.persistTokenOwnerships({
-          ownerships: Object.values(tokenPools).flatMap((tokenPool) =>
-            tokenPool.tokens.map((token) => ({
-              ownership: token,
-              tokenPoolId: tokenPool.id,
-            })),
-          ),
-          allowlistId: allowlist.id,
-          connection,
-        }),
         this.transferPoolRepository.createMany(
           Object.values(transferPools).map((transferPool) => ({
             allowlist_id: allowlist.id,
@@ -128,19 +118,33 @@ export class RunnerService {
           })),
           { connection },
         ),
-        this.tokenPoolRepository.createMany(
-          Object.values(tokenPools).map((tokenPool) => ({
-            allowlist_id: allowlist.id,
-            id: tokenPool.id,
-            name: tokenPool.name,
-            description: tokenPool.description,
-            token_ids: tokenPool.tokenIds,
-            tokens_count: tokenPool.tokens.length,
-            wallets_count: new Set(tokenPool.tokens.map((token) => token.owner))
-              .size,
-          })),
-          { connection },
-        ),
+        this.tokenPoolRepository
+          .createMany(
+            Object.values(tokenPools).map((tokenPool) => ({
+              allowlist_id: allowlist.id,
+              id: tokenPool.id,
+              name: tokenPool.name,
+              description: tokenPool.description,
+              token_ids: tokenPool.tokenIds,
+              tokens_count: tokenPool.tokens.length,
+              wallets_count: new Set(
+                tokenPool.tokens.map((token) => token.owner),
+              ).size,
+            })),
+            { connection },
+          )
+          .then(() => {
+            this.persistTokenOwnerships({
+              ownerships: Object.values(tokenPools).flatMap((tokenPool) =>
+                tokenPool.tokens.map((token) => ({
+                  ownership: token,
+                  tokenPoolId: tokenPool.id,
+                })),
+              ),
+              allowlistId: allowlist.id,
+              connection,
+            });
+          }),
         this.customTokenPoolRepository.createMany({
           entities: Object.values(customTokenPools).map((tokenPool) => ({
             allowlist_id: allowlist.id,
