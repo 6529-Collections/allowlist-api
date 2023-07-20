@@ -15,7 +15,7 @@ export class TokenPoolDownloadRepository {
         entity.allowlist_id,
         entity.token_pool_id,
         entity.contract,
-        entity.token_ids,
+        entity.token_ids || null,
         entity.block_no,
         entity.status,
       ],
