@@ -17,6 +17,10 @@ import { AllowlistEntity } from '../repository/allowlist/allowlist.entity';
 import { DB } from '../repository/db';
 import { PhaseComponentItemEntity } from '../repository/phase-component-item/phase-component-item.entity';
 import { Time } from '../time';
+import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-pool-token.repository';
+import { Connection } from 'mariadb';
+import { TokenOwnership } from '@6529-collections/allowlist-lib/allowlist/state-types/token-ownership';
+import { TokenPoolTokenEntity } from '../repository/token-pool-token/token-pool-token.entity';
 
 @Injectable()
 export class RunnerService {
@@ -34,6 +38,7 @@ export class RunnerService {
     private readonly phaseComponentRepository: PhaseComponentRepository,
     private readonly phaseComponentWinnerRepository: PhaseComponentWinnerRepository,
     private readonly phaseComponentItemRepository: PhaseComponentItemRepository,
+    private readonly tokenPoolTokenRepository: TokenPoolTokenRepository,
     private readonly db: DB,
   ) {}
 
@@ -101,6 +106,16 @@ export class RunnerService {
     try {
       await connection.beginTransaction();
       await Promise.all([
+        this.persistTokenOwnerships({
+          ownerships: Object.values(tokenPools).flatMap((tokenPool) =>
+            tokenPool.tokens.map((token) => ({
+              ownership: token,
+              tokenPoolId: tokenPool.id,
+            })),
+          ),
+          allowlistId: allowlist.id,
+          connection,
+        }),
         this.transferPoolRepository.createMany(
           Object.values(transferPools).map((transferPool) => ({
             allowlist_id: allowlist.id,
@@ -335,5 +350,37 @@ export class RunnerService {
     }
 
     console.timeEnd('AllowlistRunService');
+  }
+
+  private async persistTokenOwnerships({
+    ownerships,
+    allowlistId,
+    connection,
+  }: {
+    ownerships: { ownership: TokenOwnership; tokenPoolId: string }[];
+    allowlistId: string;
+    connection: Connection;
+  }) {
+    const entities = Object.values(
+      ownerships.reduce((acc, ownership) => {
+        const tokenPoolId = ownership.tokenPoolId;
+        const { id, contract, owner } = ownership.ownership;
+        const key = `${tokenPoolId}_${owner}_${id}_${contract}`;
+        if (acc[key]) {
+          acc[key] = { ...acc[key], amount: acc[key].amount + 1 };
+        } else {
+          acc[key] = {
+            allowlist_id: allowlistId,
+            token_pool_id: tokenPoolId,
+            token_id: id,
+            amount: 1,
+            wallet: owner,
+            contract,
+          };
+        }
+        return acc;
+      }, {} as Record<string, TokenPoolTokenEntity>),
+    );
+    await this.tokenPoolTokenRepository.upsert(entities, { connection });
   }
 }

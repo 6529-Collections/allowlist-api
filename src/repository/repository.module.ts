@@ -14,6 +14,22 @@ import { ConfigService } from '@nestjs/config';
 import { APP_POOL } from './db.constants';
 import * as mariadb from 'mariadb';
 import { DB } from './db';
+import { TokenPoolTokenRepository } from './token-pool-token/token-pool-token.repository';
+
+const REPOSITORIES = [
+  TransferRepository,
+  AllowlistRepository,
+  AllowlistOperationRepository,
+  TransferPoolRepository,
+  TokenPoolRepository,
+  CustomTokenPoolRepository,
+  WalletPoolRepository,
+  PhaseRepository,
+  PhaseComponentRepository,
+  PhaseComponentWinnerRepository,
+  PhaseComponentItemRepository,
+  TokenPoolTokenRepository,
+];
 
 @Module({
   providers: [
@@ -36,32 +52,9 @@ import { DB } from './db';
       },
       inject: [ConfigService],
     },
-    DB,
-    TransferRepository,
-    AllowlistRepository,
-    AllowlistOperationRepository,
-    TransferPoolRepository,
-    TokenPoolRepository,
-    CustomTokenPoolRepository,
-    WalletPoolRepository,
-    PhaseRepository,
-    PhaseComponentRepository,
-    PhaseComponentWinnerRepository,
-    PhaseComponentItemRepository,
-  ],
-  exports: [
-    TransferRepository,
-    AllowlistRepository,
-    AllowlistOperationRepository,
-    TransferPoolRepository,
-    TokenPoolRepository,
-    CustomTokenPoolRepository,
-    WalletPoolRepository,
-    PhaseRepository,
-    PhaseComponentRepository,
-    PhaseComponentWinnerRepository,
-    PhaseComponentItemRepository,
+    ...REPOSITORIES,
     DB,
   ],
+  exports: [...REPOSITORIES, DB],
 })
 export class RepositoryModule {}

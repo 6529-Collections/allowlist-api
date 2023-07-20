@@ -5,8 +5,6 @@ import { AllowlistOperationRepository } from '../../repository/allowlist-operati
 import { AllowlistRepository } from '../../repository/allowlist/allowlist.repository';
 import { Time } from '../../time';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
-import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
-import { Pool } from '@6529-collections/allowlist-lib/app-types';
 import { AllowlistOperationResponseApiModel } from './model/allowlist-operation-response-api.model';
 import { AllowlistRunStatus } from '../allowlist/model/allowlist-run-status';
 import { AllowlistOperationEntity } from '../../repository/allowlist-operation/allowlist-operation.entity';
