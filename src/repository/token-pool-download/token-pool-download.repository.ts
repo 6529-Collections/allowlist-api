@@ -71,4 +71,15 @@ export class TokenPoolDownloadRepository {
       [TokenPoolDownloadStatus.FAILED, tokenPoolId],
     );
   }
+
+  async getByAllowlistId(
+    allowlistId: string,
+  ): Promise<TokenPoolDownloadEntity[]> {
+    return this.db.many<TokenPoolDownloadEntity>(
+      `select contract, token_ids, token_pool_id, allowlist_id, block_no, status
+             from token_pool_download
+             where token_pool_download.allowlist_id = ?`,
+      [allowlistId],
+    );
+  }
 }

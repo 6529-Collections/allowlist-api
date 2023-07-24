@@ -68,4 +68,17 @@ export class PhaseComponentWinnerRepository {
       );
     }
   }
+
+  async getUniqueWalletsByComponentIds(param: {
+    componentIds: string[];
+  }): Promise<string[]> {
+    const componentIds = param.componentIds.map((id) => `'${id}'`).join(',');
+    return (
+      await this.db.many<{ wallet: string }>(
+        `SELECT DISTINCT wallet
+              FROM phase_component_winner
+              WHERE phase_component_external_id IN (${componentIds})`,
+      )
+    ).map((item) => item.wallet.toLowerCase());
+  }
 }

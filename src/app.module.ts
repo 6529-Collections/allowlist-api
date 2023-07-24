@@ -6,10 +6,12 @@ import { ApiModule } from './api/api.module';
 import { RunnerModule } from './runner/runner.module';
 import { OtherModule } from './api/other/other.module';
 import { TokenPoolModule } from './token-pool/token-pool.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     ApiModule,
     AllowlistLibModule,
     RunnerModule,

@@ -7,6 +7,7 @@ import { AllowlistLibLogListener } from './allowlist-lib-log-listener.service';
 import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-emitter';
 import { AlchemyApiModule } from '../alchemy-api/alchemy-api.module';
 import { Alchemy } from 'alchemy-sdk';
+import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-pool-token.repository';
 
 @Module({
   imports: [RepositoryModule, AlchemyApiModule],
@@ -17,6 +18,7 @@ import { Alchemy } from 'alchemy-sdk';
       useFactory: (
         configService: ConfigService,
         transferRepository: TransferRepository,
+        tokenPoolTokenRepository: TokenPoolTokenRepository,
         allowlistLibLogListener: AllowlistLibLogListener,
         alchemy: Alchemy,
       ): AllowlistCreator => {
@@ -30,6 +32,7 @@ import { Alchemy } from 'alchemy-sdk';
           etherscanApiKey,
           storage: {
             transfersStorage: transferRepository,
+            tokenPoolStorage: tokenPoolTokenRepository,
           },
           loggerFactory: new LoggerFactory(allowlistLibLogListener),
         });
@@ -37,6 +40,7 @@ import { Alchemy } from 'alchemy-sdk';
       inject: [
         ConfigService,
         TransferRepository,
+        TokenPoolTokenRepository,
         AllowlistLibLogListener,
         Alchemy.name,
       ],

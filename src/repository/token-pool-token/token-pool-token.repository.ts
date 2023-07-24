@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as mariadb from 'mariadb';
 import { DB } from '../db';
 import { TokenPoolTokenEntity } from './token-pool-token.entity';
+import { TokenOwnership } from '@6529-collections/allowlist-lib/allowlist/state-types/token-ownership';
 
 @Injectable()
 export class TokenPoolTokenRepository {
@@ -28,5 +29,52 @@ export class TokenPoolTokenRepository {
         options,
       );
     }
+  }
+
+  // async getTokenPoolTokens(
+  //   tokenPoolId: string,
+  // ): Promise<TokenPoolTokenEntity[]> {
+  //   const resp = await this.db.many<TokenPoolTokenEntity>(
+  //     `
+  //     SELECT id, contract, token_id, amount, wallet, token_pool_id, allowlist_id
+  //     FROM token_pool_token
+  //     WHERE token_pool_id = ?
+  //     `,
+  //     [tokenPoolId],
+  //   );
+  //   return resp;
+  // }
+
+  async getTokenPoolTokens(
+    tokenPoolId: string,
+  ): Promise<TokenOwnership[] | null> {
+    const tokens = await this.db.many<TokenPoolTokenEntity>(
+      `
+      SELECT id, contract, token_id, amount, wallet, token_pool_id, allowlist_id
+      FROM token_pool_token
+      WHERE token_pool_id = ?
+      `,
+      [tokenPoolId],
+    );
+    if (!tokens?.length) return null;
+    return tokens.flatMap<TokenOwnership>((t) =>
+      Array.from({ length: t.amount }, () => ({
+        id: t.token_id,
+        contract: t.contract,
+        owner: t.wallet,
+      })),
+    );
+  }
+
+  async getUniqueWalletsByTokenPoolId(tokenPoolId: string): Promise<string[]> {
+    const resp = await this.db.many<{ wallet: string }>(
+      `
+      SELECT DISTINCT wallet
+      FROM token_pool_token
+      WHERE token_pool_id = ?
+      `,
+      [tokenPoolId],
+    );
+    return resp.map((item) => item.wallet.toLowerCase());
   }
 }

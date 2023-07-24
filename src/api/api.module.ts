@@ -44,6 +44,8 @@ import { AUTH_CONFIG, AuthConfig } from './auth/auth.config';
 import { Time } from '../time';
 import { AuthController } from './auth/auth.controller';
 import { TokenPoolModule } from '../token-pool/token-pool.module';
+import { TokenPoolDownloadService } from './token-pool-download/token-pool-download.service';
+import { TokenPoolDownloadController } from './token-pool-download/token-pool-download.controller';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
@@ -88,6 +90,7 @@ import { TokenPoolModule } from '../token-pool/token-pool.module';
     AllowlistService,
     TransferPoolService,
     TokenPoolService,
+    TokenPoolDownloadService,
     CustomTokenPoolService,
     WalletPoolService,
     PhaseService,
@@ -103,6 +106,7 @@ import { TokenPoolModule } from '../token-pool/token-pool.module';
     AllowlistRunController,
     TransferPoolController,
     TokenPoolController,
+    TokenPoolDownloadController,
     CustomTokenPoolController,
     WalletPoolController,
     PhaseController,
