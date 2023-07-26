@@ -31,20 +31,6 @@ export class TokenPoolTokenRepository {
     }
   }
 
-  // async getTokenPoolTokens(
-  //   tokenPoolId: string,
-  // ): Promise<TokenPoolTokenEntity[]> {
-  //   const resp = await this.db.many<TokenPoolTokenEntity>(
-  //     `
-  //     SELECT id, contract, token_id, amount, wallet, token_pool_id, allowlist_id
-  //     FROM token_pool_token
-  //     WHERE token_pool_id = ?
-  //     `,
-  //     [tokenPoolId],
-  //   );
-  //   return resp;
-  // }
-
   async getTokenPoolTokens(
     tokenPoolId: string,
   ): Promise<TokenOwnership[] | null> {
@@ -64,6 +50,22 @@ export class TokenPoolTokenRepository {
         owner: t.wallet,
       })),
     );
+  }
+
+  async getTokenPoolsTokens(
+    tokenPools: string[],
+  ): Promise<TokenPoolTokenEntity[]> {
+    if (!tokenPools?.length) return []
+    const tokens = await this.db.many<TokenPoolTokenEntity>(
+      `
+      SELECT id, contract, token_id, amount, wallet, token_pool_id, allowlist_id
+      FROM token_pool_token
+      WHERE token_pool_id IN (?)
+      `,
+      [tokenPools],
+    );
+    if (!tokens?.length) return null;
+    return tokens;
   }
 
   async getUniqueWalletsByTokenPoolId(tokenPoolId: string): Promise<string[]> {

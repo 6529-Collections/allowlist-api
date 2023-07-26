@@ -81,4 +81,16 @@ export class PhaseComponentWinnerRepository {
       )
     ).map((item) => item.wallet.toLowerCase());
   }
+
+  async getWinnersByComponentIds(param: {
+    componentIds: string[];
+  }): Promise<PhaseComponentWinnerEntity[]> {
+    if (!param.componentIds.length) return [];
+    const componentIds = param.componentIds.map((id) => `'${id}'`).join(',');
+    return this.db.many<PhaseComponentWinnerEntity>(
+      `SELECT id, wallet, phase_external_id as phase_id, allowlist_id, amount, phase_component_external_id as phase_component_id
+              FROM phase_component_winner
+              WHERE phase_component_external_id IN (${componentIds})`,
+    );
+  }
 }

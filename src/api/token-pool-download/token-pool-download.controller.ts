@@ -1,7 +1,9 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { TokenPoolDownloadService } from './token-pool-download.service';
 import { TokenPoolDownloadResponseApiModel } from './model/token-pool-download-response-api.model';
-import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { TokenPoolDownloadTokenPoolUniqueWalletsCountRequestApiModel } from './model/token-pool-download-token-pool-unique-wallets-count-request-api.model';
+import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 
 @Controller('/allowlists/:allowlistId/token-pool-downloads')
 export class TokenPoolDownloadController {
@@ -29,26 +31,16 @@ export class TokenPoolDownloadController {
   @ApiOkResponse({
     type: Number,
   })
-  @ApiQuery({
-    name: 'exclude-component-winners',
-    description:
-      'Exclude component winners, comma separated string of component ids.',
-    example:
-      '5f1a526f3e8a7c4d7f53b8ac,5f1a527e2f907c2d8e10a2be,5f1a52943e8a5c4d8f45f3ba',
-    required: false,
-  })
-  @Get(':tokenPoolId/unique-wallets-count')
-  async getUniqueWalletsCount(
+  @Post('token-pool/:tokenPoolId/unique-wallets-count')
+  async getTokenPoolUniqueWalletsCount(
     @Param('allowlistId') allowlistId: string,
     @Param('tokenPoolId') tokenPoolId: string,
-    @Query('exclude-component-winners')
-    componentIds?: string,
+    @Body()
+    request: TokenPoolDownloadTokenPoolUniqueWalletsCountRequestApiModel,
   ): Promise<number> {
-    return await this.tokenPoolDownloadService.getUniqueWalletsCount({
-      allowlistId,
+    return await this.tokenPoolDownloadService.getTokenPoolUniqueWalletsCount({
       tokenPoolId,
-      excludeComponentIds:
-        componentIds?.split(',').map((item) => item.trim()) ?? [],
+      params: request,
     });
   }
 }

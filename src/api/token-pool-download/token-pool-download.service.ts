@@ -4,6 +4,7 @@ import { TokenPoolDownloadResponseApiModel } from './model/token-pool-download-r
 import { TokenPoolDownloadRepository } from '../../repository/token-pool-download/token-pool-download.repository';
 import { PhaseComponentWinnerRepository } from '../../repository/phase-component-winner/phase-component-winner.repository';
 import { TokenPoolTokenRepository } from '../../repository/token-pool-token/token-pool-token.repository';
+import { TokenPoolDownloadTokenPoolUniqueWalletsCountRequestApiModel } from './model/token-pool-download-token-pool-unique-wallets-count-request-api.model';
 
 @Injectable()
 export class TokenPoolDownloadService {
@@ -22,28 +23,27 @@ export class TokenPoolDownloadService {
     return entity.map(this.entityToApiModel);
   }
 
-  async getUniqueWalletsCount({
-    allowlistId,
+  async getTokenPoolUniqueWalletsCount({
     tokenPoolId,
-    excludeComponentIds,
+    params: { excludeComponentWinners, extraWallets },
   }: {
-    allowlistId: string;
     tokenPoolId: string;
-    excludeComponentIds: string[];
+    params: TokenPoolDownloadTokenPoolUniqueWalletsCountRequestApiModel;
   }): Promise<number> {
     const [componentWinners, tokenPoolWallets] = await Promise.all([
       new Set(
-        excludeComponentIds.length
+        excludeComponentWinners.length
           ? await this.componentWinners.getUniqueWalletsByComponentIds({
-              componentIds: excludeComponentIds,
+              componentIds: excludeComponentWinners,
             })
           : [],
       ),
-      new Set(
-        await this.tokenPoolTokenRepository.getUniqueWalletsByTokenPoolId(
+      new Set([
+        ...(await this.tokenPoolTokenRepository.getUniqueWalletsByTokenPoolId(
           tokenPoolId,
-        ),
-      ),
+        )),
+        ...extraWallets.map((wallet) => wallet.toLowerCase()),
+      ]),
     ]);
 
     for (const value of componentWinners) {

@@ -8,6 +8,7 @@ import {
 
 import { AllowlistService } from './allowlist.service';
 import { AllowlistDescriptionResponseApiModel } from './model/allowlist-description-response-api.model';
+import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 
 @Controller('/allowlists')
 export class AllowlistController {
@@ -61,5 +62,14 @@ export class AllowlistController {
   @Delete(':allowlistId')
   async delete(@Param('allowlistId') allowlistId: string): Promise<void> {
     await this.allowlistService.delete(allowlistId);
+  }
+
+  @Post(':allowlistId/unique-wallets-count')
+  async getUniqueWalletsCountFromOperations(
+    @Body() operations: AllowlistOperation[],
+  ): Promise<number> {
+    return await this.allowlistService.getUniqueWalletsCountFromOperations(
+      operations,
+    );
   }
 }
