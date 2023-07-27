@@ -8,6 +8,13 @@ import { TokenPoolDownloadStatus } from './token-pool-download-status';
 export class TokenPoolDownloadRepository {
   constructor(private readonly db: DB) {}
 
+  async delete(tokenPoolId: string) {
+    await this.db.none(
+      `delete from token_pool_download where token_pool_id = ?`,
+      [tokenPoolId],
+    );
+  }
+
   async save(entity: TokenPoolDownloadEntity) {
     await this.db.none(
       `insert into token_pool_download (allowlist_id, token_pool_id, contract, token_ids, block_no, status, consolidate_block_no) values (?, ?, ?, ?, ?, ?, ?)`,

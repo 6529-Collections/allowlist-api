@@ -7,6 +7,7 @@ import { migrateDb } from './migrate';
 import { DB } from './repository/db';
 import { TokenPoolDownloaderService } from './token-pool/token-pool-downloader.service';
 import { TokenDownloaderModule } from './token-downloader.module';
+import { TokenPoolAsyncDownloader } from './token-pool/token-pool-async-downloader';
 
 async function bootstrap(): Promise<INestApplication> {
   await initEnv();
@@ -28,7 +29,18 @@ export const handler: Handler = async (event: any, context: Context) => {
     if (!id) {
       throw new Error('No id provided');
     }
-    await service.start(id);
+    const result = await service.start(id);
+    if (result.continue) {
+      const downloadScheduler = nestApp.get(TokenPoolAsyncDownloader);
+      downloadScheduler.start({
+        contract: result.entity.contract,
+        tokenIds: result.entity.token_ids,
+        tokenPoolId: result.entity.token_pool_id,
+        allowlistId: result.entity.allowlist_id,
+        blockNo: result.entity.block_no,
+        consolidateBlockNo: result.entity.consolidate_block_no,
+      });
+    }
     try {
       await nestApp.get(DB).close();
       await nestApp.close();

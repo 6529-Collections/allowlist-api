@@ -13,6 +13,12 @@ import { Connection } from 'mariadb';
 import { TokenPoolTokenEntity } from '../repository/token-pool-token/token-pool-token.entity';
 import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-pool-token.repository';
 import { sha256 } from 'js-sha256';
+import { AllowlistState } from '@6529-collections/allowlist-lib/allowlist/state-types/allowlist-state';
+import { TransferRepository } from '../repository/transfer/transfer.repository';
+import { ContractSchema } from '@6529-collections/allowlist-lib/app-types';
+import { Time } from '../time';
+import { assertUnreachable } from '../app.utils';
+import { Alchemy } from 'alchemy-sdk';
 
 @Injectable()
 export class TokenPoolDownloaderService {
@@ -22,6 +28,8 @@ export class TokenPoolDownloaderService {
     private readonly tokenPoolDownloadRepository: TokenPoolDownloadRepository,
     private readonly tokenPoolTokenRepository: TokenPoolTokenRepository,
     private readonly allowlistCreator: AllowlistCreator,
+    private readonly transferRepository: TransferRepository,
+    private readonly alchemy: Alchemy,
     private readonly db: DB,
   ) {}
 
@@ -40,6 +48,7 @@ export class TokenPoolDownloaderService {
     readonly blockNo: number;
     readonly consolidateBlockNo: number | null;
   }) {
+    await this.tokenPoolDownloadRepository.delete(tokenPoolId);
     await this.tokenPoolDownloadRepository.save({
       contract,
       token_ids: tokenIds,
@@ -68,7 +77,10 @@ export class TokenPoolDownloaderService {
     }
   }
 
-  async start(tokenPoolId: string) {
+  async start(tokenPoolId: string): Promise<{
+    continue: boolean;
+    entity: TokenPoolDownloadEntity;
+  }> {
     const entity = await this.claimEntity(tokenPoolId);
     if (!entity) {
       this.logger.error(
@@ -79,6 +91,130 @@ export class TokenPoolDownloaderService {
     this.logger.log(
       `Claimed tokenpool download with id ${tokenPoolId}. Starting...`,
     );
+    let doableThroughAlchemy: boolean;
+    try {
+      await this.alchemy.nft.getOwnersForContract(entity.contract, {
+        withTokenBalances: true,
+        block: entity.block_no.toString(),
+      });
+      doableThroughAlchemy = true;
+    } catch (e) {
+      doableThroughAlchemy = false;
+    }
+
+    const singleTypeLatestBlock =
+      await this.transferRepository.getLatestTransferBlockNo({
+        contract: entity.contract,
+        transferType: 'single',
+      });
+
+    const batchTypeLatestBlock =
+      await this.transferRepository.getLatestTransferBlockNo({
+        contract: entity.contract,
+        transferType: 'batch',
+      });
+
+    if (doableThroughAlchemy) {
+      await this.runOperationsAndFinishUp(entity, tokenPoolId);
+    } else {
+      const schema =
+        await this.allowlistCreator.etherscanService.getContractSchema({
+          contractAddress: entity.contract,
+        });
+      switch (schema) {
+        case ContractSchema.ERC721:
+          return this.doTransferType(
+            entity,
+            schema,
+            singleTypeLatestBlock,
+            'single',
+          ).then((job) => {
+            if (job.continue) {
+              return job;
+            }
+            return this.runOperationsAndFinishUp(entity, tokenPoolId);
+          });
+        case ContractSchema.ERC721Old:
+          return this.doTransferType(
+            entity,
+            schema,
+            singleTypeLatestBlock,
+            'single',
+          ).then((job) => {
+            if (job.continue) {
+              return job;
+            }
+            return this.runOperationsAndFinishUp(entity, tokenPoolId);
+          });
+        case ContractSchema.ERC1155:
+          return this.doTransferType(
+            entity,
+            schema,
+            batchTypeLatestBlock,
+            'batch',
+          )
+            .then((job) => {
+              if (job.continue) {
+                return job;
+              }
+              return this.doTransferType(
+                entity,
+                schema,
+                singleTypeLatestBlock,
+                'single',
+              );
+            })
+            .then((job) => {
+              if (job.continue) {
+                return job;
+              }
+              return this.runOperationsAndFinishUp(entity, tokenPoolId);
+            });
+        default:
+          assertUnreachable(schema);
+          break;
+      }
+    }
+  }
+
+  private async doTransferType(
+    entity: TokenPoolDownloadEntity,
+    schema: ContractSchema,
+    latestBlockNo: number,
+    transferType: 'single' | 'batch',
+  ) {
+    const start = Time.now();
+    for await (const transfers of this.allowlistCreator.etherscanService.getTransfers(
+      {
+        contractAddress: entity.contract,
+        contractSchema: schema,
+        startingBlock: latestBlockNo.toString(),
+        toBlock: entity.block_no.toString(),
+        transferType: transferType,
+      },
+    )) {
+      await this.transferRepository.saveContractTransfers(
+        entity.contract,
+        transfers,
+      );
+      if (this.isTimeUp(start)) {
+        this.logger.log(
+          `Exceeded the 5 minute timeout. Marking as in progress and rescheduling...`,
+        );
+        return { continue: true, entity };
+      }
+    }
+    return { continue: false, entity };
+  }
+
+  private isTimeUp(start: Time) {
+    return start.diffFromNow().gt(Time.minutes(5));
+  }
+
+  private async runOperationsAndFinishUp(
+    entity: TokenPoolDownloadEntity,
+    tokenPoolId: string,
+  ): Promise<{ continue: boolean; entity: TokenPoolDownloadEntity }> {
     const mockAllowlistId = randomUUID();
     const mockPoolId = randomUUID();
     const allowlistOpParams: DescribableEntity = {
@@ -95,8 +231,9 @@ export class TokenPoolDownloaderService {
       blockNo: entity.block_no,
       consolidateBlockNo: entity.consolidate_block_no,
     };
+    let allowlistState: AllowlistState;
     try {
-      const allowlistState = await this.allowlistCreator.execute([
+      allowlistState = await this.allowlistCreator.execute([
         {
           code: AllowlistOperationCode.CREATE_ALLOWLIST,
           params: allowlistOpParams,
@@ -106,6 +243,14 @@ export class TokenPoolDownloaderService {
           params: tokenPoolOpParams,
         },
       ]);
+    } catch (e) {
+      console.error(`Persisting state for token pool ${tokenPoolId} failed`, e);
+      await this.tokenPoolDownloadRepository.changeStatusToError({
+        tokenPoolId,
+      });
+      throw e;
+    }
+    try {
       const con = await this.db.getConnection();
       try {
         await con.beginTransaction();
@@ -138,6 +283,7 @@ export class TokenPoolDownloaderService {
         tokenPoolId,
       });
     }
+    return { continue: false, entity };
   }
 
   private async persistTokenOwnerships({

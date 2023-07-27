@@ -1,0 +1,1 @@
+alter table transfer drop column transfer_type;

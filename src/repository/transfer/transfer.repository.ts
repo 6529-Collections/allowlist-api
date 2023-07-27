@@ -13,18 +13,32 @@ export class TransferRepository implements TransfersStorage {
 
   async getLatestTransferBlockNo({
     contract,
+    transferType,
   }: {
     contract: string;
+    transferType?: 'single' | 'batch';
   }): Promise<number> {
-    const resp = await this.db.one<TransferEntity>(
-      `SELECT block_number
-             FROM transfer
-             WHERE contract = ?
-             ORDER BY block_number DESC, transaction_index DESC, log_index DESC
-             LIMIT 1`,
-      [contract],
-    );
-    return resp?.block_number || 0;
+    if (transferType) {
+      const resp = await this.db.one<TransferEntity>(
+        `SELECT block_number
+                 FROM transfer
+                 WHERE contract = ? and transfer_type = ?
+                 ORDER BY block_number DESC, transaction_index DESC, log_index DESC
+                 LIMIT 1`,
+        [contract, transferType],
+      );
+      return resp?.block_number || 0;
+    } else {
+      const resp = await this.db.one<TransferEntity>(
+        `SELECT block_number
+                 FROM transfer
+                 WHERE contract = ?
+                 ORDER BY block_number DESC, transaction_index DESC, log_index DESC
+                 LIMIT 1`,
+        [contract],
+      );
+      return resp?.block_number || 0;
+    }
   }
 
   async getContractTransfersOrdered(
@@ -41,7 +55,8 @@ export class TransferRepository implements TransfersStorage {
                     log_index,
                     timestamp,
                     token_id,
-                    transaction_index
+                    transaction_index,
+                    transfer_type
              FROM transfer
              WHERE contract = ?
                AND block_number <= ?
@@ -62,6 +77,7 @@ export class TransferRepository implements TransfersStorage {
       tokenID: e.token_id,
       transactionHash: e.transaction_hash,
       transactionIndex: e.transaction_index,
+      transferType: e.transfer_type,
     }));
   }
 
@@ -81,6 +97,7 @@ export class TransferRepository implements TransfersStorage {
       transaction_hash: t.transactionHash,
       transaction_index: t.transactionIndex,
       blockNumber: t.blockNumber,
+      transfer_type: t.transferType,
     }));
     const connection = await this.db.getConnection();
     try {
@@ -88,9 +105,9 @@ export class TransferRepository implements TransfersStorage {
       for (const entity of entities) {
         await this.db.none(
           `INSERT INTO transfer (transaction_hash, amount, block_number, contract, from_party, to_party,
-                                           log_index, timestamp, token_id, transaction_index)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                     ON DUPLICATE KEY UPDATE transaction_hash = transaction_hash`,
+                                           log_index, timestamp, token_id, transaction_index, transfer_type)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE transfer_type = transfer_type`,
           [
             entity.transaction_hash,
             entity.amount,
@@ -102,6 +119,7 @@ export class TransferRepository implements TransfersStorage {
             entity.time_stamp,
             entity.token_id,
             entity.transaction_index,
+            entity.transfer_type,
           ],
           { connection },
         );

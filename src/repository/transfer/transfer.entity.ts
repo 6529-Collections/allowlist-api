@@ -9,6 +9,7 @@ export interface TransferEntity
     | 'tokenID'
     | 'transactionHash'
     | 'transactionIndex'
+    | 'transferType'
     | 'to'
     | 'from'
   > {
@@ -22,4 +23,5 @@ export interface TransferEntity
   readonly token_id: string;
   readonly transaction_hash: string;
   readonly transaction_index: number;
+  readonly transfer_type?: 'single' | 'batch';
 }

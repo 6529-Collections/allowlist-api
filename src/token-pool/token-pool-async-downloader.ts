@@ -44,7 +44,21 @@ export class TokenPoolAsyncDownloader {
       this.logger.log(
         `Starting to download tokenpool ${tokenPoolId} in the same process`,
       );
-      this.tokenPoolDownloaderService.start(tokenPoolId);
+      this.tokenPoolDownloaderService
+        .start(tokenPoolId)
+        .then(async (result) => {
+          if (result.continue) {
+            return await this.start({
+              contract,
+              tokenIds,
+              tokenPoolId,
+              allowlistId,
+              blockNo,
+              consolidateBlockNo,
+            });
+          }
+          return result;
+        });
       this.logger.log(
         `Tokenpool ${tokenPoolId} download started in the same process`,
       );
