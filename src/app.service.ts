@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
@@ -7,9 +7,7 @@ import { Time } from './time';
 @Injectable()
 export class AppService {
   private logger = new Logger(AppService.name);
-  constructor(
-    @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
-  ) {}
+  constructor(private allowlistCreator: AllowlistCreator) {}
 
   async run() {
     try {

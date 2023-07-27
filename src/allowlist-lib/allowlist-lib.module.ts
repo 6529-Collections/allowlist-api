@@ -8,13 +8,14 @@ import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-e
 import { AlchemyApiModule } from '../alchemy-api/alchemy-api.module';
 import { Alchemy } from 'alchemy-sdk';
 import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-pool-token.repository';
+import { EtherscanService } from '@6529-collections/allowlist-lib/services/etherscan.service';
 
 @Module({
   imports: [RepositoryModule, AlchemyApiModule],
   providers: [
     AllowlistLibLogListener,
     {
-      provide: AllowlistCreator.name,
+      provide: AllowlistCreator,
       useFactory: (
         configService: ConfigService,
         transferRepository: TransferRepository,
@@ -42,10 +43,17 @@ import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-p
         TransferRepository,
         TokenPoolTokenRepository,
         AllowlistLibLogListener,
-        Alchemy.name,
+        Alchemy,
       ],
     },
+
+    {
+      provide: EtherscanService,
+      useFactory: (allowlistCreator: AllowlistCreator): EtherscanService =>
+        allowlistCreator.etherscanService,
+      inject: [AllowlistCreator],
+    },
   ],
-  exports: [AllowlistCreator.name],
+  exports: [AllowlistCreator, EtherscanService],
 })
 export class AllowlistLibModule {}

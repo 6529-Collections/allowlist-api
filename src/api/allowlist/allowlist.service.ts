@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -36,7 +35,7 @@ export class AllowlistService {
     private readonly commonService: CommonService,
     private readonly runnerProxy: RunnerProxy,
     private readonly db: DB,
-    @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
+    private allowlistCreator: AllowlistCreator,
   ) {}
 
   private readonly logger = new Logger(AllowlistService.name);

@@ -1,5 +1,5 @@
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { AllowlistRepository } from '../repository/allowlist/allowlist.repository';
 import { AllowlistOperationRepository } from '../repository/allowlist-operation/allowlist-operation.repository';
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
@@ -23,7 +23,7 @@ export class RunnerService {
   private logger = new Logger(RunnerService.name);
 
   constructor(
-    @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
+    private allowlistCreator: AllowlistCreator,
     private readonly allowlistRepository: AllowlistRepository,
     private readonly allowlistOperationRepository: AllowlistOperationRepository,
     private readonly transferPoolRepository: TransferPoolRepository,

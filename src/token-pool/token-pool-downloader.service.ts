@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { TokenPoolDownloadRepository } from '../repository/token-pool-download/token-pool-download.repository';
 import { TokenPoolDownloadStatus } from '../repository/token-pool-download/token-pool-download-status';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
@@ -21,7 +21,6 @@ export class TokenPoolDownloaderService {
   constructor(
     private readonly tokenPoolDownloadRepository: TokenPoolDownloadRepository,
     private readonly tokenPoolTokenRepository: TokenPoolTokenRepository,
-    @Inject(AllowlistCreator.name)
     private readonly allowlistCreator: AllowlistCreator,
     private readonly db: DB,
   ) {}

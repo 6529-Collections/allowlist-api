@@ -1,5 +1,5 @@
 import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AllowlistOperationRequestApiModel } from './model/allowlist-operation-request-api.model';
 import { AllowlistOperationRepository } from '../../repository/allowlist-operation/allowlist-operation.repository';
 import { AllowlistRepository } from '../../repository/allowlist/allowlist.repository';
@@ -18,7 +18,7 @@ export class AllowlistOperationService {
   constructor(
     private readonly allowlistRepository: AllowlistRepository,
     private readonly allowlistOperationRepository: AllowlistOperationRepository,
-    @Inject(AllowlistCreator.name) private allowlistCreator: AllowlistCreator,
+    private allowlistCreator: AllowlistCreator,
     private readonly tokenPoolAsyncDownloader: TokenPoolAsyncDownloader,
     private readonly db: DB,
   ) {}

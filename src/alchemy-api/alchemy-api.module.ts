@@ -7,7 +7,7 @@ import { AlchemyApiService } from './alchemy-api.module.service';
   imports: [],
   providers: [
     {
-      provide: Alchemy.name,
+      provide: Alchemy,
       useFactory: (configService: ConfigService): Alchemy => {
         const alchemyApiKey = configService.get('ALLOWLIST_ALCHEMY_API_KEY');
         if (!alchemyApiKey)
@@ -21,6 +21,6 @@ import { AlchemyApiService } from './alchemy-api.module.service';
     },
     AlchemyApiService,
   ],
-  exports: [AlchemyApiService, Alchemy.name],
+  exports: [AlchemyApiService, Alchemy],
 })
 export class AlchemyApiModule {}
