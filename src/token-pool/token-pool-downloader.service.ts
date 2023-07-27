@@ -31,12 +31,14 @@ export class TokenPoolDownloaderService {
     tokenPoolId,
     allowlistId,
     blockNo,
+    consolidateWallets,
   }: {
     readonly contract: string;
     readonly tokenIds?: string;
     readonly tokenPoolId: string;
     readonly allowlistId: string;
     readonly blockNo: number;
+    readonly consolidateWallets: boolean;
   }) {
     await this.tokenPoolDownloadRepository.save({
       contract,
@@ -44,6 +46,7 @@ export class TokenPoolDownloaderService {
       token_pool_id: tokenPoolId,
       allowlist_id: allowlistId,
       block_no: blockNo,
+      consolidate_wallets: consolidateWallets ? 1 : 0,
       status: TokenPoolDownloadStatus.PENDING,
     });
   }
@@ -90,6 +93,7 @@ export class TokenPoolDownloaderService {
       contract: entity.contract,
       tokenIds: entity.token_ids,
       blockNo: entity.block_no,
+      consolidateWallets: !!entity.consolidate_wallets,
     };
     try {
       const allowlistState = await this.allowlistCreator.execute([

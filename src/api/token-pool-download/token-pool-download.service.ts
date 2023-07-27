@@ -62,6 +62,7 @@ export class TokenPoolDownloadService {
       allowlistId: entity.allowlist_id,
       blockNo: entity.block_no,
       status: entity.status,
+      consolidateWallets: !!entity.consolidate_wallets,
     };
   }
 }

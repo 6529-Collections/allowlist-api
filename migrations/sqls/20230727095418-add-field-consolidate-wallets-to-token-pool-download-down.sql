@@ -1,0 +1,1 @@
+alter table token_pool_download drop column consolidate_wallets;

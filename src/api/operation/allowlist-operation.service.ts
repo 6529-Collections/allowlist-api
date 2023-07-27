@@ -116,6 +116,7 @@ export class AllowlistOperationService {
           tokenIds: params.tokenIds,
           contract: params.contract,
           blockNo: params.blockNo,
+          consolidateWallets: params.consolidateWallets,
           allowlistId,
         });
       }
