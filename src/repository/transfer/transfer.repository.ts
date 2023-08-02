@@ -11,7 +11,11 @@ export class TransferRepository implements TransfersStorage {
 
   constructor(private readonly db: DB) {}
 
-  async getLatestTransferBlockNo(contract: string): Promise<number> {
+  async getLatestTransferBlockNo({
+    contract,
+  }: {
+    contract: string;
+  }): Promise<number> {
     const resp = await this.db.one<TransferEntity>(
       `SELECT block_number
              FROM transfer
