@@ -55,7 +55,7 @@ export class TokenPoolTokenRepository {
   async getTokenPoolsTokens(
     tokenPools: string[],
   ): Promise<TokenPoolTokenEntity[]> {
-    if (!tokenPools?.length) return []
+    if (!tokenPools?.length) return [];
     const tokens = await this.db.many<TokenPoolTokenEntity>(
       `
       SELECT id, contract, token_id, amount, wallet, token_pool_id, allowlist_id
@@ -76,6 +76,21 @@ export class TokenPoolTokenRepository {
       WHERE token_pool_id = ?
       `,
       [tokenPoolId],
+    );
+    return resp.map((item) => item.wallet.toLowerCase());
+  }
+
+  async getUniqueWalletsByTokenPoolIds(
+    tokenPoolIds: string[],
+  ): Promise<string[]> {
+    if (!tokenPoolIds?.length) return [];
+    const resp = await this.db.many<{ wallet: string }>(
+      `
+      SELECT DISTINCT wallet
+      FROM token_pool_token
+      WHERE token_pool_id IN (?)
+      `,
+      [tokenPoolIds],
     );
     return resp.map((item) => item.wallet.toLowerCase());
   }

@@ -36,6 +36,23 @@ export class AllowlistOperationController {
     return this.allowlistOperationService.add({ ...request, allowlistId });
   }
 
+  @ApiOperation({
+    summary: 'Adds operations to allowlist.',
+  })
+  @ApiCreatedResponse({
+    type: AllowlistOperationResponseApiModel,
+    isArray: true,
+  })
+  @Post('/batch')
+  async createBatch(
+    @Body() requests: AllowlistOperationRequestApiModel[],
+    @Param('allowlistId') allowlistId: string,
+  ): Promise<AllowlistOperationResponseApiModel[]> {
+    return this.allowlistOperationService.addBatch(
+      requests.map((request) => ({ ...request, allowlistId })),
+    );
+  }
+
   @Get()
   async getAll(
     @Param('allowlistId') allowlistId: string,

@@ -130,6 +130,22 @@ export class AllowlistOperationService {
     }
   }
 
+  async addBatch(
+    ops: {
+      allowlistId: string;
+      code: AllowlistOperationCode;
+      params: any;
+      order?: number;
+    }[],
+  ): Promise<AllowlistOperationResponseApiModel[]> {
+    const response: AllowlistOperationResponseApiModel[] = [];
+    for (const op of ops) {
+      const result = await this.add(op);
+      response.push(result);
+    }
+    return response;
+  }
+
   async findByAllowlistId(
     allowlistId: string,
   ): Promise<AllowlistOperationResponseApiModel[]> {

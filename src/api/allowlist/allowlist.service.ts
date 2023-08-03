@@ -162,161 +162,184 @@ export class AllowlistService {
 
     if (haveCreateTokenPoolOperation) {
       throw new BadRequestException(
-        'CREATE_CUSTOM_TOKEN_POOL operation is not allowed, please contact support',
+        'CREATE_TOKEN_POOL operation is not allowed, please contact support',
       );
     }
+    try {
+      const allowlist = createAllowlistState();
+      this.allowlistCreator.executeOperation({
+        code: AllowlistOperationCode.CREATE_ALLOWLIST,
+        params: {
+          id: randomUUID(),
+          name: 'test',
+          description: 'test',
+        },
+        state: allowlist,
+      });
 
-    const allowlist = createAllowlistState();
-    this.allowlistCreator.executeOperation({
-      code: AllowlistOperationCode.CREATE_ALLOWLIST,
-      params: {
-        id: randomUUID(),
-        name: 'test',
-        description: 'test',
-      },
-      state: allowlist,
-    });
+      const testPhaseId = randomUUID();
 
-    const testPhaseId = randomUUID();
-
-    this.allowlistCreator.executeOperation({
-      code: AllowlistOperationCode.ADD_PHASE,
-      params: {
-        id: testPhaseId,
-        name: 'test',
-        description: 'test',
-      },
-      state: allowlist,
-    });
-
-    const phaseIds: Set<string> = new Set<string>(
-      operations
-        .filter((o) => o.code === AllowlistOperationCode.ADD_COMPONENT)
-        .map((o) => o.params.phaseId),
-    );
-
-    for (const phaseId of phaseIds) {
       this.allowlistCreator.executeOperation({
         code: AllowlistOperationCode.ADD_PHASE,
         params: {
-          id: phaseId,
+          id: testPhaseId,
           name: 'test',
           description: 'test',
         },
         state: allowlist,
       });
-    }
 
-    const tokenPoolIds = new Set<string>(
-      operations
-        .filter(
-          (o) =>
-            o.code === AllowlistOperationCode.ADD_ITEM &&
-            o.params.poolType === Pool.TOKEN_POOL,
-        )
-        .map((o) => o.params.poolId),
-    );
+      const phaseIds: Set<string> = new Set<string>(
+        operations
+          .filter((o) => o.code === AllowlistOperationCode.ADD_COMPONENT)
+          .map((o) => o.params.phaseId),
+      );
 
-    const componentWinnersComponentIds = new Set<string>(
-      operations
-        .filter(
-          (o) =>
-            o.code ===
-            AllowlistOperationCode.ITEM_REMOVE_WALLETS_FROM_CERTAIN_COMPONENTS,
-        )
-        .flatMap((o) => o.params.componentIds),
-    );
-
-    const [tokenPoolTokens, componentWinnersWallets] = await Promise.all([
-      this.tokenPoolTokenRepository.getTokenPoolsTokens(
-        Array.from(tokenPoolIds),
-      ),
-      this.componentWinners.getWinnersByComponentIds({
-        componentIds: Array.from(componentWinnersComponentIds),
-      }),
-    ]);
-
-    const tokenPools: Record<string, TokenPool> = tokenPoolTokens.reduce<
-      Record<string, TokenPool>
-    >((acc, token) => {
-      if (!acc[token.token_pool_id]) {
-        acc[token.token_pool_id] = {
-          id: token.token_pool_id,
-          name: 'test',
-          description: 'test',
-          tokens: [],
-        };
+      for (const phaseId of phaseIds) {
+        this.allowlistCreator.executeOperation({
+          code: AllowlistOperationCode.ADD_PHASE,
+          params: {
+            id: phaseId,
+            name: 'test',
+            description: 'test',
+          },
+          state: allowlist,
+        });
       }
-      acc[token.token_pool_id].tokens.push(
-        ...Array.from({ length: token.amount }, () => ({
-          id: token.token_id,
-          contract: token.contract,
-          owner: token.wallet,
-        })),
-      );
-      return acc;
-    }, {});
 
-    for (const tokenPool of Object.entries(tokenPools)) {
-      const [tokenPoolId, pool] = tokenPool;
-      allowlist.tokenPools[tokenPoolId] = pool;
-    }
-
-    const phaseComponentWinners: Record<string, AllowlistComponent> =
-      componentWinnersWallets.reduce<Record<string, AllowlistComponent>>(
-        (acc, winner) => {
-          if (!acc[winner.phase_component_id]) {
-            acc[winner.phase_component_id] = {
-              id: winner.phase_component_id,
-              name: 'test',
-              description: 'test',
-              items: {},
-              winners: {},
-              _insertionOrder: Object.values(acc).length,
-            };
-          }
-          if (!acc[winner.phase_component_id].winners[winner.wallet]) {
-            acc[winner.phase_component_id].winners[winner.wallet] =
-              winner.amount;
-          } else {
-            acc[winner.phase_component_id].winners[winner.wallet] +=
-              winner.amount;
-          }
-          return acc;
-        },
-        {},
+      const addItemTokenPoolIds = new Set<string>(
+        operations
+          .filter(
+            (o) =>
+              o.code === AllowlistOperationCode.ADD_ITEM &&
+              o.params.poolType === Pool.TOKEN_POOL,
+          )
+          .map((o) => o.params.poolId),
       );
 
-    for (const phaseComponentWinner of Object.entries(phaseComponentWinners)) {
-      const [phaseComponentId, component] = phaseComponentWinner;
-      allowlist.phases[testPhaseId].components[phaseComponentId] = component;
-    }
+      const excludeTokenPoolIds = new Set(
+        operations.flatMap((o) => {
+          if (
+            o.code ===
+            AllowlistOperationCode.ITEM_REMOVE_WALLETS_FROM_CERTAIN_TOKEN_POOLS
+          ) {
+            return o.params.pools
+              .filter((p: any) => p.poolType === Pool.TOKEN_POOL)
+              .map((p: any) => p.poolId);
+          }
+          return [];
+        }),
+      );
 
-    for (const operation of operations) {
-      this.allowlistCreator.executeOperation({
-        code: operation.code,
-        params: operation.params,
-        state: allowlist,
-      });
-    }
+      const tokenPoolIds = new Set<string>(
+        Array.from([...addItemTokenPoolIds, ...excludeTokenPoolIds]),
+      );
 
-    const uniqueWalletsCount = Array.from(phaseIds).reduce<number>(
-      (acc, phaseId) => {
-        const phase = allowlist.phases[phaseId];
-        if (!phase) return acc;
-        const components = Object.values(phase.components);
-        if (!components.length) return acc;
-        const wallets = new Set<string>(
-          components.flatMap((component) =>
-            Object.values(component.items).flatMap((item) =>
-              item.tokens.flatMap((token) => token.owner),
-            ),
-          ),
+      const componentWinnersComponentIds = new Set<string>(
+        operations
+          .filter(
+            (o) =>
+              o.code ===
+              AllowlistOperationCode.ITEM_REMOVE_WALLETS_FROM_CERTAIN_COMPONENTS,
+          )
+          .flatMap((o) => o.params.componentIds),
+      );
+
+      const [tokenPoolTokens, componentWinnersWallets] = await Promise.all([
+        this.tokenPoolTokenRepository.getTokenPoolsTokens(
+          Array.from(tokenPoolIds),
+        ),
+        this.componentWinners.getWinnersByComponentIds({
+          componentIds: Array.from(componentWinnersComponentIds),
+        }),
+      ]);
+
+      const tokenPools: Record<string, TokenPool> = tokenPoolTokens.reduce<
+        Record<string, TokenPool>
+      >((acc, token) => {
+        if (!acc[token.token_pool_id]) {
+          acc[token.token_pool_id] = {
+            id: token.token_pool_id,
+            name: 'test',
+            description: 'test',
+            tokens: [],
+          };
+        }
+        acc[token.token_pool_id].tokens.push(
+          ...Array.from({ length: token.amount }, () => ({
+            id: token.token_id,
+            contract: token.contract,
+            owner: token.wallet,
+          })),
         );
-        return acc + wallets.size;
-      },
-      0,
-    );
-    return uniqueWalletsCount;
+        return acc;
+      }, {});
+
+      for (const tokenPool of Object.entries(tokenPools)) {
+        const [tokenPoolId, pool] = tokenPool;
+        allowlist.tokenPools[tokenPoolId] = pool;
+      }
+
+      const phaseComponentWinners: Record<string, AllowlistComponent> =
+        componentWinnersWallets.reduce<Record<string, AllowlistComponent>>(
+          (acc, winner) => {
+            if (!acc[winner.phase_component_id]) {
+              acc[winner.phase_component_id] = {
+                id: winner.phase_component_id,
+                name: 'test',
+                description: 'test',
+                items: {},
+                winners: {},
+                _insertionOrder: Object.values(acc).length,
+              };
+            }
+            if (!acc[winner.phase_component_id].winners[winner.wallet]) {
+              acc[winner.phase_component_id].winners[winner.wallet] =
+                winner.amount;
+            } else {
+              acc[winner.phase_component_id].winners[winner.wallet] +=
+                winner.amount;
+            }
+            return acc;
+          },
+          {},
+        );
+
+      for (const phaseComponentWinner of Object.entries(
+        phaseComponentWinners,
+      )) {
+        const [phaseComponentId, component] = phaseComponentWinner;
+        allowlist.phases[testPhaseId].components[phaseComponentId] = component;
+      }
+
+      for (const operation of operations) {
+        this.allowlistCreator.executeOperation({
+          code: operation.code,
+          params: operation.params,
+          state: allowlist,
+        });
+      }
+
+      const uniqueWalletsCount = Array.from(phaseIds).reduce<number>(
+        (acc, phaseId) => {
+          const phase = allowlist.phases[phaseId];
+          if (!phase) return acc;
+          const components = Object.values(phase.components);
+          if (!components.length) return acc;
+          const wallets = new Set<string>(
+            components.flatMap((component) =>
+              Object.values(component.items).flatMap((item) =>
+                item.tokens.flatMap((token) => token.owner),
+              ),
+            ),
+          );
+          return acc + wallets.size;
+        },
+        0,
+      );
+      return uniqueWalletsCount;
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 }

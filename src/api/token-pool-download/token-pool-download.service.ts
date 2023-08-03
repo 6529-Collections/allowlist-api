@@ -5,6 +5,7 @@ import { TokenPoolDownloadRepository } from '../../repository/token-pool-downloa
 import { PhaseComponentWinnerRepository } from '../../repository/phase-component-winner/phase-component-winner.repository';
 import { TokenPoolTokenRepository } from '../../repository/token-pool-token/token-pool-token.repository';
 import { TokenPoolDownloadTokenPoolUniqueWalletsCountRequestApiModel } from './model/token-pool-download-token-pool-unique-wallets-count-request-api.model';
+import { Pool } from '@6529-collections/allowlist-lib/app-types';
 
 @Injectable()
 export class TokenPoolDownloadService {
@@ -25,28 +26,60 @@ export class TokenPoolDownloadService {
 
   async getTokenPoolUniqueWalletsCount({
     tokenPoolId,
-    params: { excludeComponentWinners, extraWallets },
+    params: { excludeComponentWinners, excludeSnapshots, extraWallets },
   }: {
     tokenPoolId: string;
     params: TokenPoolDownloadTokenPoolUniqueWalletsCountRequestApiModel;
   }): Promise<number> {
-    const [componentWinners, tokenPoolWallets] = await Promise.all([
-      new Set(
-        excludeComponentWinners.length
-          ? await this.componentWinners.getUniqueWalletsByComponentIds({
-              componentIds: excludeComponentWinners,
-            })
-          : [],
-      ),
-      new Set([
-        ...(await this.tokenPoolTokenRepository.getUniqueWalletsByTokenPoolId(
-          tokenPoolId,
-        )),
-        ...extraWallets.map((wallet) => wallet.toLowerCase()),
-      ]),
-    ]);
+    const [componentWinners, tokenPoolsWallets, tokenPoolWallets] =
+      await Promise.all([
+        new Set(
+          excludeComponentWinners.length
+            ? await this.componentWinners.getUniqueWalletsByComponentIds({
+                componentIds: excludeComponentWinners,
+              })
+            : [],
+        ),
+        new Set(
+          await this.tokenPoolTokenRepository.getUniqueWalletsByTokenPoolIds(
+            excludeSnapshots
+              .filter((s) => s.snapshotType === Pool.TOKEN_POOL)
+              .map((s) => s.snapshotId),
+          ),
+        ),
+        new Set([
+          ...(await this.tokenPoolTokenRepository.getUniqueWalletsByTokenPoolId(
+            tokenPoolId,
+          )),
+          ...extraWallets.map((wallet) => wallet.toLowerCase()),
+        ]),
+      ]);
+
+    const customTokenPoolWallets = new Set<string>(
+      excludeSnapshots
+        .filter((s) => s.snapshotType === Pool.CUSTOM_TOKEN_POOL)
+        .flatMap((s) => s.extraWallets),
+    );
+
+    const walletPoolWallets = new Set<string>(
+      excludeSnapshots
+        .filter((s) => s.snapshotType === Pool.WALLET_POOL)
+        .flatMap((s) => s.extraWallets),
+    );
 
     for (const value of componentWinners) {
+      tokenPoolWallets.delete(value);
+    }
+
+    for (const value of tokenPoolsWallets) {
+      tokenPoolWallets.delete(value);
+    }
+
+    for (const value of customTokenPoolWallets) {
+      tokenPoolWallets.delete(value);
+    }
+
+    for (const value of walletPoolWallets) {
       tokenPoolWallets.delete(value);
     }
     return tokenPoolWallets.size;
