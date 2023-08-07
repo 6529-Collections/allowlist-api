@@ -15,7 +15,10 @@ export class TokenPoolRepository {
                     allowlist_id,
                     token_ids,
                     wallets_count,
-                    tokens_count
+                    tokens_count,
+                    contract,
+                    block_no,
+                    consolidate_block_no
              FROM token_pool
              WHERE allowlist_id = ?`,
       [allowlistId],
@@ -36,7 +39,10 @@ export class TokenPoolRepository {
                     allowlist_id,
                     token_ids
                     wallets_count,
-                    tokens_count
+                    tokens_count,
+                    contract,
+                    block_no,
+                    consolidate_block_no
              FROM token_pool
              WHERE allowlist_id = ?
                and external_id = ?`,
@@ -51,8 +57,11 @@ export class TokenPoolRepository {
     for (const tokenPool of tokenPools) {
       await this.db.none(
         `INSERT INTO token_pool (external_id, name, description, allowlist_id,
-                                         token_ids, wallets_count, tokens_count)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                                         token_ids, wallets_count, tokens_count,
+                                 contract,
+                                 block_no,
+                                 consolidate_block_no)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           tokenPool.id,
           tokenPool.name,
@@ -61,6 +70,9 @@ export class TokenPoolRepository {
           tokenPool.token_ids || null,
           tokenPool.wallets_count,
           tokenPool.tokens_count,
+          tokenPool.contract,
+          tokenPool.block_no,
+          tokenPool.consolidate_block_no,
         ],
         options,
       );

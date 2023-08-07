@@ -38,6 +38,9 @@ export class TokenPoolService {
       tokenIds: entity.token_ids,
       walletsCount: entity.wallets_count,
       tokensCount: entity.tokens_count,
+      contract: entity.contract,
+      blockNo: entity.block_no,
+      consolidateBlockNo: entity.consolidate_block_no,
     };
   }
 }

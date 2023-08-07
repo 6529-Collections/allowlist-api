@@ -17,7 +17,6 @@ import { DB } from '../../repository/db';
 import { RunnerProxy } from '../../runner/runner.proxy';
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
-import { createAllowlistState } from '@6529-collections/allowlist-lib/allowlist/state-types/allowlist-state';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
 import { AllowlistComponent } from '@6529-collections/allowlist-lib/allowlist/state-types/allowlist-component';
 import { TokenPool } from '@6529-collections/allowlist-lib/allowlist/state-types/token-pool';
@@ -166,7 +165,7 @@ export class AllowlistService {
       );
     }
     try {
-      const allowlist = createAllowlistState();
+      const allowlist = this.allowlistCreator.createAllowlistState();
       this.allowlistCreator.executeOperation({
         code: AllowlistOperationCode.CREATE_ALLOWLIST,
         params: {
@@ -206,7 +205,6 @@ export class AllowlistService {
           state: allowlist,
         });
       }
-
 
       const addItemTokenPoolIds = new Set<string>(
         operations
@@ -264,6 +262,9 @@ export class AllowlistService {
             name: 'test',
             description: 'test',
             tokens: [],
+            contract: token.contract,
+            blockNo: null,
+            consolidateBlockNo: null,
           };
         }
         acc[token.token_pool_id].tokens.push(
@@ -321,24 +322,20 @@ export class AllowlistService {
         });
       }
 
-      const uniqueWalletsCount = Array.from(phaseIds).reduce<number>(
-        (acc, phaseId) => {
-          const phase = allowlist.phases[phaseId];
-          if (!phase) return acc;
-          const components = Object.values(phase.components);
-          if (!components.length) return acc;
-          const wallets = new Set<string>(
-            components.flatMap((component) =>
-              Object.values(component.items).flatMap((item) =>
-                item.tokens.flatMap((token) => token.owner),
-              ),
+      return Array.from(phaseIds).reduce<number>((acc, phaseId) => {
+        const phase = allowlist.phases[phaseId];
+        if (!phase) return acc;
+        const components = Object.values(phase.components);
+        if (!components.length) return acc;
+        const wallets = new Set<string>(
+          components.flatMap((component) =>
+            Object.values(component.items).flatMap((item) =>
+              item.tokens.flatMap((token) => token.owner),
             ),
-          );
-          return acc + wallets.size;
-        },
-        0,
-      );
-      return uniqueWalletsCount;
+          ),
+        );
+        return acc + wallets.size;
+      }, 0);
     } catch (e) {
       throw new BadRequestException(e.message);
     }

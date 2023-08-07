@@ -101,18 +101,21 @@ export class TokenPoolDownloaderService {
     } catch (e) {
       doableThroughAlchemy = false;
     }
-
+    this.logger.log(`Asking for single type latest block...`);
     const singleTypeLatestBlock =
       await this.transferRepository.getLatestTransferBlockNo({
         contract: entity.contract,
         transferType: 'single',
       });
+    this.logger.log(`Single type latest block is ${singleTypeLatestBlock}`);
 
+    this.logger.log(`Asking for batch type latest block...`);
     const batchTypeLatestBlock =
       await this.transferRepository.getLatestTransferBlockNo({
         contract: entity.contract,
         transferType: 'batch',
       });
+    this.logger.log(`Batch type latest block is ${batchTypeLatestBlock}`);
 
     if (doableThroughAlchemy) {
       await this.runOperationsAndFinishUp(entity, tokenPoolId);

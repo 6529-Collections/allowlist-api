@@ -5,6 +5,18 @@ export class TokenPoolResponseApiModel
   implements Omit<TokenPool, 'tokens' | 'tokenIds' | 'transferPoolId'>
 {
   @ApiProperty({
+    description: 'Contract address.',
+  })
+  contract: string;
+  @ApiProperty({
+    description: 'Block number.',
+  })
+  blockNo: number;
+  @ApiProperty({
+    description: 'Consolidate block number.',
+  })
+  consolidateBlockNo: number | null;
+  @ApiProperty({
     description: 'ID',
   })
   readonly id: string;

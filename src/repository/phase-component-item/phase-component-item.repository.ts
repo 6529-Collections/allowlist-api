@@ -52,7 +52,10 @@ export class PhaseComponentItemRepository {
                     pool_id,
                     pool_type,
                     wallets_count,
-                    tokens_count
+                    tokens_count,
+                    contract,
+                    block_no,
+                    consolidate_block_no
              FROM phase_component_item
              WHERE allowlist_id = ?
                AND phase_external_id = ?
@@ -70,8 +73,9 @@ export class PhaseComponentItemRepository {
       await this.db.none(
         `INSERT INTO phase_component_item (external_id, name, description, insertion_order,
                                                    phase_external_id, allowlist_id,
-                                                   phase_component_external_id, pool_id, pool_type, wallets_count, tokens_count)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                                                   phase_component_external_id, pool_id, pool_type, wallets_count, tokens_count,
+            contract, block_no, consolidate_block_no)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           entity.id,
           entity.name,
@@ -84,6 +88,9 @@ export class PhaseComponentItemRepository {
           entity.pool_type,
           entity.wallets_count,
           entity.tokens_count,
+          entity.contract,
+          entity.block_no,
+          entity.consolidate_block_no,
         ],
         options,
       );
@@ -104,7 +111,10 @@ export class PhaseComponentItemRepository {
                     pool_id,
                     pool_type,
                     wallets_count,
-                    tokens_count
+                    tokens_count,
+                    contract, 
+                    block_no, 
+                    consolidate_block_no
              FROM phase_component_item
              WHERE allowlist_id = ?
              order by insertion_order`,

@@ -65,6 +65,9 @@ export class PhaseComponentItemService {
       poolType: entity.pool_type as Pool,
       walletsCount: entity.wallets_count,
       tokensCount: entity.tokens_count,
+      contract: entity.contract,
+      blockNo: entity.block_no,
+      consolidateBlockNo: entity.consolidate_block_no,
     };
   }
 }

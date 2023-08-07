@@ -123,6 +123,9 @@ export class RunnerService {
             tokens_count: tokenPool.tokens.length,
             wallets_count: new Set(tokenPool.tokens.map((token) => token.owner))
               .size,
+            contract: tokenPool.contract,
+            consolidate_block_no: tokenPool.consolidateBlockNo,
+            block_no: tokenPool.blockNo,
           })),
           { connection },
         ),
@@ -246,6 +249,9 @@ export class RunnerService {
                   wallets_count: new Set(
                     item.tokens.map((token) => token.owner),
                   ).size,
+                  contract: item.contract,
+                  consolidate_block_no: item.consolidateBlockNo,
+                  block_no: item.blockNo,
                 }),
               ),
             ),
