@@ -32,7 +32,7 @@ export const handler: Handler = async (event: any, context: Context) => {
     const result = await service.start(id);
     if (result.continue) {
       const downloadScheduler = nestApp.get(TokenPoolAsyncDownloader);
-      downloadScheduler.start({
+      await downloadScheduler.start({
         contract: result.entity.contract,
         tokenIds: result.entity.token_ids,
         tokenPoolId: result.entity.token_pool_id,

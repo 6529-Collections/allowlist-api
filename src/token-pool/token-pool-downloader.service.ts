@@ -271,6 +271,7 @@ export class TokenPoolDownloaderService {
         });
         await con.commit();
         this.logger.log(`Finished tokenpool download with id ${tokenPoolId}.`);
+        return { continue: false, entity };
       } catch (e) {
         await con.rollback();
         throw e;
