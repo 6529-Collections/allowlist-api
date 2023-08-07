@@ -62,7 +62,7 @@ export class TokenPoolTokenRepository {
       `,
       [tokenPools],
     );
-    if (!tokens?.length) return null;
+    if (!tokens?.length) return [];
     return tokens;
   }
 
