@@ -118,7 +118,7 @@ export class TokenPoolDownloaderService {
     this.logger.log(`Batch type latest block is ${batchTypeLatestBlock}`);
 
     if (doableThroughAlchemy) {
-      await this.runOperationsAndFinishUp(entity, tokenPoolId);
+      return this.runOperationsAndFinishUp(entity, tokenPoolId);
     } else {
       const schema =
         await this.allowlistCreator.etherscanService.getContractSchema({

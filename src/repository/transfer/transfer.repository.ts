@@ -102,7 +102,10 @@ export class TransferRepository implements TransfersStorage {
     const connection = await this.db.getConnection();
     try {
       await connection.beginTransaction();
+      let i = 0;
+      let type = '';
       for (const entity of entities) {
+        i++;
         await this.db.none(
           `INSERT INTO transfer (transaction_hash, amount, block_number, contract, from_party, to_party,
                                            log_index, timestamp, token_id, transaction_index, transfer_type)
@@ -123,7 +126,13 @@ export class TransferRepository implements TransfersStorage {
           ],
           { connection },
         );
+        type = entity.transfer_type;
       }
+      console.log(
+        `saved ${i} ${type} type transfers. largest block no: ${
+          entities[entities.length - 1].block_number
+        }`,
+      );
       await connection.commit();
     } catch (e) {
       await connection.rollback();
