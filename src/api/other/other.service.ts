@@ -8,7 +8,7 @@ import {
 } from '@6529-collections/allowlist-lib/utils/allowlist-operation-code.utils';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OperationDescriptionsResponseApiModel } from './model/operation-descriptions-response-api.model';
-import { AlchemyApiService } from '../../alchemy-api/alchemy-api.module.service';
+import { AlchemyApiService } from '../../alchemy-api/alchemy-api.service';
 import { SearchContractMetadataResponseApiModel } from './model/search-contract-metadata-response-api.model';
 import { ReservoirApiService } from '../../reservoir-api/reservoir-api.service';
 import { ReservoirCollection } from '../../reservoir-api/reservoir-api.types';

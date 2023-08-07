@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Alchemy, Network } from 'alchemy-sdk';
-import { AlchemyApiService } from './alchemy-api.module.service';
+import { AlchemyApiService } from './alchemy-api.service';
 
 @Module({
   imports: [],
