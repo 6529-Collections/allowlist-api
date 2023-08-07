@@ -14,12 +14,15 @@ import { ReservoirApiService } from '../../reservoir-api/reservoir-api.service';
 import { ReservoirCollection } from '../../reservoir-api/reservoir-api.types';
 import { formatNumberRange } from '../../app.utils';
 import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
+import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
+import { SeizeApiService } from '../../seize-api/seize-api.service';
 
 @Injectable()
 export class OtherService {
   constructor(
     private readonly alchemyApiService: AlchemyApiService,
     private readonly reservoirApiService: ReservoirApiService,
+    private readonly seizeApiService: SeizeApiService,
   ) {}
 
   getOperationDescriptions(): OperationDescriptionsResponseApiModel[] {
@@ -118,7 +121,6 @@ export class OtherService {
   async getContractMetadata(
     contract: string,
   ): Promise<SearchContractMetadataResponseApiModel | null> {
-
     const results =
       await this.reservoirApiService.getContractsMetadataByAddress(contract);
     if (results.collections?.length) {
@@ -145,5 +147,13 @@ export class OtherService {
     return {
       tokenIds: tokenIds.length ? formatNumberRange(tokenIds) : '',
     };
+  }
+
+  async getMemesSeasons(): Promise<MemesSeasonResponseApiModel[]> {
+    const seasons = await this.seizeApiService.getMemesSeasons();
+    return seasons.map((season) => ({
+      season: season.season,
+      tokenIds: formatNumberRange(season.token_ids.split(',')),
+    }));
   }
 }

@@ -10,7 +10,7 @@ export class TokenPoolDownloadRepository {
 
   async save(entity: TokenPoolDownloadEntity) {
     await this.db.none(
-      `insert into token_pool_download (allowlist_id, token_pool_id, contract, token_ids, block_no, status, consolidate_wallets) values (?, ?, ?, ?, ?, ?, ?)`,
+      `insert into token_pool_download (allowlist_id, token_pool_id, contract, token_ids, block_no, status, consolidate_block_no) values (?, ?, ?, ?, ?, ?, ?)`,
       [
         entity.allowlist_id,
         entity.token_pool_id,
@@ -18,7 +18,7 @@ export class TokenPoolDownloadRepository {
         entity.token_ids || null,
         entity.block_no,
         entity.status,
-        entity.consolidate_wallets,
+        entity.consolidate_block_no,
       ],
     );
   }
@@ -28,7 +28,7 @@ export class TokenPoolDownloadRepository {
     options?: { connection?: mariadb.Connection },
   ): Promise<TokenPoolDownloadEntity | null> {
     const entity = await this.db.one<TokenPoolDownloadEntity>(
-      `select contract, token_ids, token_pool_id, allowlist_id, block_no, status, consolidate_wallets
+      `select contract, token_ids, token_pool_id, allowlist_id, block_no, status, consolidate_block_no
              from token_pool_download
              where token_pool_download.token_pool_id = ?
                and token_pool_download.status = ? for update skip locked;`,
@@ -77,7 +77,7 @@ export class TokenPoolDownloadRepository {
     allowlistId: string,
   ): Promise<TokenPoolDownloadEntity[]> {
     return this.db.many<TokenPoolDownloadEntity>(
-      `select contract, token_ids, token_pool_id, allowlist_id, block_no, status, consolidate_wallets
+      `select contract, token_ids, token_pool_id, allowlist_id, block_no, status, consolidate_block_no
              from token_pool_download
              where token_pool_download.allowlist_id = ?`,
       [allowlistId],

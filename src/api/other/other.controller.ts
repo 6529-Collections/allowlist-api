@@ -5,6 +5,7 @@ import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { SearchContractMetadataResponseApiModel } from './model/search-contract-metadata-response-api.model';
 import { SearchContractMetadataRequestApiModel } from './model/search-contract-metadata-request-api.model';
 import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
+import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
 
 @Controller('other')
 export class OtherController {
@@ -87,6 +88,18 @@ export class OtherController {
     SearchContractMetadataResponseApiModel[]
   > {
     return await this.otherService.getMemesCollections();
+  }
+
+  @ApiOperation({
+    summary: 'Get memes seasons',
+  })
+  @ApiOkResponse({
+    type: MemesSeasonResponseApiModel,
+    isArray: true,
+  })
+  @Get('memes-seasons')
+  async getMemesSeasons(): Promise<MemesSeasonResponseApiModel[]> {
+    return await this.otherService.getMemesSeasons();
   }
 
   @ApiOperation({

@@ -31,9 +31,7 @@ export class TokenPoolTokenRepository {
     }
   }
 
-  async getTokenPoolTokens(
-    tokenPoolId: string,
-  ): Promise<TokenOwnership[] | null> {
+  async getTokenPoolTokens(tokenPoolId: string): Promise<TokenOwnership[]> {
     const tokens = await this.db.many<TokenPoolTokenEntity>(
       `
       SELECT id, contract, token_id, amount, wallet, token_pool_id, allowlist_id
@@ -42,7 +40,7 @@ export class TokenPoolTokenRepository {
       `,
       [tokenPoolId],
     );
-    if (!tokens?.length) return null;
+    if (!tokens?.length) return [];
     return tokens.flatMap<TokenOwnership>((t) =>
       Array.from({ length: t.amount }, () => ({
         id: t.token_id,

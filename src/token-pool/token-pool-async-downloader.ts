@@ -17,14 +17,14 @@ export class TokenPoolAsyncDownloader {
     tokenPoolId,
     allowlistId,
     blockNo,
-    consolidateWallets,
+    consolidateBlockNo,
   }: {
     readonly contract: string;
     readonly tokenIds?: string;
     readonly tokenPoolId: string;
     readonly allowlistId: string;
     readonly blockNo: number;
-    readonly consolidateWallets: boolean;
+    readonly consolidateBlockNo: number | null;
   }) {
     await this.tokenPoolDownloaderService.prepare({
       contract,
@@ -32,7 +32,7 @@ export class TokenPoolAsyncDownloader {
       tokenPoolId,
       allowlistId,
       blockNo,
-      consolidateWallets,
+      consolidateBlockNo,
     });
     const snsTopicArn = process.env.SNS_TOKEN_POOL_DOWNLOADER_TOPIC_ARN;
     if (snsTopicArn) {

@@ -6,6 +6,7 @@ import { PhaseComponentWinnerRepository } from '../../repository/phase-component
 import { TokenPoolTokenRepository } from '../../repository/token-pool-token/token-pool-token.repository';
 import { TokenPoolDownloadTokenPoolUniqueWalletsCountRequestApiModel } from './model/token-pool-download-token-pool-unique-wallets-count-request-api.model';
 import { Pool } from '@6529-collections/allowlist-lib/app-types';
+import { TokenPoolDownloadTokenResponseApiModel } from './model/token-pool-download-token-response-api.model';
 
 @Injectable()
 export class TokenPoolDownloadService {
@@ -95,7 +96,23 @@ export class TokenPoolDownloadService {
       allowlistId: entity.allowlist_id,
       blockNo: entity.block_no,
       status: entity.status,
-      consolidateWallets: !!entity.consolidate_wallets,
+      consolidateBlockNo: entity.consolidate_block_no,
     };
+  }
+
+  async getTokenPoolTokens({
+    tokenPoolId,
+  }: {
+    tokenPoolId: string;
+  }): Promise<TokenPoolDownloadTokenResponseApiModel[]> {
+    const tokens = await this.tokenPoolTokenRepository.getTokenPoolsTokens([
+      tokenPoolId,
+    ]);
+    return tokens.map((token) => ({
+      contract: token.contract,
+      tokenId: token.token_id,
+      amount: token.amount,
+      wallet: token.wallet,
+    }));
   }
 }

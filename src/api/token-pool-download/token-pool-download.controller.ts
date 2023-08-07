@@ -3,7 +3,7 @@ import { TokenPoolDownloadService } from './token-pool-download.service';
 import { TokenPoolDownloadResponseApiModel } from './model/token-pool-download-response-api.model';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { TokenPoolDownloadTokenPoolUniqueWalletsCountRequestApiModel } from './model/token-pool-download-token-pool-unique-wallets-count-request-api.model';
-import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
+import { TokenPoolDownloadTokenResponseApiModel } from './model/token-pool-download-token-response-api.model';
 
 @Controller('/allowlists/:allowlistId/token-pool-downloads')
 export class TokenPoolDownloadController {
@@ -41,6 +41,23 @@ export class TokenPoolDownloadController {
     return await this.tokenPoolDownloadService.getTokenPoolUniqueWalletsCount({
       tokenPoolId,
       params: request,
+    });
+  }
+
+  @ApiOperation({
+    summary: 'Get token pool tokens',
+  })
+  @ApiOkResponse({
+    type: TokenPoolDownloadTokenResponseApiModel,
+    isArray: true,
+  })
+  @Get('token-pool/:tokenPoolId/tokens')
+  async getTokenPoolTokens(
+    @Param('allowlistId') allowlistId: string,
+    @Param('tokenPoolId') tokenPoolId: string,
+  ): Promise<TokenPoolDownloadTokenResponseApiModel[]> {
+    return await this.tokenPoolDownloadService.getTokenPoolTokens({
+      tokenPoolId,
     });
   }
 }

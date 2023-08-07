@@ -33,7 +33,7 @@ export class TokenPoolDownloadResponseApiModel {
   readonly status: TokenPoolDownloadStatus;
 
   @ApiProperty({
-    description: 'Consolidate wallets.',
+    description: 'Block number of the token pool consolidation.',
   })
-  readonly consolidateWallets: boolean;
+  readonly consolidateBlockNo: number | null;
 }
