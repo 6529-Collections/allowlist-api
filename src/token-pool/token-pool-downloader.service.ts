@@ -120,63 +120,64 @@ export class TokenPoolDownloaderService {
     if (doableThroughAlchemy) {
       return this.runOperationsAndFinishUp(entity, tokenPoolId);
     } else {
-      const schema =
-        await this.allowlistCreator.etherscanService.getContractSchema({
-          contractAddress: entity.contract,
-        });
-      switch (schema) {
-        case ContractSchema.ERC721:
-          return this.doTransferType(
-            entity,
-            schema,
-            singleTypeLatestBlock,
-            'single',
-          ).then((job) => {
-            if (job.continue) {
-              return job;
-            }
-            return this.runOperationsAndFinishUp(entity, tokenPoolId);
-          });
-        case ContractSchema.ERC721Old:
-          return this.doTransferType(
-            entity,
-            schema,
-            singleTypeLatestBlock,
-            'single',
-          ).then((job) => {
-            if (job.continue) {
-              return job;
-            }
-            return this.runOperationsAndFinishUp(entity, tokenPoolId);
-          });
-        case ContractSchema.ERC1155:
-          return this.doTransferType(
-            entity,
-            schema,
-            batchTypeLatestBlock,
-            'batch',
-          )
-            .then((job) => {
-              if (job.continue) {
-                return job;
-              }
-              return this.doTransferType(
-                entity,
-                schema,
-                singleTypeLatestBlock,
-                'single',
-              );
-            })
-            .then((job) => {
-              if (job.continue) {
-                return job;
-              }
-              return this.runOperationsAndFinishUp(entity, tokenPoolId);
-            });
-        default:
-          assertUnreachable(schema);
-          break;
-      }
+      throw new Error('Not implemented');
+      // const schema =
+      //   await this.allowlistCreator.etherscanService.getContractSchema({
+      //     contractAddress: entity.contract,
+      //   });
+      // switch (schema) {
+      //   case ContractSchema.ERC721:
+      //     return this.doTransferType(
+      //       entity,
+      //       schema,
+      //       singleTypeLatestBlock,
+      //       'single',
+      //     ).then((job) => {
+      //       if (job.continue) {
+      //         return job;
+      //       }
+      //       return this.runOperationsAndFinishUp(entity, tokenPoolId);
+      //     });
+      //   case ContractSchema.ERC721Old:
+      //     return this.doTransferType(
+      //       entity,
+      //       schema,
+      //       singleTypeLatestBlock,
+      //       'single',
+      //     ).then((job) => {
+      //       if (job.continue) {
+      //         return job;
+      //       }
+      //       return this.runOperationsAndFinishUp(entity, tokenPoolId);
+      //     });
+      //   case ContractSchema.ERC1155:
+      //     return this.doTransferType(
+      //       entity,
+      //       schema,
+      //       batchTypeLatestBlock,
+      //       'batch',
+      //     )
+      //       .then((job) => {
+      //         if (job.continue) {
+      //           return job;
+      //         }
+      //         return this.doTransferType(
+      //           entity,
+      //           schema,
+      //           singleTypeLatestBlock,
+      //           'single',
+      //         );
+      //       })
+      //       .then((job) => {
+      //         if (job.continue) {
+      //           return job;
+      //         }
+      //         return this.runOperationsAndFinishUp(entity, tokenPoolId);
+      //       });
+      //   default:
+      //     assertUnreachable(schema);
+      //     break;
+      // }
     }
   }
 

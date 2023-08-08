@@ -47,7 +47,7 @@ export class TokenPoolAsyncDownloader {
       this.tokenPoolDownloaderService
         .start(tokenPoolId)
         .then(async (result) => {
-          if (result.continue) {
+          if (result?.continue) {
             return await this.start({
               contract,
               tokenIds,
