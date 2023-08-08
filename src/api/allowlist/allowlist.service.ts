@@ -155,15 +155,25 @@ export class AllowlistService {
     if (!operations.length) {
       throw new BadRequestException('Operations are empty');
     }
-    const haveCreateTokenPoolOperation = operations.some(
-      (o) => o.code === AllowlistOperationCode.CREATE_TOKEN_POOL,
+
+    const { createTokenPoolOps, allowlistOperations } = operations.reduce<{
+      createTokenPoolOps: AllowlistOperation[];
+      allowlistOperations: AllowlistOperation[];
+    }>(
+      (acc, o) => {
+        if (o.code === AllowlistOperationCode.CREATE_TOKEN_POOL) {
+          acc.createTokenPoolOps.push(o);
+        } else {
+          acc.allowlistOperations.push(o);
+        }
+        return acc;
+      },
+      { createTokenPoolOps: [], allowlistOperations: [] },
     );
 
-    if (haveCreateTokenPoolOperation) {
-      throw new BadRequestException(
-        'CREATE_TOKEN_POOL operation is not allowed, please contact support',
-      );
-    }
+    const createTokenPoolOpsMap = new Map<string, AllowlistOperation>(
+      createTokenPoolOps.map((o) => [o.params.id, o]),
+    );
     try {
       const allowlist = this.allowlistCreator.createAllowlistState();
       this.allowlistCreator.executeOperation({
@@ -189,7 +199,7 @@ export class AllowlistService {
       });
 
       const phaseIds: Set<string> = new Set<string>(
-        operations
+        allowlistOperations
           .filter((o) => o.code === AllowlistOperationCode.ADD_COMPONENT)
           .map((o) => o.params.phaseId),
       );
@@ -207,7 +217,7 @@ export class AllowlistService {
       }
 
       const addItemTokenPoolIds = new Set<string>(
-        operations
+        allowlistOperations
           .filter(
             (o) =>
               o.code === AllowlistOperationCode.ADD_ITEM &&
@@ -217,7 +227,7 @@ export class AllowlistService {
       );
 
       const excludeTokenPoolIds = new Set(
-        operations.flatMap((o) => {
+        allowlistOperations.flatMap((o) => {
           if (
             o.code ===
             AllowlistOperationCode.ITEM_REMOVE_WALLETS_FROM_CERTAIN_TOKEN_POOLS
@@ -235,7 +245,7 @@ export class AllowlistService {
       );
 
       const componentWinnersComponentIds = new Set<string>(
-        operations
+        allowlistOperations
           .filter(
             (o) =>
               o.code ===
@@ -263,8 +273,11 @@ export class AllowlistService {
             description: 'test',
             tokens: [],
             contract: token.contract,
-            blockNo: null,
-            consolidateBlockNo: null,
+            blockNo:
+              createTokenPoolOpsMap.get(token.token_pool_id)?.params.blockNo ??
+              null,
+            consolidateBlockNo: createTokenPoolOpsMap.get(token.token_pool_id)
+              ?.params.consolidateBlockNo,
           };
         }
         acc[token.token_pool_id].tokens.push(
@@ -314,7 +327,7 @@ export class AllowlistService {
         allowlist.phases[testPhaseId].components[phaseComponentId] = component;
       }
 
-      for (const operation of operations) {
+      for (const operation of allowlistOperations) {
         this.allowlistCreator.executeOperation({
           code: operation.code,
           params: operation.params,
