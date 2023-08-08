@@ -30,7 +30,7 @@ export const handler: Handler = async (event: any, context: Context) => {
       throw new Error('No id provided');
     }
     const result = await service.start(id);
-    if (result.continue) {
+    if (result?.continue) {
       const downloadScheduler = nestApp.get(TokenPoolAsyncDownloader);
       await downloadScheduler.start({
         contract: result.entity.contract,

@@ -86,7 +86,7 @@ export class TokenPoolDownloaderService {
       this.logger.error(
         `Nothing to claim. Claimable tokenpool download with id ${tokenPoolId} not found`,
       );
-      return;
+      return { continue: false, entity: null };
     }
     this.logger.log(
       `Claimed tokenpool download with id ${tokenPoolId}. Starting...`,
