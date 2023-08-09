@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import SnsService from '../sns/sns.service';
 import { TokenPoolDownloaderService } from './token-pool-downloader.service';
+import { TokenPoolDownloaderParams } from './token-pool.types';
 
 @Injectable()
 export class TokenPoolAsyncDownloader {
@@ -11,21 +12,16 @@ export class TokenPoolAsyncDownloader {
     private readonly snsService: SnsService,
   ) {}
 
-  async start({
-    contract,
-    tokenIds,
-    tokenPoolId,
-    allowlistId,
-    blockNo,
-    consolidateBlockNo,
-  }: {
-    readonly contract: string;
-    readonly tokenIds?: string;
-    readonly tokenPoolId: string;
-    readonly allowlistId: string;
-    readonly blockNo: number;
-    readonly consolidateBlockNo: number | null;
-  }) {
+  async start({ config, state }: TokenPoolDownloaderParams) {
+    const {
+      contract,
+      tokenIds,
+      tokenPoolId,
+      allowlistId,
+      blockNo,
+      consolidateBlockNo,
+    } = config;
+
     await this.tokenPoolDownloaderService.prepare({
       contract,
       tokenIds,
@@ -37,7 +33,7 @@ export class TokenPoolAsyncDownloader {
     const snsTopicArn = process.env.SNS_TOKEN_POOL_DOWNLOADER_TOPIC_ARN;
     if (snsTopicArn) {
       await this.snsService.publishMessage({
-        payload: { tokenPoolId: tokenPoolId },
+        payload: { config, state },
         topicArn: snsTopicArn,
       });
     } else {
@@ -45,17 +41,10 @@ export class TokenPoolAsyncDownloader {
         `Starting to download tokenpool ${tokenPoolId} in the same process`,
       );
       this.tokenPoolDownloaderService
-        .start(tokenPoolId)
+        .start({ config, state })
         .then(async (result) => {
           if (result?.continue) {
-            return await this.start({
-              contract,
-              tokenIds,
-              tokenPoolId,
-              allowlistId,
-              blockNo,
-              consolidateBlockNo,
-            });
+            return await this.start({ config, state });
           }
           return result;
         });

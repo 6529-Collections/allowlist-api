@@ -19,6 +19,10 @@ import { ContractSchema } from '@6529-collections/allowlist-lib/app-types';
 import { Time } from '../time';
 import { assertUnreachable } from '../app.utils';
 import { Alchemy } from 'alchemy-sdk';
+import {
+  TokenPoolDownloaderParams,
+  TokenPoolDownloaderParamsState,
+} from './token-pool.types';
 
 @Injectable()
 export class TokenPoolDownloaderService {
@@ -77,17 +81,20 @@ export class TokenPoolDownloaderService {
     }
   }
 
-  async start(tokenPoolId: string): Promise<{
+  async start({ config, state }: TokenPoolDownloaderParams): Promise<{
     continue: boolean;
     entity: TokenPoolDownloadEntity;
+    state: TokenPoolDownloaderParamsState;
   }> {
+    const { tokenPoolId } = config;
     const entity = await this.claimEntity(tokenPoolId);
     if (!entity) {
       this.logger.error(
         `Nothing to claim. Claimable tokenpool download with id ${tokenPoolId} not found`,
       );
-      return { continue: false, entity: null };
+      return { continue: false, entity: null, state };
     }
+    const { startingBlocks } = state;
     this.logger.log(
       `Claimed tokenpool download with id ${tokenPoolId}. Starting...`,
     );
@@ -115,10 +122,33 @@ export class TokenPoolDownloaderService {
         contract: entity.contract,
         transferType: 'batch',
       });
+
+    if (
+      startingBlocks.length &&
+      startingBlocks.at(-1).single === singleTypeLatestBlock &&
+      startingBlocks.at(-1).batch === batchTypeLatestBlock
+    ) {
+      this.logger.log(`Already processed this block. Erroring...`);
+      await this.tokenPoolDownloadRepository.changeStatusToError({
+        tokenPoolId,
+      });
+      return { continue: false, entity, state };
+    }
+
+    this.logger.log(`Old single type block: ${startingBlocks.at(-1).single}`);
+    this.logger.log(`New single type block: ${singleTypeLatestBlock}`);
+    this.logger.log(`Old batch type block: ${startingBlocks.at(-1).batch}`);
+    this.logger.log(`New batch type block: ${batchTypeLatestBlock}`);
+
+    startingBlocks.push({
+      single: singleTypeLatestBlock,
+      batch: batchTypeLatestBlock,
+    });
+
     this.logger.log(`Batch type latest block is ${batchTypeLatestBlock}`);
 
     if (doableThroughAlchemy) {
-      return this.runOperationsAndFinishUp(entity, tokenPoolId);
+      return this.runOperationsAndFinishUp({ entity, state });
     } else {
       const schema =
         await this.allowlistCreator.etherscanService.getContractSchema({
@@ -126,52 +156,56 @@ export class TokenPoolDownloaderService {
         });
       switch (schema) {
         case ContractSchema.ERC721:
-          return this.doTransferType(
+          return this.doTransferType({
             entity,
             schema,
-            singleTypeLatestBlock,
-            'single',
-          ).then((job) => {
+            latestBlockNo: singleTypeLatestBlock,
+            transferType: 'single',
+            state,
+          }).then((job) => {
             if (job.continue) {
               return job;
             }
-            return this.runOperationsAndFinishUp(entity, tokenPoolId);
+            return this.runOperationsAndFinishUp({ entity, state });
           });
         case ContractSchema.ERC721Old:
-          return this.doTransferType(
+          return this.doTransferType({
             entity,
             schema,
-            singleTypeLatestBlock,
-            'single',
-          ).then((job) => {
+            latestBlockNo: singleTypeLatestBlock,
+            transferType: 'single',
+            state,
+          }).then((job) => {
             if (job.continue) {
               return job;
             }
-            return this.runOperationsAndFinishUp(entity, tokenPoolId);
+            return this.runOperationsAndFinishUp({ entity, state });
           });
         case ContractSchema.ERC1155:
-          return this.doTransferType(
+          return this.doTransferType({
             entity,
             schema,
-            batchTypeLatestBlock,
-            'batch',
-          )
+            latestBlockNo: batchTypeLatestBlock,
+            transferType: 'batch',
+            state,
+          })
             .then((job) => {
               if (job.continue) {
                 return job;
               }
-              return this.doTransferType(
+              return this.doTransferType({
                 entity,
                 schema,
-                singleTypeLatestBlock,
-                'single',
-              );
+                latestBlockNo: singleTypeLatestBlock,
+                transferType: 'single',
+                state,
+              });
             })
             .then((job) => {
               if (job.continue) {
                 return job;
               }
-              return this.runOperationsAndFinishUp(entity, tokenPoolId);
+              return this.runOperationsAndFinishUp({ entity, state });
             });
         default:
           assertUnreachable(schema);
@@ -180,12 +214,23 @@ export class TokenPoolDownloaderService {
     }
   }
 
-  private async doTransferType(
-    entity: TokenPoolDownloadEntity,
-    schema: ContractSchema,
-    latestBlockNo: number,
-    transferType: 'single' | 'batch',
-  ) {
+  private async doTransferType({
+    entity,
+    schema,
+    latestBlockNo,
+    transferType,
+    state,
+  }: {
+    entity: TokenPoolDownloadEntity;
+    schema: ContractSchema;
+    latestBlockNo: number;
+    transferType: 'single' | 'batch';
+    state: TokenPoolDownloaderParamsState;
+  }): Promise<{
+    continue: boolean;
+    entity: TokenPoolDownloadEntity;
+    state: TokenPoolDownloaderParamsState;
+  }> {
     const start = Time.now();
     for await (const transfers of this.allowlistCreator.etherscanService.getTransfers(
       {
@@ -204,20 +249,28 @@ export class TokenPoolDownloaderService {
         this.logger.log(
           `Exceeded the 5 minute timeout. Marking as in progress and rescheduling...`,
         );
-        return { continue: true, entity };
+        return { continue: true, entity, state };
       }
     }
-    return { continue: false, entity };
+    return { continue: false, entity, state };
   }
 
   private isTimeUp(start: Time) {
     return start.diffFromNow().gt(Time.minutes(5));
   }
 
-  private async runOperationsAndFinishUp(
-    entity: TokenPoolDownloadEntity,
-    tokenPoolId: string,
-  ): Promise<{ continue: boolean; entity: TokenPoolDownloadEntity }> {
+  private async runOperationsAndFinishUp({
+    entity,
+    state,
+  }: {
+    entity: TokenPoolDownloadEntity;
+    state: TokenPoolDownloaderParamsState;
+  }): Promise<{
+    continue: boolean;
+    entity: TokenPoolDownloadEntity;
+    state: TokenPoolDownloaderParamsState;
+  }> {
+    const { token_pool_id: tokenPoolId } = entity;
     const mockAllowlistId = randomUUID();
     const mockPoolId = randomUUID();
     const allowlistOpParams: DescribableEntity = {
@@ -274,7 +327,7 @@ export class TokenPoolDownloaderService {
         });
         await con.commit();
         this.logger.log(`Finished tokenpool download with id ${tokenPoolId}.`);
-        return { continue: false, entity };
+        return { continue: false, entity, state };
       } catch (e) {
         await con.rollback();
         throw e;
@@ -287,7 +340,7 @@ export class TokenPoolDownloaderService {
         tokenPoolId,
       });
     }
-    return { continue: false, entity };
+    return { continue: false, entity, state };
   }
 
   private async persistTokenOwnerships({

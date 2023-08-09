@@ -112,12 +112,18 @@ export class AllowlistOperationService {
 
       if (code === AllowlistOperationCode.CREATE_TOKEN_POOL) {
         await this.tokenPoolAsyncDownloader.start({
-          tokenPoolId: params.id,
-          tokenIds: params.tokenIds,
-          contract: params.contract,
-          blockNo: params.blockNo,
-          consolidateBlockNo: params.consolidateBlockNo,
-          allowlistId,
+          config: {
+            tokenPoolId: params.id,
+            tokenIds: params.tokenIds,
+            contract: params.contract,
+            blockNo: params.blockNo,
+            consolidateBlockNo: params.consolidateBlockNo,
+            allowlistId,
+          },
+          state: {
+            runsCount: 0,
+            startingBlocks: [],
+          },
         });
       }
 
