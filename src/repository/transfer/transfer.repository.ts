@@ -146,14 +146,16 @@ export class TransferRepository implements TransfersStorage {
   }
 
   async deleteOsTransfers() {
-    this.db.none(
-      `delete from transfer where contract = "0x495f947276749ce646f68ac8c248420045cb7b5e"`,
-    );
+    this.db.none(`delete from transfer where contract = ?`, [
+      '0x495f947276749ce646f68ac8c248420045cb7b5e',
+    ]);
   }
 
   async countOS() {
-    return this.db.one<{ count: number }>(
-      `select count(*) as count from transfer where contract = "0x495f947276749ce646f68ac8c248420045cb7b5e"`,
+    const { count } = await this.db.one<{ count: bigint }>(
+      `select count(*) as count from transfer where contract = ?`,
+      ['0x495f947276749ce646f68ac8c248420045cb7b5e'],
     );
+    return { count: bigInt2Number(count) };
   }
 }
