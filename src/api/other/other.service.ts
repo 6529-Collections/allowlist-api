@@ -162,4 +162,8 @@ export class OtherService {
   async temp() {
     await this.transferRepo.deleteOsTransfers();
   }
+
+  async temp2() {
+    return await this.transferRepo.countOS();
+  }
 }

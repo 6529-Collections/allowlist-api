@@ -116,9 +116,15 @@ export class OtherController {
     return await this.otherService.getContractTokenIdsAsString(contractId);
   }
 
-  @Post('temp')
+  @Get('temp')
   async temp(): Promise<{ done: true }> {
     await this.otherService.temp();
+    return { done: true };
+  }
+
+  @Get('temp2')
+  async temp2(): Promise<{ done: true }> {
+    await this.otherService.temp2();
     return { done: true };
   }
 }
