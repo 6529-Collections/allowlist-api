@@ -16,6 +16,7 @@ import { formatNumberRange } from '../../app.utils';
 import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
 import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
 import { SeizeApiService } from '../../seize-api/seize-api.service';
+import { TransferRepository } from '../../repository/transfer/transfer.repository';
 
 @Injectable()
 export class OtherService {
@@ -23,6 +24,7 @@ export class OtherService {
     private readonly alchemyApiService: AlchemyApiService,
     private readonly reservoirApiService: ReservoirApiService,
     private readonly seizeApiService: SeizeApiService,
+    private readonly transferRepo: TransferRepository,
   ) {}
 
   getOperationDescriptions(): OperationDescriptionsResponseApiModel[] {
@@ -155,5 +157,9 @@ export class OtherService {
       season: season.season,
       tokenIds: formatNumberRange(season.token_ids.split(',')),
     }));
+  }
+
+  async temp() {
+    await this.transferRepo.deleteOsTransfers();
   }
 }

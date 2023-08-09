@@ -144,4 +144,10 @@ export class TransferRepository implements TransfersStorage {
       await connection.end();
     }
   }
+
+  async deleteOsTransfers() {
+    await this.db.none(
+      `delete from transfer where contract = "0x495f947276749ce646f68ac8c248420045cb7b5e"`,
+    );
+  }
 }

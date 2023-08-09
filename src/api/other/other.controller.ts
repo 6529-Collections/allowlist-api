@@ -115,4 +115,10 @@ export class OtherController {
   ): Promise<ContractTokenIdsAsStringResponseApiModel> {
     return await this.otherService.getContractTokenIdsAsString(contractId);
   }
+
+  @Post('temp')
+  async temp(): Promise<{ done: true }> {
+    await this.otherService.temp();
+    return { done: true };
+  }
 }
