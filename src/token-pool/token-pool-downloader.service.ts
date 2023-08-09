@@ -122,11 +122,10 @@ export class TokenPoolDownloaderService {
         contract: entity.contract,
         transferType: 'batch',
       });
-
     if (
-      startingBlocks.length &&
-      startingBlocks.at(-1).single === singleTypeLatestBlock &&
-      startingBlocks.at(-1).batch === batchTypeLatestBlock
+      !!startingBlocks.length &&
+      startingBlocks.at(-1)?.single === singleTypeLatestBlock &&
+      startingBlocks.at(-1)?.batch === batchTypeLatestBlock
     ) {
       this.logger.log(`Already processed this block. Erroring...`);
       await this.tokenPoolDownloadRepository.changeStatusToError({
@@ -135,9 +134,9 @@ export class TokenPoolDownloaderService {
       return { continue: false, entity, state };
     }
 
-    this.logger.log(`Old single type block: ${startingBlocks.at(-1).single}`);
+    this.logger.log(`Old single type block: ${startingBlocks.at(-1)?.single}`);
     this.logger.log(`New single type block: ${singleTypeLatestBlock}`);
-    this.logger.log(`Old batch type block: ${startingBlocks.at(-1).batch}`);
+    this.logger.log(`Old batch type block: ${startingBlocks.at(-1)?.batch}`);
     this.logger.log(`New batch type block: ${batchTypeLatestBlock}`);
 
     startingBlocks.push({
