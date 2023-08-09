@@ -123,8 +123,7 @@ export class OtherController {
   }
 
   @Get('temp2')
-  async temp2(): Promise<{ done: true }> {
-    await this.otherService.temp2();
-    return { done: true };
+  async temp2(): Promise<{ count: number }> {
+    return await this.otherService.temp2();
   }
 }
