@@ -30,17 +30,17 @@ export const handler: Handler = async (event: any, context: Context) => {
       throw new Error('No id provided');
     }
     const result = await service.start(id);
-    if (result?.continue) {
-      const downloadScheduler = nestApp.get(TokenPoolAsyncDownloader);
-      await downloadScheduler.start({
-        contract: result.entity.contract,
-        tokenIds: result.entity.token_ids,
-        tokenPoolId: result.entity.token_pool_id,
-        allowlistId: result.entity.allowlist_id,
-        blockNo: result.entity.block_no,
-        consolidateBlockNo: result.entity.consolidate_block_no,
-      });
-    }
+    // if (result?.continue) {
+    //   const downloadScheduler = nestApp.get(TokenPoolAsyncDownloader);
+    //   await downloadScheduler.start({
+    //     contract: result.entity.contract,
+    //     tokenIds: result.entity.token_ids,
+    //     tokenPoolId: result.entity.token_pool_id,
+    //     allowlistId: result.entity.allowlist_id,
+    //     blockNo: result.entity.block_no,
+    //     consolidateBlockNo: result.entity.consolidate_block_no,
+    //   });
+    // }
     try {
       await nestApp.get(DB).close();
       await nestApp.close();
