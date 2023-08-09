@@ -85,6 +85,9 @@ export class TransferRepository implements TransfersStorage {
     contract: string,
     transfers: Transfer[],
   ): Promise<void> {
+    if (!transfers.length) {
+      return;
+    }
     const entities = transfers.map<TransferEntity>((t) => ({
       amount: BigInt(t.amount),
       block_number: t.blockNumber,
@@ -130,7 +133,7 @@ export class TransferRepository implements TransfersStorage {
       }
       console.log(
         `saved ${i} ${type} type transfers. largest block no: ${
-          entities[entities.length - 1].block_number
+          entities.at(-1)?.block_number
         }`,
       );
       await connection.commit();
