@@ -158,12 +158,4 @@ export class OtherService {
       tokenIds: formatNumberRange(season.token_ids.split(',')),
     }));
   }
-
-  async temp() {
-    await this.transferRepo.deleteOsTransfers();
-  }
-
-  async temp2() {
-    return await this.transferRepo.countOS();
-  }
 }
