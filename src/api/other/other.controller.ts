@@ -6,6 +6,7 @@ import { SearchContractMetadataResponseApiModel } from './model/search-contract-
 import { SearchContractMetadataRequestApiModel } from './model/search-contract-metadata-request-api.model';
 import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
 import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
+import { ResolveEnsResponseApiModel } from './model/resolve-ens-response-api.model';
 
 @Controller('other')
 export class OtherController {
@@ -116,4 +117,15 @@ export class OtherController {
     return await this.otherService.getContractTokenIdsAsString(contractId);
   }
 
+  @ApiOperation({
+    summary: 'Resolve ENS to address',
+  })
+  @ApiOkResponse({
+    type: ResolveEnsResponseApiModel,
+    isArray: true,
+  })
+  @Post('resolve-ens-to-address')
+  async resolveEnsToAddress(@Body() ens: string[]) {
+    return await this.otherService.resolveEnsToAddress(ens);
+  }
 }

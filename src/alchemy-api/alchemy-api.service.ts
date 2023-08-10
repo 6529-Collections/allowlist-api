@@ -13,9 +13,9 @@ export class AlchemyApiService {
     return await this.alchemy.core.getBlockNumber();
   }
 
-  public async resolveEnsToAddress(ens: string): Promise<string> {
+  public async resolveEnsToAddress(ens: string): Promise<string | null> {
     const address = await this.alchemy.core.resolveName(ens);
-    return address?.toLowerCase();
+    return address?.toLowerCase() ?? null;
   }
 
   public async resolveAddressToEns(address: string): Promise<string> {

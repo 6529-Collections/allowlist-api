@@ -17,6 +17,7 @@ import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token
 import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
 import { SeizeApiService } from '../../seize-api/seize-api.service';
 import { TransferRepository } from '../../repository/transfer/transfer.repository';
+import { ResolveEnsResponseApiModel } from './model/resolve-ens-response-api.model';
 
 @Injectable()
 export class OtherService {
@@ -157,5 +158,19 @@ export class OtherService {
       season: season.season,
       tokenIds: formatNumberRange(season.token_ids.split(',')),
     }));
+  }
+
+  async resolveEnsToAddress(
+    ens: string[],
+  ): Promise<ResolveEnsResponseApiModel[]> {
+    const results: ResolveEnsResponseApiModel[] = [];
+    for (const ensName of ens) {
+      const address = await this.alchemyApiService.resolveEnsToAddress(ensName);
+      results.push({
+        ens: ensName,
+        address,
+      });
+    }
+    return results;
   }
 }
