@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DB } from '../db';
 import * as mariadb from 'mariadb';
 import { AllowlistOperationEntity } from './allowlist-operation.entity';
+import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
 
 @Injectable()
 export class AllowlistOperationRepository {
@@ -181,5 +182,36 @@ export class AllowlistOperationRepository {
       options,
     );
     return model?.op_order || 0;
+  }
+
+  async getAllowlistOperationsByCode({
+    allowlistId,
+    code,
+    options,
+  }: {
+    allowlistId: string;
+    code: AllowlistOperationCode;
+    options?: { connection?: mariadb.Connection };
+  }): Promise<AllowlistOperationEntity[]> {
+    return this.db.many<AllowlistOperationEntity>(
+      `SELECT id, created_at, code, op_order, has_ran, allowlist_id, params
+             FROM allowlist_operation
+             WHERE allowlist_id = ?
+               AND code = ?
+       ORDER BY op_order`,
+      [allowlistId, code],
+      options,
+    );
+  }
+
+  async setOperationOrder(
+    { operationId, order }: { operationId: string; order: number },
+    options?: { connection?: mariadb.Connection },
+  ): Promise<void> {
+    await this.db.none(
+      `UPDATE allowlist_operation SET op_order = ? WHERE id = ?`,
+      [order, operationId],
+      options,
+    );
   }
 }

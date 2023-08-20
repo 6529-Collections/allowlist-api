@@ -12,6 +12,7 @@ import { bigInt2Number } from '../../app.utils';
 import { randomUUID } from 'crypto';
 import { DB } from '../../repository/db';
 import { TokenPoolAsyncDownloader } from '../../token-pool/token-pool-async-downloader';
+import * as mariadb from 'mariadb';
 
 @Injectable()
 export class AllowlistOperationService {
@@ -54,6 +55,58 @@ export class AllowlistOperationService {
         `Allowlist with ID ${allowlistId} has an active run`,
       );
     }
+  }
+
+  private async ensureLatestOperationIsMapToDelegatedWallets({
+    allowlistId,
+    options,
+  }: {
+    allowlistId: string;
+    options?: { connection?: mariadb.Connection };
+  }): Promise<void> {
+    const [operations, latestOperationCode] = await Promise.all([
+      this.allowlistOperationRepository.getAllowlistOperationsByCode({
+        allowlistId,
+        code: AllowlistOperationCode.MAP_RESULTS_TO_DELEGATED_WALLETS,
+        options,
+      }),
+      this.allowlistOperationRepository.getLatestOrderForAllowlist(
+        allowlistId,
+        options,
+      ),
+    ]);
+
+    if (!operations.length) {
+      return;
+    }
+
+    if (operations.length > 1) {
+      throw new BadRequestException(
+        `Allowlist with ID ${allowlistId} has more than one operation of code ${AllowlistOperationCode.MAP_RESULTS_TO_DELEGATED_WALLETS}`,
+      );
+    }
+
+    const operation = operations.at(0);
+    if (operation.op_order === latestOperationCode) {
+      return;
+    }
+
+    await Promise.all([
+      this.allowlistOperationRepository.decOrdersForAllowlistSinceOrder(
+        {
+          allowlistId,
+          sinceOrder: operation.op_order,
+        },
+        options,
+      ),
+      this.allowlistOperationRepository.setOperationOrder(
+        {
+          operationId: operation.id,
+          order: latestOperationCode,
+        },
+        options,
+      ),
+    ]);
   }
 
   async add({
@@ -126,6 +179,11 @@ export class AllowlistOperationService {
           },
         });
       }
+
+      await this.ensureLatestOperationIsMapToDelegatedWallets({
+        allowlistId,
+        options: { connection },
+      });
 
       return this.allowlistOperationEntityToApiModel(entity);
     } catch (e) {
