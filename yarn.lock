@@ -10,10 +10,10 @@
     d "1"
     es5-ext "^0.10.47"
 
-"@6529-collections/allowlist-lib@0.0.93":
-  version "0.0.93"
-  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.93/92a51a0b7f55c79661041fd03b5a3e69b3556f8a#92a51a0b7f55c79661041fd03b5a3e69b3556f8a"
-  integrity sha512-N8qBACS4Q7JG+keQQyCE1rd2APl+gcsgm2OD8VveOXNY8rqRaZCqodiWay2H3e+zCBNjvq4rCtTCj3i2LpPobg==
+"@6529-collections/allowlist-lib@0.0.94":
+  version "0.0.94"
+  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.94/45cd321c9222b8b6e7ca5d5455a5789192e7b18c#45cd321c9222b8b6e7ca5d5455a5789192e7b18c"
+  integrity sha512-teGfHTd/xpoxJB8GLHTxckn3f3w+HReBkq4jCcDxH79NAtYzzD3orC7d8sm+J8nKJJM/C3fwqw2/uTgZSlXaXQ==
   dependencies:
     alchemy-sdk "^2.9.2"
     axios "^1.4.0"

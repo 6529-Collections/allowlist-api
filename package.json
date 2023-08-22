@@ -24,7 +24,7 @@
     "new-endpoint": "node new-api-endpoint-generator-wrapper.js"
   },
   "dependencies": {
-    "@6529-collections/allowlist-lib": "0.0.93",
+    "@6529-collections/allowlist-lib": "0.0.94",
     "@aws-sdk/client-secrets-manager": "^3.334.0",
     "@aws-sdk/client-sns": "^3.335.0",
     "@nestjs/axios": "^3.0.0",
