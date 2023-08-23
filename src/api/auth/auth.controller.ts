@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   Inject,
   Post,
@@ -13,17 +12,14 @@ import { Nonce, VerifySignedNonceRequest } from './nonce';
 import { ethers } from 'ethers';
 import { randomUUID } from 'crypto';
 import { AUTH_CONFIG, AuthConfig } from './auth.config';
-import { roleToPrivileges } from './privileges';
 import { LoginResponse } from './login.response';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { EthereumWalletDataReaderService } from './ethereum-wallet-data-reader.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly ethereum: EthereumWalletDataReaderService,
     @Inject(AUTH_CONFIG) private readonly authConfig: AuthConfig,
   ) {}
 
@@ -60,17 +56,10 @@ export class AuthController {
       nonce,
       clientSignature,
     );
-    const walletData = await this.ethereum.getWalletData({
-      wallet: signingAddress,
-    });
-    if (!walletData) {
-      throw new ForbiddenException(`Wallet doesn't have access to this API`);
-    }
     const authToken = this.jwtService.sign(
       {
         id: randomUUID(),
         sub: signingAddress,
-        privileges: roleToPrivileges(walletData.role),
       },
       {
         secret: this.authConfig.authTokenSecret,
@@ -98,19 +87,6 @@ export class AuthController {
       console.error(e);
       throw new UnauthorizedException('Invalid client signature');
     }
-
-    await this.verifyTdh(signingAddress);
     return signingAddress;
-  }
-
-  async verifyTdh(signingAddress: string) {
-    const response = await fetch(
-      `https://api.seize.io/api/consolidated_owner_metrics/?wallet=${signingAddress}`,
-    ).then((res) => res.json());
-    const memesBalance = response.data?.at(0)?.memes_balance || 0;
-    const memesTdh = response.data?.at(0)?.memes_tdh || 0;
-    if (memesBalance < 1 || memesTdh < 1) {
-      throw new ForbiddenException(`Wallet doesn't have access to this API`);
-    }
   }
 }

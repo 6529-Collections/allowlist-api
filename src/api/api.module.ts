@@ -36,9 +36,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AccessTokenGuard } from './auth/access-token.guard';
 import { APP_GUARD } from '@nestjs/core';
-import { PrivilegeGuard } from './auth/privilege.guard';
 import { AccessTokenStrategy } from './auth/access.token.strategy';
-import { EthereumWalletDataReaderService } from './auth/ethereum-wallet-data-reader.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AUTH_CONFIG, AuthConfig } from './auth/auth.config';
 import { Time } from '../time';
@@ -66,10 +64,6 @@ import { TokenPoolDownloadController } from './token-pool-download/token-pool-do
       useClass: AccessTokenGuard,
     },
     {
-      provide: APP_GUARD,
-      useClass: PrivilegeGuard,
-    },
-    {
       provide: AUTH_CONFIG,
       useFactory: (configService: ConfigService): AuthConfig => ({
         authTokenSecret: configService.get('ALLOWLIST_AUTH_TOKEN_SECRET'),
@@ -85,7 +79,6 @@ import { TokenPoolDownloadController } from './token-pool-download/token-pool-do
       inject: [ConfigService],
     },
     AccessTokenStrategy,
-    EthereumWalletDataReaderService,
     AllowlistOperationService,
     AllowlistService,
     TransferPoolService,

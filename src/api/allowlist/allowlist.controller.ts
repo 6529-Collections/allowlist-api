@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Request,
+} from '@nestjs/common';
 import { AllowlistDescriptionRequestApiModel } from './model/allowlist-description-request-api.model';
 import {
   ApiCreatedResponse,
@@ -9,6 +17,7 @@ import {
 import { AllowlistService } from './allowlist.service';
 import { AllowlistDescriptionResponseApiModel } from './model/allowlist-description-response-api.model';
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
+import { PublicEndpoint } from '../auth/public-endpoint-decorator';
 
 @Controller('/allowlists')
 export class AllowlistController {
@@ -37,7 +46,10 @@ export class AllowlistController {
     isArray: true,
   })
   @Get()
-  async getAll(): Promise<AllowlistDescriptionResponseApiModel[]> {
+  async getAll(
+    @Request() req: { user?: { wallet?: string } },
+  ): Promise<AllowlistDescriptionResponseApiModel[]> {
+    console.log(req.user?.wallet);
     return await this.allowlistService.getAll();
   }
 
