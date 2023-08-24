@@ -1,0 +1,1 @@
+DROP TABLE allowlist_user;

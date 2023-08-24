@@ -24,6 +24,8 @@ import { Pool } from '@6529-collections/allowlist-lib/app-types';
 import { randomUUID } from 'crypto';
 import { PhaseComponentWinnerRepository } from '../../repository/phase-component-winner/phase-component-winner.repository';
 import { TokenPoolTokenRepository } from '../../repository/token-pool-token/token-pool-token.repository';
+import { AllowlistUserRepository } from '../../repository/allowlist-user/allowlist-user.repository';
+import { SeizeApiService } from '../../seize-api/seize-api.service';
 
 @Injectable()
 export class AllowlistService {
@@ -35,6 +37,8 @@ export class AllowlistService {
     private readonly runnerProxy: RunnerProxy,
     private readonly db: DB,
     private allowlistCreator: AllowlistCreator,
+    private readonly allowlistUserRepository: AllowlistUserRepository,
+    private readonly seizeApiService: SeizeApiService,
   ) {}
 
   private readonly logger = new Logger(AllowlistService.name);
@@ -59,19 +63,109 @@ export class AllowlistService {
     };
   }
 
-  async getAll(): Promise<AllowlistDescriptionResponseApiModel[]> {
-    const entities = await this.allowlistRepository.findAll();
+  async getAll({
+    wallet,
+  }: {
+    wallet: string;
+  }): Promise<AllowlistDescriptionResponseApiModel[]> {
+    const allowlistIds =
+      await this.allowlistUserRepository.getAllowlistIdsForWallet({ wallet });
+    if (!allowlistIds.length) {
+      return [];
+    }
+    const entities = await this.allowlistRepository.findByIds({
+      ids: allowlistIds,
+    });
     return entities.map(this.allowlistEntityToResponseModel);
   }
 
-  async create(
-    param: AllowlistDescriptionRequestApiModel,
-  ): Promise<AllowlistDescriptionResponseApiModel> {
-    const entity = await this.allowlistRepository.save({
-      ...param,
-      created_at: BigInt(Time.currentMillis()),
-    });
-    return this.allowlistEntityToResponseModel(entity);
+  async canWalletCreateAllowlist({
+    wallets,
+    tdh,
+  }: {
+    wallets: string[];
+    tdh: number;
+  }): Promise<boolean> {
+    if (tdh > +process.env.ALLOWLIST_MIN_TDH_REQUIRED_FOR_UNLIMITED_ALLOWLIST) {
+      return false;
+    }
+    const minCreatedAt = BigInt(
+      Time.currentMillis() -
+        +process.env.ALLOWLIST_TIME_WINDOW_MS_ALLOWLIST_CREATION,
+    );
+
+    const createdCount =
+      await this.allowlistUserRepository.createdAllowlistsCountAfterTime({
+        wallets,
+        createdAt: minCreatedAt,
+      });
+
+    if (
+      createdCount >=
+      +process.env.ALLOWLIST_LIMIT_BELOW_REQUESTED_TDH_IN_TIME_WINDOW
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private async getWalletConsolidationsAndTdh(
+    wallet: string,
+  ): Promise<{ wallets: string[]; tdh: number }> {
+    const consolidationsResponse =
+      await this.seizeApiService.getWalletConsolidatedMetrics(wallet);
+    if (!consolidationsResponse?.data?.at(0)?.wallets?.length) {
+      return { wallets: [wallet], tdh: 0 };
+    }
+    return {
+      wallets: consolidationsResponse.data
+        .at(0)
+        .wallets.map((wallet) => wallet.toLowerCase()),
+      tdh: consolidationsResponse.data.at(0).boosted_memes_tdh ?? 0,
+    };
+  }
+
+  async create({
+    input,
+    wallet,
+  }: {
+    input: AllowlistDescriptionRequestApiModel;
+    wallet: string;
+  }): Promise<AllowlistDescriptionResponseApiModel> {
+    const { wallets, tdh } = await this.getWalletConsolidationsAndTdh(wallet);
+    if (!(await this.canWalletCreateAllowlist({ wallets, tdh }))) {
+      throw new BadRequestException(
+        'You have reached your allowlists creation limit',
+      );
+    }
+    const connection = await this.db.getConnection();
+    try {
+      const createdAt = BigInt(Time.currentMillis());
+      await connection.beginTransaction();
+      const entity = await this.allowlistRepository.save({
+        request: {
+          ...input,
+          created_at: createdAt,
+        },
+        options: { connection },
+      });
+      await this.allowlistUserRepository.save({
+        entity: {
+          allowlist_id: entity.id,
+          user_wallet: wallet,
+          created_at: createdAt,
+        },
+        options: { connection },
+      });
+      await connection.commit();
+      return this.allowlistEntityToResponseModel(entity);
+    } catch (e) {
+      await connection.rollback();
+      throw e;
+    } finally {
+      await connection.end();
+    }
   }
 
   async get(

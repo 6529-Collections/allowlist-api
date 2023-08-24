@@ -9,7 +9,7 @@ import { DB } from '../db';
 export class AllowlistRepository {
   constructor(private readonly db: DB) {}
 
-  async findAll(): Promise<AllowlistEntity[]> {
+  async findByIds({ ids }: { ids: string[] }): Promise<AllowlistEntity[]> {
     return this.db.many<AllowlistEntity>(
       `select allowlist.*,
                     allowlist_run.status     as run_status,
@@ -17,17 +17,26 @@ export class AllowlistRepository {
                     allowlist_run.updated_at as run_updated_at,
                     allowlist_run.error_reason as error_reason
              from allowlist
-                      left join allowlist_run on allowlist.id = allowlist_run.allowlist_id;`,
+                      left join allowlist_run on allowlist.id = allowlist_run.allowlist_id
+             where allowlist.id in (${ids.map(() => '?').join(',')});`,
+      ids,
     );
   }
 
-  async save(request: Omit<AllowlistEntity, 'id'>): Promise<AllowlistEntity> {
+  async save({
+    request,
+    options,
+  }: {
+    request: Omit<AllowlistEntity, 'id'>;
+    options?: { connection?: mariadb.Connection };
+  }): Promise<AllowlistEntity> {
     const id = randomUUID();
     await this.db.none(
       'insert into allowlist (id, name, description, created_at) values (?, ?, ?, ?);',
       [id, request.name, request.description, request.created_at],
+      options,
     );
-    return await this.findById(id);
+    return await this.findById(id, options);
   }
 
   async findById(

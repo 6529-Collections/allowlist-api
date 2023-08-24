@@ -22,7 +22,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(payload: any): Promise<AuthenticatedUser> {
     const wallet = payload.sub;
     return {
-      wallet,
+      wallet: wallet.toLowerCase(),
     };
   }
 }

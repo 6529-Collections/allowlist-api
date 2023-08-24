@@ -1,6 +1,9 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { SeizeApiSeizeSeasonResponse } from './seize-api.types';
+import {
+  SeizeAPIWalletConsolidatedMetricsResponse,
+  SeizeApiSeizeSeasonResponse,
+} from './seize-api.types';
 
 @Injectable()
 export class SeizeApiService {
@@ -21,8 +24,27 @@ export class SeizeApiService {
     return data;
   }
 
+  async getWalletConsolidations(wallet: string): Promise<string[]> {
+    const url = `${this.BASE_URL}/consolidations/${wallet}`;
+    const response: { data: string[] } | undefined = await this.seizeGet(
+      url,
+      {},
+    );
+    return response?.data?.map((wallet) => wallet.toLowerCase()) ?? [wallet];
+  }
+
   async getMemesSeasons(): Promise<SeizeApiSeizeSeasonResponse[]> {
     const url = `${this.BASE_URL}/memes_seasons`;
     return await this.seizeGet<SeizeApiSeizeSeasonResponse[]>(url, {});
+  }
+
+  async getWalletConsolidatedMetrics(
+    wallet: string,
+  ): Promise<SeizeAPIWalletConsolidatedMetricsResponse> {
+    const url = `${this.BASE_URL}/consolidated_owner_metrics?wallet=${wallet}`;
+    return await this.seizeGet<SeizeAPIWalletConsolidatedMetricsResponse>(
+      url,
+      {},
+    );
   }
 }

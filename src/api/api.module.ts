@@ -44,6 +44,7 @@ import { AuthController } from './auth/auth.controller';
 import { TokenPoolModule } from '../token-pool/token-pool.module';
 import { TokenPoolDownloadService } from './token-pool-download/token-pool-download.service';
 import { TokenPoolDownloadController } from './token-pool-download/token-pool-download.controller';
+import { SeizeApiModule } from '../seize-api/seize-api.module';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
@@ -57,6 +58,7 @@ import { TokenPoolDownloadController } from './token-pool-download/token-pool-do
     RunnerModule,
     TokenPoolModule,
     CommonModule,
+    SeizeApiModule,
   ],
   providers: [
     {

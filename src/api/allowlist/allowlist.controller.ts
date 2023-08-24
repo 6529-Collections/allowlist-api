@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -17,7 +18,7 @@ import {
 import { AllowlistService } from './allowlist.service';
 import { AllowlistDescriptionResponseApiModel } from './model/allowlist-description-response-api.model';
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
-import { PublicEndpoint } from '../auth/public-endpoint-decorator';
+import { isEthereumAddress } from 'class-validator';
 
 @Controller('/allowlists')
 export class AllowlistController {
@@ -34,8 +35,15 @@ export class AllowlistController {
   @Post()
   async create(
     @Body() request: AllowlistDescriptionRequestApiModel,
+    @Request() req: { user?: { wallet?: string } },
   ): Promise<AllowlistDescriptionResponseApiModel> {
-    return await this.allowlistService.create(request);
+    if (!req.user?.wallet || !isEthereumAddress(req.user.wallet)) {
+      throw new BadRequestException('Invalid wallet');
+    }
+    return await this.allowlistService.create({
+      input: request,
+      wallet: req.user.wallet,
+    });
   }
 
   @ApiOperation({
@@ -49,8 +57,10 @@ export class AllowlistController {
   async getAll(
     @Request() req: { user?: { wallet?: string } },
   ): Promise<AllowlistDescriptionResponseApiModel[]> {
-    console.log(req.user?.wallet);
-    return await this.allowlistService.getAll();
+    if (!req.user?.wallet || !isEthereumAddress(req.user.wallet)) {
+      throw new BadRequestException('Invalid wallet');
+    }
+    return await this.allowlistService.getAll({ wallet: req.user.wallet });
   }
 
   @ApiOperation({

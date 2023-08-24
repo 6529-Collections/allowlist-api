@@ -16,11 +16,13 @@ import * as mariadb from 'mariadb';
 import { DB } from './db';
 import { TokenPoolTokenRepository } from './token-pool-token/token-pool-token.repository';
 import { TokenPoolDownloadRepository } from './token-pool-download/token-pool-download.repository';
+import { AllowlistUserRepository } from './allowlist-user/allowlist-user.repository';
 
 const REPOSITORIES = [
   TransferRepository,
   AllowlistRepository,
   AllowlistOperationRepository,
+  AllowlistUserRepository,
   TransferPoolRepository,
   TokenPoolRepository,
   CustomTokenPoolRepository,
