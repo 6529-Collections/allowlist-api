@@ -4,7 +4,9 @@ import { TokenPoolDownloadResponseApiModel } from './model/token-pool-download-r
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { TokenPoolDownloadTokenPoolUniqueWalletsCountRequestApiModel } from './model/token-pool-download-token-pool-unique-wallets-count-request-api.model';
 import { TokenPoolDownloadTokenResponseApiModel } from './model/token-pool-download-token-response-api.model';
+import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
 
+@HaveAllowlistAccess()
 @Controller('/allowlists/:allowlistId/token-pool-downloads')
 export class TokenPoolDownloadController {
   constructor(

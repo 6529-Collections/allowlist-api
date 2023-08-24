@@ -19,6 +19,7 @@ import { AllowlistService } from './allowlist.service';
 import { AllowlistDescriptionResponseApiModel } from './model/allowlist-description-response-api.model';
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { isEthereumAddress } from 'class-validator';
+import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
 
 @Controller('/allowlists')
 export class AllowlistController {
@@ -71,6 +72,7 @@ export class AllowlistController {
     isArray: true,
   })
   @Get(':allowlistId')
+  @HaveAllowlistAccess()
   async get(
     @Param('allowlistId') allowlistId: string,
   ): Promise<AllowlistDescriptionResponseApiModel> {
@@ -81,11 +83,13 @@ export class AllowlistController {
     summary: 'Delete allowlist',
   })
   @ApiOkResponse()
+  @HaveAllowlistAccess()
   @Delete(':allowlistId')
   async delete(@Param('allowlistId') allowlistId: string): Promise<void> {
     await this.allowlistService.delete(allowlistId);
   }
 
+  @HaveAllowlistAccess()
   @Post(':allowlistId/unique-wallets-count')
   async getUniqueWalletsCountFromOperations(
     @Body() operations: AllowlistOperation[],

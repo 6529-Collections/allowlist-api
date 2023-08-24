@@ -2,7 +2,9 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { TransferPoolService } from './transfer-pool.service';
 import { TransferPoolResponseApiModel } from './model/transfer-pool-response-api.model';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
 
+@HaveAllowlistAccess()
 @Controller('/allowlists/:allowlistId/transfer-pools')
 export class TransferPoolController {
   constructor(private readonly transferPoolService: TransferPoolService) {}

@@ -7,7 +7,9 @@ import {
 import { AllowlistDescriptionRequestApiModel } from '../allowlist/model/allowlist-description-request-api.model';
 import { AllowlistService } from '../allowlist/allowlist.service';
 import { AllowlistDescriptionResponseApiModel } from '../allowlist/model/allowlist-description-response-api.model';
+import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
 
+@HaveAllowlistAccess()
 @Controller('/allowlists/:allowlistId/runs')
 export class AllowlistRunController {
   constructor(private readonly allowlistService: AllowlistService) {}

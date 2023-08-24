@@ -2,7 +2,9 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { WalletPoolService } from './wallet-pool.service';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { WalletPoolResponseApiModel } from './model/wallet-pool-response-api.model';
+import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
 
+@HaveAllowlistAccess()
 @Controller('/allowlists/:allowlistId/wallet-pools')
 export class WalletPoolController {
   constructor(private readonly walletPoolService: WalletPoolService) {}

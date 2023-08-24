@@ -4,7 +4,9 @@ import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { PhaseResponseApiModel } from './model/phase-response-api.model';
 import { PhasesWithComponentsAndItemsResponseApiModel } from '../phase-full/model/phases-full-api.model';
 import { PhaseFullService } from '../phase-full/phase-full.service';
+import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
 
+@HaveAllowlistAccess()
 @Controller('/allowlists/:allowlistId/phases')
 export class PhaseController {
   constructor(

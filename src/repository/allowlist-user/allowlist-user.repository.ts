@@ -53,4 +53,21 @@ export class AllowlistUserRepository {
     );
     return result.map((row) => row.allowlist_id);
   }
+
+  async haveAllowlist({
+    allowlistId,
+    userWallet,
+  }: {
+    allowlistId: string;
+    userWallet: string;
+  }): Promise<boolean> {
+    const result = await this.db.one<{ count: bigint }>(
+      `SELECT COUNT(*) as count
+       FROM allowlist_user
+       WHERE allowlist_id = ?
+         AND user_wallet = ?`,
+      [allowlistId, userWallet],
+    );
+    return result.count > 0;
+  }
 }

@@ -2,7 +2,9 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { CustomTokenPoolService } from './custom-token-pool.service';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { CustomTokenPoolResponseApiModel } from './model/custom-token-pool-response-api.model';
+import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
 
+@HaveAllowlistAccess()
 @Controller('/allowlists/:allowlistId/custom-token-pools')
 export class CustomTokenPoolController {
   constructor(

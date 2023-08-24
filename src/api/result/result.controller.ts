@@ -2,7 +2,9 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { ResultService } from './result.service';
 import { ResultResponseApiModel } from './models/result-response-api.model';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
 
+@HaveAllowlistAccess()
 @Controller('/allowlists/:allowlistId/results')
 export class ResultController {
   constructor(private readonly resultService: ResultService) {}

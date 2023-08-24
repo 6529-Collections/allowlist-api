@@ -15,7 +15,9 @@ import {
 import { AllowlistOperationRequestApiModel } from './model/allowlist-operation-request-api.model';
 import { AllowlistOperationService } from './allowlist-operation.service';
 import { AllowlistOperationResponseApiModel } from './model/allowlist-operation-response-api.model';
+import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
 
+@HaveAllowlistAccess()
 @Controller('/allowlists/:allowlistId/operations')
 export class AllowlistOperationController {
   constructor(
