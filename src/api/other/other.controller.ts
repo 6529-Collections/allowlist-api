@@ -7,7 +7,9 @@ import { SearchContractMetadataRequestApiModel } from './model/search-contract-m
 import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
 import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
 import { ResolveEnsResponseApiModel } from './model/resolve-ens-response-api.model';
+import { PublicEndpoint } from '../auth/public-endpoint-decorator';
 
+@PublicEndpoint()
 @Controller('other')
 export class OtherController {
   constructor(private readonly otherService: OtherService) {}
