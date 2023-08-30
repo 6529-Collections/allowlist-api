@@ -6,7 +6,11 @@ import {
   ALLOWLIST_CODE_DESCRIPTIONS,
   getCodesForType,
 } from '@6529-collections/allowlist-lib/utils/allowlist-operation-code.utils';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { OperationDescriptionsResponseApiModel } from './model/operation-descriptions-response-api.model';
 import { AlchemyApiService } from '../../alchemy-api/alchemy-api.service';
 import { SearchContractMetadataResponseApiModel } from './model/search-contract-metadata-response-api.model';
@@ -16,8 +20,11 @@ import { formatNumberRange } from '../../app.utils';
 import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
 import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
 import { SeizeApiService } from '../../seize-api/seize-api.service';
-import { TransferRepository } from '../../repository/transfer/transfer.repository';
 import { ResolveEnsResponseApiModel } from './model/resolve-ens-response-api.model';
+import { EtherscanApiService } from '../../etherscan-api/etherscan-api.service';
+import { Time } from '../../time';
+import { PredictBlockNumbersResponseApiModel } from './model/predict-block-numbers-response-api.model';
+import { countSubNumbersInRange } from './other.utils';
 
 @Injectable()
 export class OtherService {
@@ -25,7 +32,7 @@ export class OtherService {
     private readonly alchemyApiService: AlchemyApiService,
     private readonly reservoirApiService: ReservoirApiService,
     private readonly seizeApiService: SeizeApiService,
-    private readonly transferRepo: TransferRepository,
+    private readonly etherscanApiService: EtherscanApiService,
   ) {}
 
   getOperationDescriptions(): OperationDescriptionsResponseApiModel[] {
@@ -83,6 +90,82 @@ export class OtherService {
 
   async getLatestBlockNumber(): Promise<number> {
     return await this.alchemyApiService.getBlockNumber();
+  }
+
+  async predictBlockNumber({
+    timestamp,
+  }: {
+    timestamp: number;
+  }): Promise<number> {
+    // Get current timestamp
+    const now = Time.currentMillis();
+    if (timestamp < now) {
+      throw new NotFoundException('Timestamp must be in the future');
+    }
+    // Get current block number
+    const currentBlock = await this.etherscanApiService.currentBlockNumber();
+    // Calculate the difference between the current timestamp and the given timestamp
+    const timeDiff = timestamp - now;
+    // Calculate the number of blocks that will be mined in the given time
+    const predictedBlocks = Math.ceil(timeDiff / 12000);
+    // Get predicted block number with naive approach (12sec per block)
+    const predictedBlockNaive = currentBlock + predictedBlocks;
+    // Get predicted block data from Etherscan API
+    const { result } = await this.etherscanApiService.getBlockCountdown({
+      blockNumber: predictedBlockNaive,
+    });
+    if (!result) {
+      throw new NotFoundException('Something went wrong');
+    }
+    const { RemainingBlock, EstimateTimeInSec } = result;
+    if (!RemainingBlock) {
+      throw new NotFoundException('Something went wrong');
+    }
+
+    if (!EstimateTimeInSec) {
+      throw new NotFoundException('Something went wrong');
+    }
+
+    // How many blocks will be mined in the given time
+    const blockCounts = parseInt(RemainingBlock, 10);
+    // How much time will be passed in the given time
+    const estimateTimeInMillis = parseInt(EstimateTimeInSec, 10) * 1000;
+    // Calculate the average block time
+    const blockTime = estimateTimeInMillis / blockCounts;
+    // Calculate the number of blocks that will be mined in the given time
+    const blocks = Math.ceil(timeDiff / blockTime);
+    // Return the predicted block number
+    return currentBlock + blocks;
+  }
+
+  async predictBlockNumbers({
+    minTimestamp,
+    maxTimestamp,
+    blockNumberIncludes,
+  }: {
+    minTimestamp: number;
+    maxTimestamp: number;
+    blockNumberIncludes: number[];
+  }): Promise<PredictBlockNumbersResponseApiModel[]> {
+    const now = Time.currentMillis();
+    if (minTimestamp < now) {
+      throw new NotFoundException('Min timestamp must be in the future');
+    }
+    if (maxTimestamp < now) {
+      throw new NotFoundException('Max timestamp must be in the future');
+    }
+    if (minTimestamp > maxTimestamp) {
+      throw new NotFoundException(
+        'Min timestamp must be less than max timestamp',
+      );
+    }
+    const minBlock = await this.predictBlockNumber({ timestamp: minTimestamp });
+    const maxBlock = await this.predictBlockNumber({ timestamp: maxTimestamp });
+    return countSubNumbersInRange({
+      start: minBlock,
+      end: maxBlock,
+      subnumbers: blockNumberIncludes,
+    });
   }
 
   async getMemesCollections(): Promise<

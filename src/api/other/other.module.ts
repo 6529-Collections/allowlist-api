@@ -5,12 +5,14 @@ import { OtherService } from './other.service';
 import { AlchemyApiModule } from '../../alchemy-api/alchemy-api.module';
 import { ReservoirApiModule } from '../../reservoir-api/reservoir-api.module';
 import { SeizeApiModule } from '../../seize-api/seize-api.module';
+import { EtherscanApiModule } from '../../etherscan-api/etherscan-api.module';
 
 @Module({
   imports: [
     RepositoryModule,
     AlchemyApiModule,
     ReservoirApiModule,
+    EtherscanApiModule,
     SeizeApiModule,
   ],
   controllers: [OtherController],

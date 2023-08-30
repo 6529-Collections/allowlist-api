@@ -8,6 +8,9 @@ import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token
 import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
 import { ResolveEnsResponseApiModel } from './model/resolve-ens-response-api.model';
 import { PublicEndpoint } from '../auth/public-endpoint-decorator';
+import { PredictBlockNumberRequestApiModel } from './model/predict-block-number-request.api.model';
+import { PredictBlockNumbersRequestApiModel } from './model/predict-block-numbers-request-api.model';
+import { PredictBlockNumbersResponseApiModel } from './model/predict-block-numbers-response-api.model';
 
 @PublicEndpoint()
 @Controller('other')
@@ -77,6 +80,42 @@ export class OtherController {
   @Get('latest-block-number')
   async getLatestBlockNumber(): Promise<number> {
     return await this.otherService.getLatestBlockNumber();
+  }
+
+  @ApiOperation({
+    summary: 'Predict the Ethereum block number for a given timestamp',
+  })
+  @ApiOkResponse({
+    type: Number,
+  })
+  @Post('predict-block-number')
+  async predictBlockNumber(
+    @Body() { timestamp }: PredictBlockNumberRequestApiModel,
+  ): Promise<number> {
+    return await this.otherService.predictBlockNumber({ timestamp });
+  }
+
+  @ApiOperation({
+    summary: 'Predict Ethereum block numbers for a given timestamp range',
+  })
+  @ApiOkResponse({
+    type: PredictBlockNumbersResponseApiModel,
+    isArray: true,
+  })
+  @Post('predict-block-numbers')
+  async predictBlockNumbers(
+    @Body()
+    {
+      minTimestamp,
+      maxTimestamp,
+      blockNumberIncludes,
+    }: PredictBlockNumbersRequestApiModel,
+  ): Promise<PredictBlockNumbersResponseApiModel[]> {
+    return await this.otherService.predictBlockNumbers({
+      minTimestamp,
+      maxTimestamp,
+      blockNumberIncludes,
+    });
   }
 
   @ApiOperation({
