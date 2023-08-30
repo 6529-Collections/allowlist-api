@@ -10,7 +10,7 @@ export class EtherscanApiService {
     const blockNumber = await this.httpService.axiosRef
       .get(
         'https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=' +
-          process.env.ETHERSCAN_API_KEY,
+          process.env.ALLOWLIST_ETHERSCAN_API_KEY,
       )
       .then((res) => res.data.result);
     return parseInt(blockNumber, 16);

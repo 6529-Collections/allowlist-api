@@ -44,7 +44,7 @@ export class AppService {
         `Mongo based filled run took ${mongoFilledStart.diffFromNow()}`,
       );
       const local = AllowlistCreator.getInstance({
-        etherscanApiKey: process.env.ETHERSCAN_API_KEY,
+        etherscanApiKey: process.env.ALLOWLIST_ETHERSCAN_API_KEY,
         seizeApiPath: process.env.ALLOWLIST_SEIZE_API_PATH,
       });
       this.logger.log(`Doing a local prefill`);
