@@ -87,7 +87,7 @@ export class AllowlistService {
     tdh: number;
   }): Promise<boolean> {
     if (tdh > +process.env.ALLOWLIST_MIN_TDH_REQUIRED_FOR_UNLIMITED_ALLOWLIST) {
-      return false;
+      return true;
     }
     const minCreatedAt = BigInt(
       Time.currentMillis() -
