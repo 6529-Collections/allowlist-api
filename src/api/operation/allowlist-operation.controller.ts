@@ -75,7 +75,7 @@ export class AllowlistOperationController {
       throw new BadRequestException('operation order must be a number');
     }
     await this.allowlistOperationService.delete({
-      operationOrder,
+      operationOrder: +operationOrder,
       allowlistId,
     });
   }

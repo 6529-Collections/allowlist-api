@@ -1,4 +1,5 @@
 import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
+import { removeEntity } from '@6529-collections/allowlist-lib/allowlist/operation-removers/operation-remover';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AllowlistOperationRequestApiModel } from './model/allowlist-operation-request-api.model';
 import { AllowlistOperationRepository } from '../../repository/allowlist-operation/allowlist-operation.repository';
@@ -13,6 +14,7 @@ import { randomUUID } from 'crypto';
 import { DB } from '../../repository/db';
 import { TokenPoolAsyncDownloader } from '../../token-pool/token-pool-async-downloader';
 import * as mariadb from 'mariadb';
+import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 
 @Injectable()
 export class AllowlistOperationService {
@@ -219,14 +221,13 @@ export class AllowlistOperationService {
     return entities.map(this.allowlistOperationEntityToApiModel);
   }
 
-  async delete({
+  private async deleteCommonOperation({
     allowlistId,
     operationOrder,
   }: {
     allowlistId: string;
     operationOrder: number;
-  }) {
-    await this.validateAllowlistState(allowlistId);
+  }): Promise<void> {
     const connection = await this.db.getConnection();
     try {
       await connection.beginTransaction();
@@ -265,6 +266,82 @@ export class AllowlistOperationService {
     } finally {
       await connection.end();
     }
+  }
+
+  private async deleteEntityOperation({
+    allowlistId,
+    entityId,
+    operations,
+  }: {
+    allowlistId: string;
+    entityId: string;
+    operations: AllowlistOperationEntity[];
+  }): Promise<void> {
+    const modifiedOperations = removeEntity({
+      entityId,
+      operations,
+    }).map((op, i) => ({
+      ...op,
+      op_order: i + 1,
+      has_ran: false,
+    }));
+    const connection = await this.db.getConnection();
+    try {
+      await connection.beginTransaction();
+      await this.allowlistOperationRepository.deleteByAllowlistId(
+        { allowlistId },
+        { connection },
+      );
+      for (const op of modifiedOperations) {
+        await this.allowlistOperationRepository.save(op, { connection });
+      }
+      await connection.commit();
+    } catch (e) {
+      await connection.rollback();
+      throw e;
+    } finally {
+      await connection.end();
+    }
+  }
+
+  async delete({
+    allowlistId,
+    operationOrder,
+  }: {
+    allowlistId: string;
+    operationOrder: number;
+  }) {
+    await this.validateAllowlistState(allowlistId);
+    const operations = (
+      await this.allowlistOperationRepository.findByAllowlistId(allowlistId)
+    ).map((op) => ({
+      ...op,
+      params: op.params ? JSON.parse(op.params) : op.params,
+    }));
+    if (operations.length === 0) {
+      throw new BadRequestException(
+        `Allowlist with ID ${allowlistId} has no operations`,
+      );
+    }
+    const operation = operations.find((op) => op.op_order === operationOrder);
+    if (!operation) {
+      throw new BadRequestException(
+        `Allowlist with ID ${allowlistId} has no operation with order ${operationOrder}`,
+      );
+    }
+
+    const isEntity = !!operation.params?.id;
+
+    if (!isEntity) {
+      await this.deleteCommonOperation({ allowlistId, operationOrder });
+      return;
+    }
+
+    await this.deleteEntityOperation({
+      allowlistId,
+      entityId: operation.params.id,
+      operations,
+    });
   }
 
   private allowlistOperationEntityToApiModel(

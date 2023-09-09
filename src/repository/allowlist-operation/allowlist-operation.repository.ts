@@ -161,14 +161,18 @@ export class AllowlistOperationRepository {
     );
   }
 
-  async deleteByAllowlistId({
-    allowlistId,
-  }: {
-    allowlistId: string;
-  }): Promise<void> {
+  async deleteByAllowlistId(
+    {
+      allowlistId,
+    }: {
+      allowlistId: string;
+    },
+    options?: { connection?: mariadb.Connection },
+  ): Promise<void> {
     await this.db.none(
       `DELETE FROM allowlist_operation WHERE allowlist_id = ?`,
       [allowlistId],
+      options,
     );
   }
 
