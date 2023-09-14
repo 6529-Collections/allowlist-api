@@ -72,7 +72,6 @@ functions:
       - http:
           method: any
           path: /{any+}
-          cors: true
 
   queue:
     handler: src/worker-lambda.handler
