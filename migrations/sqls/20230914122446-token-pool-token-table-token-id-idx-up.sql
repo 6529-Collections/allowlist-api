@@ -1,0 +1,1 @@
+CREATE INDEX idx_token_pool_token_token_pool_id ON token_pool_token (token_pool_id)

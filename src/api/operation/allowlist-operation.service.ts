@@ -114,85 +114,21 @@ export class AllowlistOperationService {
   async add({
     code,
     params,
-    order: orderParam,
+    order,
     allowlistId,
   }: AllowlistOperationRequestApiModel & {
     allowlistId: string;
   }): Promise<AllowlistOperationResponseApiModel> {
-    this.validateOperation({ code, params });
-    await this.validateAllowlistState(allowlistId);
-    const connection = await this.db.getConnection();
-    try {
-      await connection.beginTransaction();
-      const order =
-        orderParam ??
-        (await this.allowlistOperationRepository.getLatestOrderForAllowlist(
-          allowlistId,
-          { connection },
-        )) + 1;
-      await this.allowlistOperationRepository.incOrdersForAllowlistSinceOrder(
-        {
-          sinceOrder: order,
-          allowlistId,
-        },
-        { connection },
-      );
-      const entity = await this.allowlistOperationRepository.save(
-        {
-          id: randomUUID(),
-          code,
-          params: params ? JSON.stringify(params) : undefined,
-          op_order: order,
-          allowlist_id: allowlistId,
-          created_at: BigInt(Time.currentMillis()),
-          has_ran: false,
-        },
-        { connection },
-      );
-      const ranLaterOperations =
-        await this.allowlistOperationRepository.getAllRanForAllowlistSinceOrder(
-          {
-            allowlistId,
-            order,
-          },
-          { connection },
-        );
-      if (ranLaterOperations.length > 0) {
-        await this.allowlistOperationRepository.updateAllForAllowlistToNotRan(
-          allowlistId,
-          { connection },
-        );
-      }
-
-      if (code === AllowlistOperationCode.CREATE_TOKEN_POOL) {
-        await this.tokenPoolAsyncDownloader.start({
-          config: {
-            tokenPoolId: params.id,
-            tokenIds: params.tokenIds,
-            contract: params.contract,
-            blockNo: params.blockNo,
-            consolidateBlockNo: params.consolidateBlockNo,
-            allowlistId,
-          },
-          state: {
-            runsCount: 0,
-            startingBlocks: [],
-          },
-        });
-      }
-
-      await this.ensureLatestOperationIsMapToDelegatedWallets({
+    const response = await this.addBatch([
+      {
         allowlistId,
-        options: { connection },
-      });
-      await connection.commit();
-      return this.allowlistOperationEntityToApiModel(entity);
-    } catch (e) {
-      await connection.rollback();
-      throw e;
-    } finally {
-      await connection.end();
-    }
+        code,
+        params,
+        order,
+      },
+    ]);
+
+    return await response.at(0);
   }
 
   async addBatch(
@@ -203,14 +139,18 @@ export class AllowlistOperationService {
       order?: number;
     }[],
   ): Promise<AllowlistOperationResponseApiModel[]> {
+    if (!ops.length) {
+      return [];
+    }
     const response: AllowlistOperationResponseApiModel[] = [];
     const connection = await this.db.getConnection();
     try {
       await connection.beginTransaction();
+      await this.validateAllowlistState(ops.at(0).allowlistId);
       for (const op of ops) {
         const { code, params, order: orderParam, allowlistId } = op;
         this.validateOperation({ code, params });
-        await this.validateAllowlistState(allowlistId);
+
         const order =
           orderParam ??
           (await this.allowlistOperationRepository.getLatestOrderForAllowlist(
