@@ -24,7 +24,7 @@
     "new-endpoint": "node new-api-endpoint-generator-wrapper.js"
   },
   "dependencies": {
-    "@6529-collections/allowlist-lib": "0.0.103",
+    "@6529-collections/allowlist-lib": "0.0.104",
     "@aws-sdk/client-secrets-manager": "^3.334.0",
     "@aws-sdk/client-sns": "^3.335.0",
     "@nestjs/axios": "^3.0.0",
@@ -37,14 +37,14 @@
     "@nestjs/schedule": "^3.0.1",
     "@nestjs/swagger": "^6.3.0",
     "@vendia/serverless-express": "^4.10.4",
-    "alchemy-sdk": "^2.9.2",
+    "alchemy-sdk": "^2.10.1",
     "aws-lambda": "^1.0.7",
     "aws-serverless-express": "^3.4.0",
     "axios": "^1.4.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
-    "db-migrate": "^0.11.13",
-    "db-migrate-mysql": "^2.2.0",
+    "db-migrate": "^0.11.14",
+    "db-migrate-mysql": "^2.3.2",
     "dotenv": "^16.0.3",
     "ethers": "^6.6.0",
     "js-sha256": "^0.9.0",
@@ -87,6 +87,9 @@
     "ts-node": "^10.0.0",
     "tsconfig-paths": "4.1.1",
     "typescript": "^4.7.4"
+  },
+  "resolutions": {
+    "cpu-features": "0.0.9"
   },
   "jest": {
     "moduleFileExtensions": [
