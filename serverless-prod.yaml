@@ -18,6 +18,7 @@ provider:
   environment:
     ALLOWLIST_AWS_REGION: "us-east-1"
     SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:987989283142:allowlist-creation.fifo"
+    SNS_TOKEN_POOL_DOWNLOADER_TOPIC_ARN: "arn:aws:sns:eu-west-1:987989283142:token-pool-downloader.fifo"
   memorySize: 4086
   timeout: 900
   cors: true
@@ -70,6 +71,8 @@ functions:
       - http:
           method: any
           path: /{any+}
+          cors: true
+
   queue:
     handler: src/worker-lambda.handler
     name: allowlist-worker
@@ -77,6 +80,22 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:us-east-1:987989283142:allowlist-creation.fifo
+          batchSize: 1
+    vpc:
+      securityGroupIds:
+        - sg-033f6ed509ce4c3a4
+        - sg-0b548abc33e4c84a3
+      subnetIds:
+        - subnet-08dbb020dea1a658d
+        - subnet-003b0c8ce57cb67c2
+
+  token-pool-downloader:
+    handler: src/token-pool-downloader-lambda.handler
+    name: allowlist-token-pool-downloader
+    role: arn:aws:iam::987989283142:role/lambda-vpc-role
+    events:
+      - sqs:
+          arn: arn:aws:sqs:eu-west-1:987989283142:token-pool-downloader.fifo
           batchSize: 1
     vpc:
       securityGroupIds:
