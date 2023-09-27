@@ -70,7 +70,7 @@ export class AllowlistOperationController {
   async delete(
     @Param('allowlistId') allowlistId: string,
     @Param('operationOrder') operationOrder: number,
-  ) {
+  ): Promise<number> {
     if (!(+operationOrder > 0)) {
       throw new BadRequestException('operation order must be a number');
     }
@@ -78,5 +78,6 @@ export class AllowlistOperationController {
       operationOrder: +operationOrder,
       allowlistId,
     });
+    return operationOrder;
   }
 }

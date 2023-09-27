@@ -86,8 +86,9 @@ export class AllowlistController {
   @ApiOkResponse()
   @HaveAllowlistAccess()
   @Delete(':allowlistId')
-  async delete(@Param('allowlistId') allowlistId: string): Promise<void> {
+  async delete(@Param('allowlistId') allowlistId: string): Promise<string> {
     await this.allowlistService.delete(allowlistId);
+    return allowlistId;
   }
 
   @HaveAllowlistAccess()
