@@ -10,10 +10,10 @@
     d "1"
     es5-ext "^0.10.47"
 
-"@6529-collections/allowlist-lib@0.0.104":
-  version "0.0.104"
-  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.104/63fee682575f6cbc373228f88662e04909e56c8c#63fee682575f6cbc373228f88662e04909e56c8c"
-  integrity sha512-lkoLg4HKdhyZqJXBdI+X8yJ2TW6RWdB2y+ZGxTZ6YdK04yuJD8Dh0SD5UwBWLok1iHyu5lkW/4maHD5ypEPnSg==
+"@6529-collections/allowlist-lib@0.0.105":
+  version "0.0.105"
+  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.105/0ddb5c294a57cca34ec52e550e303657f1caeb19#0ddb5c294a57cca34ec52e550e303657f1caeb19"
+  integrity sha512-hhPFjHc//wrk548LNGJBwM1USD41fmZivcvFs0kvbejRfZXdhKoEiFkKgVMgBwkKVvKffrVWxokR9xPmq9uvjA==
   dependencies:
     alchemy-sdk "^2.10.1"
     axios "^1.4.0"
@@ -12872,6 +12872,7 @@ winston@2.x:
     stack-trace "0.0.x"
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+  name wrap-ansi-cjs
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==

@@ -268,6 +268,7 @@ export class AllowlistService {
       [AllowlistOperationCode.ITEM_SELECT_LAST_N_TOKENS]: true,
       [AllowlistOperationCode.ITEM_SORT_WALLETS_BY_TOTAL_TOKENS_COUNT]: false,
       [AllowlistOperationCode.ITEM_SORT_WALLETS_BY_UNIQUE_TOKENS_COUNT]: false,
+      [AllowlistOperationCode.ITEM_SELECT_WALLETS_OWNING_TOKEN_IDS]: true,
       [AllowlistOperationCode.ITEM_REMOVE_FIRST_N_WALLETS]: true,
       [AllowlistOperationCode.ITEM_SELECT_FIRST_N_WALLETS]: true,
       [AllowlistOperationCode.ITEM_REMOVE_WALLETS_FROM_CERTAIN_COMPONENTS]:
