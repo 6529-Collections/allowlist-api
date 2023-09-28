@@ -1,0 +1,1 @@
+ALTER TABLE allowlist_operation MODIFY params LONGTEXT;
