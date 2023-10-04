@@ -86,6 +86,9 @@ export class AllowlistService {
     wallets: string[];
     tdh: number;
   }): Promise<boolean> {
+    if (tdh < 1) {
+      return false;
+    }
     if (tdh > +process.env.ALLOWLIST_MIN_TDH_REQUIRED_FOR_UNLIMITED_ALLOWLIST) {
       return true;
     }
