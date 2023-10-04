@@ -55,15 +55,14 @@ docker-compose stop && docker-compose rm -f && docker-compose up -d
 
 Start the application again and you'll have a clean database.
 
-## Deployment to production and how it works there
+## Deployment to staging and production lambdas
 
-Github CI pipeline builds and redeploys everything to production automatically on push to `main` branch.
+Github actions CI pipelines are used to build and redeploy everything to staging and production.
 
 New migrations are called on first invocation of any lambda.
 
-In production the app is ran in two lambas:
+In production the app is ran in three lambas:
 
 1. API lambda - Serves all API requests (entrypoint: `src/api-lambda.ts/handle`)
 2. Worker lambda - Does the actual final allowlist creation (entrypoint: `src/worker-lambda.ts/handle`)
-
-Lambda configuration is in `serverless.yml`.
+3. Tokenpool downloader lambda - Helps to get aggregated tokenpool data needed for worker lambda (entrypoint: `src/token-pool-downloader-lambda.ts/handle`)
