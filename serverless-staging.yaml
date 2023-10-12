@@ -19,8 +19,6 @@ provider:
     ALLOWLIST_AWS_REGION: "eu-west-1"
     SNS_TOPIC_ARN: "arn:aws:sns:eu-west-1:987989283142:allowlist-creation.fifo"
     SNS_TOKEN_POOL_DOWNLOADER_TOPIC_ARN: "arn:aws:sns:eu-west-1:987989283142:token-pool-downloader.fifo"
-  memorySize: 4086
-  timeout: 900
   cors: true
 
 custom:
@@ -59,6 +57,8 @@ functions:
     handler: ./src/api-lambda.handler
     name: allowlist-api
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
+    memorySize: 512
+    timeout: 30
     vpc:
       securityGroupIds:
         - sg-08e10923e6cff59a8
@@ -67,7 +67,6 @@ functions:
         - subnet-00dfa69df6e94f877
         - subnet-07ddc88c08df15ad3
         - subnet-0470704bff1eac2f5
-    timeout: 120
     events:
       - http:
           method: any
@@ -78,6 +77,8 @@ functions:
     handler: src/worker-lambda.handler
     name: allowlist-worker
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
+    memorySize: 4086
+    timeout: 900
     events:
       - sqs:
           arn: arn:aws:sqs:eu-west-1:987989283142:allowlist-creation.fifo
@@ -95,6 +96,8 @@ functions:
     handler: src/token-pool-downloader-lambda.handler
     name: allowlist-token-pool-downloader
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
+    memorySize: 4086
+    timeout: 900
     events:
       - sqs:
           arn: arn:aws:sqs:eu-west-1:987989283142:token-pool-downloader.fifo
