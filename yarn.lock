@@ -11362,6 +11362,11 @@ serverless-plugin-optimize@^4.2.1-rc.1:
     fs-extra "^7.0.1"
     resolve-from "^4.0.0"
 
+serverless-plugin-tracing@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/serverless-plugin-tracing/-/serverless-plugin-tracing-2.0.0.tgz#df6b8b3166ac9bb70a37c7fc875014b2369158f6"
+  integrity sha512-cndG6QC5ZFHSwmylOqxOzy/M9TAKtUl+wnpqdmqZ5sFfWjcUi4BLV7MkQnsIdKPKJcCv19tpNONYmGPmw6tXIg==
+
 serverless-plugin-typescript@^2.1.4:
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/serverless-plugin-typescript/-/serverless-plugin-typescript-2.1.5.tgz#d4c4636ee6e4803d2fe773ce2bb8bf52362c836d"

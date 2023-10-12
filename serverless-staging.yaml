@@ -1,10 +1,11 @@
 service: allowlist-api
 
 plugins:
-  - 'serverless-plugin-typescript'
+  - serverless-plugin-typescript
   - serverless-plugin-optimize
   - serverless-offline
   - serverless-plugin-warmup
+  - serverless-plugin-tracing
 
 package:
   include:
@@ -20,6 +21,14 @@ provider:
     SNS_TOPIC_ARN: "arn:aws:sns:eu-west-1:987989283142:allowlist-creation.fifo"
     SNS_TOKEN_POOL_DOWNLOADER_TOPIC_ARN: "arn:aws:sns:eu-west-1:987989283142:token-pool-downloader.fifo"
   cors: true
+  tracing: true
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "xray:PutTraceSegments"
+        - "xray:PutTelemetryRecords"
+      Resource:
+        - "*"
 
 custom:
   warmup:
