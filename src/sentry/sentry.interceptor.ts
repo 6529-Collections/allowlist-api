@@ -1,6 +1,7 @@
 import {
   CallHandler,
   ExecutionContext,
+  HttpException,
   Injectable,
   Logger,
   NestInterceptor,
@@ -43,7 +44,11 @@ export class SentryInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       catchError((error) => {
-        Sentry.captureException(error, span.getTraceContext());
+        const skipCapture =
+          error instanceof HttpException && error.getStatus() < 500;
+        if (!skipCapture) {
+          Sentry.captureException(error, span.getTraceContext());
+        }
         return throwError(() => error);
       }),
       finalize(() => {
