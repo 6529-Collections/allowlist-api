@@ -21,7 +21,7 @@ export class SentryInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const sentryDsn = this.configService.get('SENTRY_DSN');
+    const sentryDsn = this.configService.get('ALLOWLIST_SENTRY_DSN');
     if (sentryDsn && !this.sentryInitialized) {
       Sentry.init({
         dsn: sentryDsn,
