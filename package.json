@@ -75,7 +75,6 @@
     "eslint-plugin-prettier": "^4.0.0",
     "hygen": "^6.2.11",
     "jest": "29.3.1",
-    "plugin": "^0.3.3",
     "prettier": "^2.3.2",
     "serverless": "^3.31.0",
     "serverless-domain-manager": "^7.0.4",
