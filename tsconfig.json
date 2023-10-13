@@ -18,7 +18,8 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "types": [
-      "node"
+      "node",
+      "jest"
     ]
   }
 }
