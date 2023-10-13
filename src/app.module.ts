@@ -9,6 +9,7 @@ import { TokenPoolModule } from './token-pool/token-pool.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as Sentry from '@sentry/node';
 import { SentryModule } from './sentry/sentry.module';
+import { AppLoggerMiddleware } from './app.logger.middleware';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SentryModule } from './sentry/sentry.module';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AppLoggerMiddleware).forRoutes('*');
     consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({
       path: '*',
       method: RequestMethod.ALL,
