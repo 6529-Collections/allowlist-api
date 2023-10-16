@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/serverless';
+//import * as Sentry from '@sentry/serverless';
 import { Handler } from 'aws-lambda';
 import { getSecrets } from './env';
 
@@ -7,11 +7,11 @@ async function initBackgroundLambdaSentry() {
   const secrets = await getSecrets();
   const dsn = secrets?.ALLOWLIST_SENTRY_DSN;
   if (dsn) {
-    Sentry.AWSLambda.init({
+    /*Sentry.AWSLambda.init({
       dsn,
       tracesSampleRate: 1.0,
       debug: true,
-    });
+    });*/
     console.log(
       `Sentry initialized successfully with DSN ${dsn.slice(
         0,
@@ -29,7 +29,7 @@ async function initBackgroundLambdaSentry() {
 
 export function withSentryIfConfigured(handler: Handler): Handler {
   if (initBackgroundLambdaSentry()) {
-    return Sentry.AWSLambda.wrapHandler(handler);
+    return handler; //Sentry.AWSLambda.wrapHandler(handler);
   }
   return handler;
 }

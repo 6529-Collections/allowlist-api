@@ -38,7 +38,6 @@
     "@nestjs/swagger": "^6.3.0",
     "@sentry/node": "^7.73.0",
     "@sentry/profiling-node": "^1.2.1",
-    "@sentry/serverless": "^7.74.0",
     "@vendia/serverless-express": "^4.10.4",
     "alchemy-sdk": "^2.10.1",
     "aws-lambda": "^1.0.7",
