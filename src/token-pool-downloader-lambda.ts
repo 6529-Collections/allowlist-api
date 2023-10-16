@@ -10,6 +10,7 @@ import { TokenDownloaderModule } from './token-downloader.module';
 import { TokenPoolAsyncDownloader } from './token-pool/token-pool-async-downloader';
 import { TokenPoolDownloaderParams } from './token-pool/token-pool.types';
 import { withSentryIfConfigured } from './background-lambda-sentry';
+import * as Sentry from '@sentry/serverless';
 
 async function bootstrap(): Promise<INestApplication> {
   await initEnv();
@@ -78,8 +79,9 @@ export const handler = withSentryIfConfigured(
       await context.succeed(event);
     } catch (e) {
       console.error('Error running worker', e);
+      await Sentry.captureException(e);
+      await Sentry.flush(3000);
       await context.fail(e);
-      throw e;
     }
     return {};
   },
