@@ -5,12 +5,18 @@ import { getSecrets } from './env';
 async function initBackgroundLambdaSentry() {
   // This has to come from environment variable because in this stage there is no access to secrets manager yet
   const secrets = await getSecrets();
-  if (secrets?.ALLOWLIST_SENTRY_DSN) {
+  const dsn = secrets?.ALLOWLIST_SENTRY_DSN;
+  if (dsn) {
     Sentry.AWSLambda.init({
-      dsn: secrets.ALLOWLIST_SENTRY_DSN,
+      dsn,
       tracesSampleRate: 1.0,
     });
-    console.log('Sentry initialized');
+    console.log(
+      `Sentry initialized successfully with DSN ${dsn.slice(
+        0,
+        7,
+      )}*****/${dsn.slice(-17)}`,
+    );
     return true;
   } else {
     console.warn(
