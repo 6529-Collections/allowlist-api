@@ -8,7 +8,6 @@ import { OtherModule } from './api/other/other.module';
 import { TokenPoolModule } from './token-pool/token-pool.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as Sentry from '@sentry/node';
-import { SentryModule } from './sentry/sentry.module';
 import { AppLoggerMiddleware } from './app.logger.middleware';
 
 @Module({
@@ -20,7 +19,6 @@ import { AppLoggerMiddleware } from './app.logger.middleware';
     RunnerModule,
     TokenPoolModule,
     OtherModule,
-    SentryModule.forRoot(),
   ],
   controllers: [],
   providers: [AppService],
