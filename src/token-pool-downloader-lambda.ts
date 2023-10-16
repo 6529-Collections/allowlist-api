@@ -79,6 +79,7 @@ export const handler = withSentryIfConfigured(
     } catch (e) {
       console.error('Error running worker', e);
       await context.fail(e);
+      throw e;
     }
     return {};
   },
