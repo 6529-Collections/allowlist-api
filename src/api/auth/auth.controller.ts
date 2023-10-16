@@ -14,6 +14,7 @@ import { randomUUID } from 'crypto';
 import { AUTH_CONFIG, AuthConfig } from './auth.config';
 import { LoginResponse } from './login.response';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SeizeApiService } from '../../seize-api/seize-api.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -21,12 +22,15 @@ export class AuthController {
   constructor(
     private readonly jwtService: JwtService,
     @Inject(AUTH_CONFIG) private readonly authConfig: AuthConfig,
+    private readonly seizeApiService: SeizeApiService,
   ) {}
 
   @PublicEndpoint()
   @Get('test-failure')
   testFailure() {
-    throw new Error('Test failure');
+    return this.seizeApiService.getWalletConsolidatedMetrics(
+      '0xb986cf96d32716bd8cbb22b0063c35d2768f64d9',
+    );
   }
 
   @ApiOperation({
