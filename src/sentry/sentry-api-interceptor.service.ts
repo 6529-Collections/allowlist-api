@@ -57,6 +57,7 @@ export class SentryApiInterceptor implements NestInterceptor {
       }),
       finalize(() => {
         span.finish();
+        console.log('sentry span finished');
       }),
     );
   }
