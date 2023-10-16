@@ -327,7 +327,6 @@ export class RunnerService {
         allowlistId,
       });
     } catch (e) {
-      console.error(e);
       this.logger.error(`Error running for allowlist ${allowlistId}`);
       await this.allowlistRepository.changeStatusToError({
         allowlistId,
@@ -338,6 +337,7 @@ export class RunnerService {
             ? e.message
             : JSON.stringify(e),
       });
+      throw e;
     }
 
     console.timeEnd('AllowlistRunService');

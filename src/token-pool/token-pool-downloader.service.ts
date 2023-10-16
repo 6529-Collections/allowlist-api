@@ -85,11 +85,12 @@ export class TokenPoolDownloaderService {
     continue: boolean;
     entity: TokenPoolDownloadEntity;
     state: TokenPoolDownloaderParamsState;
+    error?: string;
   }> {
     const { tokenPoolId } = config;
     const entity = await this.claimEntity(tokenPoolId);
     if (!entity) {
-      this.logger.error(
+      this.logger.warn(
         `Nothing to claim. Claimable tokenpool download with id ${tokenPoolId} not found`,
       );
       return { continue: false, entity: null, state };
@@ -131,7 +132,12 @@ export class TokenPoolDownloaderService {
       await this.tokenPoolDownloadRepository.changeStatusToError({
         tokenPoolId,
       });
-      return { continue: false, entity, state };
+      return {
+        continue: false,
+        entity,
+        state,
+        error: `Tried to reprocess already processed block for contract ${entity.contract}`,
+      };
     }
 
     this.logger.log(`Old single type block: ${startingBlocks.at(-1)?.single}`);
@@ -268,6 +274,7 @@ export class TokenPoolDownloaderService {
     continue: boolean;
     entity: TokenPoolDownloadEntity;
     state: TokenPoolDownloaderParamsState;
+    error?: string;
   }> {
     const { token_pool_id: tokenPoolId } = entity;
     const mockAllowlistId = randomUUID();
@@ -338,6 +345,12 @@ export class TokenPoolDownloaderService {
       await this.tokenPoolDownloadRepository.changeStatusToError({
         tokenPoolId,
       });
+      return {
+        continue: false,
+        entity,
+        state,
+        error: `Persisting state for token pool ${tokenPoolId} failed: ${e.message}`,
+      };
     }
     return { continue: false, entity, state };
   }

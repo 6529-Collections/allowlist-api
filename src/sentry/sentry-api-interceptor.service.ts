@@ -12,8 +12,8 @@ import * as Sentry from '@sentry/node';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class SentryInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(SentryInterceptor.name);
+export class SentryApiInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(SentryApiInterceptor.name);
   private sentryInitialized = false;
 
   constructor(

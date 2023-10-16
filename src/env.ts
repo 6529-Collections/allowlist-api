@@ -26,7 +26,7 @@ export async function initEnv() {
   }
 }
 
-async function initEnvFromSecrets() {
+export async function getSecrets(): Promise<Record<string, string>> {
   const region = process.env.ALLOWLIST_AWS_REGION;
   logger.log(`Loading secrets from region ${region}`);
   const secretsManager = new SecretsManager({
@@ -35,11 +35,14 @@ async function initEnvFromSecrets() {
   logger.log(`Secrets manager created. Fetching secrets from ${SECRET}...`);
   const secret = await secretsManager.getSecretValue({ SecretId: SECRET });
   logger.log(`Secrets fetched...`);
-  if (secret.SecretString) {
-    const secretValue = JSON.parse(secret.SecretString);
+  return secret.SecretString ? JSON.parse(secret.SecretString) : undefined;
+}
 
-    Object.keys(secretValue).forEach(function (key) {
-      process.env[key] = secretValue[key];
+async function initEnvFromSecrets() {
+  const secrets = await getSecrets();
+  if (secrets) {
+    Object.keys(secrets).forEach(function (key) {
+      process.env[key] = secrets[key];
     });
   }
 
