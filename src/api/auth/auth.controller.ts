@@ -23,6 +23,12 @@ export class AuthController {
     @Inject(AUTH_CONFIG) private readonly authConfig: AuthConfig,
   ) {}
 
+  @PublicEndpoint()
+  @Get('test-failure')
+  testFailure() {
+    throw new Error('Test failure');
+  }
+
   @ApiOperation({
     summary:
       'Get the nonce from server which you should sign with your Web3 wallet',
