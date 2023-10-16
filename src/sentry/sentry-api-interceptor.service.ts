@@ -55,8 +55,9 @@ export class SentryApiInterceptor implements NestInterceptor {
         }
         return throwError(() => error);
       }),
-      finalize(() => {
+      finalize(async () => {
         span.finish();
+        await Sentry.flush(3000);
         console.log('sentry span finished');
       }),
     );
