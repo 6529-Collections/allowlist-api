@@ -10,6 +10,7 @@ async function initBackgroundLambdaSentry() {
     Sentry.AWSLambda.init({
       dsn,
       tracesSampleRate: 1.0,
+      debug: true,
     });
     console.log(
       `Sentry initialized successfully with DSN ${dsn.slice(
