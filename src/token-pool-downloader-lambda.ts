@@ -78,7 +78,7 @@ export const handler = withSentryIfConfigured(
       }
       await context.succeed(event);
     } catch (e) {
-      console.error('Error running worker', e);
+      console.error('Error running worker. Capturing error', e);
       await Sentry.captureException(e);
       await Sentry.flush(3000);
       await context.fail(e);

@@ -10,6 +10,7 @@ async function initBackgroundLambdaSentry() {
       dsn: secrets.ALLOWLIST_SENTRY_DSN,
       tracesSampleRate: 1.0,
     });
+    console.log('Sentry initialized');
     return true;
   } else {
     console.warn(
