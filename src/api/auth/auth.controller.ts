@@ -29,7 +29,7 @@ export class AuthController {
   @Get('test-failure')
   @UseInterceptors(new RavenInterceptor())
   testFailure() {
-    throw new Error('Test failure');
+    throw new Error('Test some new failure');
   }
 
   @ApiOperation({
