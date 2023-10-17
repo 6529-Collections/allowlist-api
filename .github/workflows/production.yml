@@ -23,8 +23,6 @@ jobs:
         run: yarn build
       - name: Run unit tests
         run: yarn test
-      - name: Upload sourcemaps to Sentry
-        run: yarn sentry:sourcemaps
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
         with:
@@ -32,7 +30,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Deploy
-        run:  ESCAPED_REPLACE=$(printf '%s\n' "$SENTRY_DSN" | sed -e 's/[\/&]/\\&/g') && sed "s/SENTRY-DSN-VALUE/${ESCAPED_REPLACE}/g" serverless-prod.yaml > serverless.yaml && yarn sls:deploy
+        run:  ESCAPED_REPLACE=$(printf '%s\n' "$SENTRY_DSN" | sed -e 's/[\/&]/\\&/g') && sed "s/SENTRY-DSN-VALUE/${ESCAPED_REPLACE}/g" serverless-prod.yaml > serverless.yaml && yarn sls:deploy && yarn sentry:sourcemaps
       - name: Notify about failure
         uses: sarisia/actions-status-discord@v1
         if: failure()
@@ -40,7 +38,7 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           title: "Allowlist API production CI pipeline is broken!!!"
-          content: "@everyone"
+          content: "@developers"
           color: 0xff0000
       - name: Notify about success
         uses: sarisia/actions-status-discord@v1
