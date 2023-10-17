@@ -12,7 +12,6 @@ import * as Sentry from '@sentry/serverless';
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.SENTRY_ENV,
-  debug: true,
 });
 async function bootstrap(): Promise<INestApplication> {
   await initEnv();

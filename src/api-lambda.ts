@@ -15,7 +15,6 @@ import { eventContext } from 'aws-serverless-express/middleware';
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.SENTRY_ENV,
-  debug: true,
 });
 
 let server: Server;
