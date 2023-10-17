@@ -9,7 +9,13 @@ import { TokenPoolDownloaderService } from './token-pool/token-pool-downloader.s
 import { TokenDownloaderModule } from './token-downloader.module';
 import { TokenPoolAsyncDownloader } from './token-pool/token-pool-async-downloader';
 import { TokenPoolDownloaderParams } from './token-pool/token-pool.types';
-import { withSentryIfConfigured } from './background-lambda-sentry';
+import * as Sentry from '@sentry/serverless';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.SENTRY_ENV,
+  debug: true,
+});
 
 async function bootstrap(): Promise<INestApplication> {
   await initEnv();
@@ -20,7 +26,7 @@ async function bootstrap(): Promise<INestApplication> {
   return nestApp;
 }
 
-export const handler = withSentryIfConfigured(
+export const handler = Sentry.AWSLambda.wrapHandler(
   async (event: any, context: Context) => {
     const nestApp = await bootstrap();
     const service = nestApp.get(TokenPoolDownloaderService);

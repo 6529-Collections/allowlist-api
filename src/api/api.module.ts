@@ -1,4 +1,4 @@
-import { HttpException, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { RepositoryModule } from '../repository/repository.module';
 import { AllowlistController } from './allowlist/allowlist.controller';
 import { AllowlistOperationService } from './operation/allowlist-operation.service';
@@ -35,7 +35,7 @@ import { ResultController } from './result/result.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AccessTokenGuard } from './auth/access-token.guard';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenStrategy } from './auth/access.token.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AUTH_CONFIG, AuthConfig } from './auth/auth.config';
@@ -45,8 +45,8 @@ import { TokenPoolModule } from '../token-pool/token-pool.module';
 import { TokenPoolDownloadService } from './token-pool-download/token-pool-download.service';
 import { TokenPoolDownloadController } from './token-pool-download/token-pool-download.controller';
 import { SeizeApiModule } from '../seize-api/seize-api.module';
-
-import { RavenInterceptor, RavenModule } from 'nest-raven';
+import { AppLoggerMiddleware } from '../app.logger.middleware';
+import * as Sentry from '@sentry/serverless';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
@@ -61,7 +61,6 @@ import { RavenInterceptor, RavenModule } from 'nest-raven';
     TokenPoolModule,
     CommonModule,
     SeizeApiModule,
-    RavenModule,
   ],
   providers: [
     {
@@ -82,17 +81,6 @@ import { RavenInterceptor, RavenModule } from 'nest-raven';
         ),
       }),
       inject: [ConfigService],
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useValue: new RavenInterceptor({
-        filters: [
-          {
-            type: HttpException,
-            filter: (exception: HttpException) => 500 > exception.getStatus(),
-          },
-        ],
-      }),
     },
     AccessTokenStrategy,
     AllowlistOperationService,
@@ -126,4 +114,12 @@ import { RavenInterceptor, RavenModule } from 'nest-raven';
     // Placeholder for future controllers, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
 })
-export class ApiModule {}
+export class ApiModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AppLoggerMiddleware).forRoutes('*');
+    consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+  }
+}

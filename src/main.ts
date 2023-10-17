@@ -4,16 +4,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { initEnv } from './env';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { migrateDb } from './migrate';
-import * as Sentry from '@sentry/node';
 
 async function bootstrap() {
-  if (process.env.ALLOWLIST_SENTRY_DSN) {
-    Sentry.init({
-      dsn: process.env.ALLOWLIST_SENTRY_DSN,
-      tracesSampleRate: 1.0,
-      debug: true,
-    });
-  }
   const app = await NestFactory.create(AppModule);
   app.enableShutdownHooks();
   app.enableCors();

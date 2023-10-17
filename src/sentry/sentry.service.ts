@@ -1,13 +1,10 @@
 import { Request } from 'express';
 import { Injectable } from '@nestjs/common';
-import * as Sentry from '@sentry/node';
+import * as Sentry from '@sentry/serverless';
 import { Span, SpanContext } from '@sentry/types';
 
 @Injectable()
 export class SentryService {
-  /**
-   * Return the current span defined in the current Hub and Scope
-   */
   get span(): Span {
     return Sentry.getCurrentHub().getScope().getSpan();
   }
@@ -37,11 +34,6 @@ export class SentryService {
     return span;
   }
 
-  /**
-   * This will simply start a new child span in the current span
-   *
-   * @param spanContext
-   */
   startChild(spanContext: SpanContext) {
     return this.span.startChild(spanContext);
   }
