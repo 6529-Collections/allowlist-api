@@ -5,7 +5,6 @@ import {
   Inject,
   Post,
   UnauthorizedException,
-  UseInterceptors,
 } from '@nestjs/common';
 import { PublicEndpoint } from './public-endpoint-decorator';
 import { JwtService } from '@nestjs/jwt';
@@ -15,7 +14,6 @@ import { randomUUID } from 'crypto';
 import { AUTH_CONFIG, AuthConfig } from './auth.config';
 import { LoginResponse } from './login.response';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RavenInterceptor } from 'nest-raven';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -27,7 +25,6 @@ export class AuthController {
 
   @PublicEndpoint()
   @Get('test-failure')
-  @UseInterceptors(new RavenInterceptor())
   testFailure() {
     throw new Error('Test some new failure');
   }
