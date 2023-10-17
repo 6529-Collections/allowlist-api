@@ -31,7 +31,7 @@ export class SentryService {
 
     span.startChild(spanContext);
 
-    return span;
+    return { span, transaction };
   }
 
   startChild(spanContext: SpanContext) {

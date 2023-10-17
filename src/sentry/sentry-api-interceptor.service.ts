@@ -16,7 +16,7 @@ export class SentryApiInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
 
-    const span = this.sentryService.getRequestSpan(request, {
+    const { span, transaction } = this.sentryService.getRequestSpan(request, {
       op: `Route Handler`,
     });
 
@@ -30,6 +30,8 @@ export class SentryApiInterceptor implements NestInterceptor {
             process.env.SENTRY_DSN?.at(10),
           );
           Sentry.captureException(error, span.getTraceContext());
+          span.finish();
+          transaction.finish();
         }
         return throwError(() => error);
       }),
