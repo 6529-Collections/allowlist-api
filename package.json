@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && yarn sentry:sourcemaps",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:local": "NODE_ENV=local nest start",
@@ -21,7 +21,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "new-endpoint": "node new-api-endpoint-generator-wrapper.js"
+    "new-endpoint": "node new-api-endpoint-generator-wrapper.js",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org seize-ff --project allowlist-api ./dist && sentry-cli sourcemaps upload --org seize-ff --project allowlist-api ./dist"
   },
   "dependencies": {
     "@6529-collections/allowlist-lib": "0.0.105",

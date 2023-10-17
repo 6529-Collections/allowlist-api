@@ -26,7 +26,7 @@ export class AuthController {
   @PublicEndpoint()
   @Get('test-failure')
   testFailure() {
-    throw new Error('Test some new failure');
+    throw new Error('Test some new failure v2');
   }
 
   @ApiOperation({
