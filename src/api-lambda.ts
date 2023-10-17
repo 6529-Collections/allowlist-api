@@ -12,6 +12,7 @@ import express from 'express';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { eventContext } from 'aws-serverless-express/middleware';
 
+console.log('Initializing sentry ' + process.env.SENTRY_DSN?.at(10));
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.SENTRY_ENV,
