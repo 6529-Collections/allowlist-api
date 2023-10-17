@@ -28,7 +28,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
       - name: Deploy
-        run: sed "s/SENTRY-DSN-VALUE/${SENTRY_DSN}/g" serverless-staging.yaml > serverless.yaml && yarn sls:deploy
+        run: ESCAPED_REPLACE=$(printf '%s\n' "$SENTRY_DSN" | sed -e 's/[\/&]/\\&/g') && sed "s/SENTRY-DSN-VALUE/${ESCAPED_REPLACE}/g" serverless-staging.yaml > serverless.yaml && yarn sls:deploy
       - name: Notify about failure
         uses: sarisia/actions-status-discord@v1
         if: failure()
