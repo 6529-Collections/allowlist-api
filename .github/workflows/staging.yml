@@ -6,6 +6,7 @@ env:
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   AWS_REGION: eu-west-1
   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
 jobs:
   build-test-and-deploy:
