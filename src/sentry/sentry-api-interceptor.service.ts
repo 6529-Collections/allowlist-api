@@ -30,8 +30,6 @@ export class SentryApiInterceptor implements NestInterceptor {
             process.env.SENTRY_DSN?.at(10),
           );
           Sentry.captureException(error, span.getTraceContext());
-          span.finish();
-          transaction.finish();
         }
         return throwError(() => error);
       }),
