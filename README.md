@@ -20,14 +20,14 @@ Then run:
 docker-compose up -d
 ```
 
-Now the database is ready to be used. Dev DB is running on port 3306 and the DB is named `allowlist` (user: allowlist; password: allowlist)
+Now the database is ready to be used. Dev DB is running on port 3307 and the DB is named `allowlist` (user: allowlist; password: allowlist)
 
 Create an `.env.local` file in the root of the project and add the following:
 
 ```
 ALLOWLIST_APP_PORT=3000
-ALLOWLIST_DB_HOST=localhost
-ALLOWLIST_DB_PORT=3306
+ALLOWLIST_DB_HOST=127.0.0.1
+ALLOWLIST_DB_PORT=3307
 ALLOWLIST_DB_USER=allowlist
 ALLOWLIST_DB_NAME=allowlist
 ALLOWLIST_DB_PASSWORD=allowlist
