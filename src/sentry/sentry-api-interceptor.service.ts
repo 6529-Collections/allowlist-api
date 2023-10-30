@@ -14,6 +14,9 @@ export class SentryApiInterceptor implements NestInterceptor {
   constructor(private sentryService: SentryService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    if (!process.env.SENTRY_DSN) {
+      return next.handle();
+    }
     const request = context.switchToHttp().getRequest();
 
     const { span } = this.sentryService.getRequestSpan(request, {

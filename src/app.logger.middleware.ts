@@ -1,13 +1,18 @@
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { Time } from './time';
 
 @Injectable()
 export class AppLoggerMiddleware implements NestMiddleware {
+  constructor(private readonly configService: ConfigService) {}
   private logger = new Logger('HTTP');
 
   use(request: Request, response: Response, next: NextFunction): void {
+    if (this.configService.get('REQUEST_LOG_OFF') === 'true') {
+      return next();
+    }
     const { ip, method, originalUrl: url } = request;
     const start = Time.now();
 

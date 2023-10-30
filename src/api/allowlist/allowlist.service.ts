@@ -86,6 +86,9 @@ export class AllowlistService {
     wallets: string[];
     tdh: number;
   }): Promise<boolean> {
+    if (process.env.DEV_MODE === 'true') {
+      return true;
+    }
     if (tdh < 1) {
       return false;
     }
