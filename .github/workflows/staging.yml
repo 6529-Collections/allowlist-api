@@ -7,7 +7,6 @@ env:
   AWS_REGION: eu-west-1
   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
 jobs:
   build-test-and-deploy:
@@ -30,7 +29,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
       - name: Deploy
-        run: ESCAPED_REPLACE=$(printf '%s\n' "$SENTRY_DSN" | sed -e 's/[\/&]/\\&/g') && sed "s/SENTRY-DSN-VALUE/${ESCAPED_REPLACE}/g" serverless-staging.yaml > serverless.yaml && yarn sls:deploy && yarn sentry:sourcemaps
+        run: cp serverless-staging.yaml > serverless.yaml && yarn sls:deploy && yarn sentry:sourcemaps
       - name: Notify about failure
         uses: sarisia/actions-status-discord@v1
         if: failure()

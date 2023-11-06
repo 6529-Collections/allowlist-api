@@ -20,7 +20,7 @@ provider:
     ALLOWLIST_AWS_REGION: "us-east-1"
     SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:987989283142:allowlist-creation.fifo"
     SNS_TOKEN_POOL_DOWNLOADER_TOPIC_ARN: "arn:aws:sns:us-east-1:987989283142:token-pool-downloader.fifo"
-    SENTRY_DSN: "SENTRY-DSN-VALUE"
+    SENTRY_DSN: ${env:SENTRY_DSN}
     SENTRY_ENV: production
   cors: true
   tracing: true
