@@ -22,6 +22,7 @@ provider:
     SNS_TOKEN_POOL_DOWNLOADER_TOPIC_ARN: "arn:aws:sns:eu-west-1:987989283142:token-pool-downloader.fifo"
     SENTRY_DSN: "SENTRY-DSN-VALUE"
     SENTRY_ENV: staging
+    DISCORD_WEBHOOK: ${env:DISCORD_WEBHOOK}
   cors: true
   tracing: true
   iamRoleStatements:
