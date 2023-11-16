@@ -99,16 +99,7 @@ export class TokenPoolDownloaderService {
     this.logger.log(
       `Claimed tokenpool download with id ${tokenPoolId}. Starting...`,
     );
-    let doableThroughAlchemy: boolean;
-    try {
-      await this.alchemy.nft.getOwnersForContract(entity.contract, {
-        withTokenBalances: true,
-        block: entity.block_no.toString(),
-      });
-      doableThroughAlchemy = true;
-    } catch (e) {
-      doableThroughAlchemy = false;
-    }
+    const doableThroughAlchemy = await this.attemptThroughAlchemy(entity);
     this.logger.log(`Asking for single type latest block...`);
     const singleTypeLatestBlock =
       await this.transferRepository.getLatestTransferBlockNo({
@@ -155,67 +146,93 @@ export class TokenPoolDownloaderService {
     if (doableThroughAlchemy) {
       return this.runOperationsAndFinishUp({ entity, state });
     } else {
-      const schema =
-        await this.allowlistCreator.etherscanService.getContractSchema({
-          contractAddress: entity.contract,
+      return await this.doWithoutAlchemy(
+        entity,
+        singleTypeLatestBlock,
+        state,
+        batchTypeLatestBlock,
+      );
+    }
+  }
+
+  private async doWithoutAlchemy(
+    entity: TokenPoolDownloadEntity,
+    singleTypeLatestBlock: number,
+    state: TokenPoolDownloaderParamsState,
+    batchTypeLatestBlock: number,
+  ) {
+    const schema =
+      await this.allowlistCreator.etherscanService.getContractSchema({
+        contractAddress: entity.contract,
+      });
+    switch (schema) {
+      case ContractSchema.ERC721:
+        return this.doTransferType({
+          entity,
+          schema,
+          latestBlockNo: singleTypeLatestBlock,
+          transferType: 'single',
+          state,
+        }).then((job) => {
+          if (job.continue) {
+            return job;
+          }
+          return this.runOperationsAndFinishUp({ entity, state });
         });
-      switch (schema) {
-        case ContractSchema.ERC721:
-          return this.doTransferType({
-            entity,
-            schema,
-            latestBlockNo: singleTypeLatestBlock,
-            transferType: 'single',
-            state,
-          }).then((job) => {
+      case ContractSchema.ERC721Old:
+        return this.doTransferType({
+          entity,
+          schema,
+          latestBlockNo: singleTypeLatestBlock,
+          transferType: 'single',
+          state,
+        }).then((job) => {
+          if (job.continue) {
+            return job;
+          }
+          return this.runOperationsAndFinishUp({ entity, state });
+        });
+      case ContractSchema.ERC1155:
+        return this.doTransferType({
+          entity,
+          schema,
+          latestBlockNo: batchTypeLatestBlock,
+          transferType: 'batch',
+          state,
+        })
+          .then((job) => {
             if (job.continue) {
               return job;
             }
-            return this.runOperationsAndFinishUp({ entity, state });
-          });
-        case ContractSchema.ERC721Old:
-          return this.doTransferType({
-            entity,
-            schema,
-            latestBlockNo: singleTypeLatestBlock,
-            transferType: 'single',
-            state,
-          }).then((job) => {
-            if (job.continue) {
-              return job;
-            }
-            return this.runOperationsAndFinishUp({ entity, state });
-          });
-        case ContractSchema.ERC1155:
-          return this.doTransferType({
-            entity,
-            schema,
-            latestBlockNo: batchTypeLatestBlock,
-            transferType: 'batch',
-            state,
-          })
-            .then((job) => {
-              if (job.continue) {
-                return job;
-              }
-              return this.doTransferType({
-                entity,
-                schema,
-                latestBlockNo: singleTypeLatestBlock,
-                transferType: 'single',
-                state,
-              });
-            })
-            .then((job) => {
-              if (job.continue) {
-                return job;
-              }
-              return this.runOperationsAndFinishUp({ entity, state });
+            return this.doTransferType({
+              entity,
+              schema,
+              latestBlockNo: singleTypeLatestBlock,
+              transferType: 'single',
+              state,
             });
-        default:
-          assertUnreachable(schema);
-          break;
-      }
+          })
+          .then((job) => {
+            if (job.continue) {
+              return job;
+            }
+            return this.runOperationsAndFinishUp({ entity, state });
+          });
+      default:
+        assertUnreachable(schema);
+        break;
+    }
+  }
+
+  private async attemptThroughAlchemy(entity: TokenPoolDownloadEntity) {
+    try {
+      await this.alchemy.nft.getOwnersForContract(entity.contract, {
+        withTokenBalances: true,
+        block: entity.block_no.toString(),
+      });
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
