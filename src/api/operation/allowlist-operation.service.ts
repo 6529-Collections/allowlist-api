@@ -14,7 +14,6 @@ import { randomUUID } from 'crypto';
 import { DB } from '../../repository/db';
 import { TokenPoolAsyncDownloader } from '../../token-pool/token-pool-async-downloader';
 import * as mariadb from 'mariadb';
-import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 
 @Injectable()
 export class AllowlistOperationService {
