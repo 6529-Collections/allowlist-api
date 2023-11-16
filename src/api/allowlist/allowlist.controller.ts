@@ -20,7 +20,6 @@ import { AllowlistDescriptionResponseApiModel } from './model/allowlist-descript
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { isEthereumAddress } from 'class-validator';
 import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
-import { randomUUID } from 'crypto';
 
 @Controller('/allowlists')
 export class AllowlistController {
