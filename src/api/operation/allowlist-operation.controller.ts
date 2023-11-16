@@ -71,7 +71,8 @@ export class AllowlistOperationController {
     @Param('allowlistId') allowlistId: string,
     @Param('operationOrder') operationOrder: number,
   ): Promise<number> {
-    if (!(+operationOrder > 0)) {
+    const normalizedOperationOrder = +operationOrder;
+    if (isNaN(normalizedOperationOrder) || normalizedOperationOrder <= 0) {
       throw new BadRequestException('operation order must be a number');
     }
     await this.allowlistOperationService.delete({
