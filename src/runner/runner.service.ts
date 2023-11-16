@@ -75,14 +75,17 @@ export class RunnerService {
     } catch (e) {
       this.logger.error(`Error running run for allowlist ${allowlistId}`, e);
       await connection.rollback();
+      let errorReason: string;
+      if (e === 'string') {
+        errorReason = e;
+      } else if (e.message === 'string') {
+        errorReason = e.message;
+      } else {
+        errorReason = JSON.stringify(e);
+      }
       await this.allowlistRepository.changeStatusToError({
         allowlistId,
-        errorReason:
-          typeof e === 'string'
-            ? e
-            : typeof e.message === 'string'
-            ? e.message
-            : JSON.stringify(e),
+        errorReason,
       });
       return null;
     } finally {
