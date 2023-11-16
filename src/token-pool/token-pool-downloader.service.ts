@@ -167,50 +167,46 @@ export class TokenPoolDownloaderService {
       });
     switch (schema) {
       case ContractSchema.ERC721:
-        return this.doTransferType({
+        return this.doTransferTypeSingle(
           entity,
           schema,
-          latestBlockNo: singleTypeLatestBlock,
-          transferType: 'single',
+          singleTypeLatestBlock,
           state,
-        }).then((job) => {
+        ).then((job) => {
           if (job.continue) {
             return job;
           }
           return this.runOperationsAndFinishUp({ entity, state });
         });
       case ContractSchema.ERC721Old:
-        return this.doTransferType({
+        return this.doTransferTypeSingle(
           entity,
           schema,
-          latestBlockNo: singleTypeLatestBlock,
-          transferType: 'single',
+          singleTypeLatestBlock,
           state,
-        }).then((job) => {
+        ).then((job) => {
           if (job.continue) {
             return job;
           }
           return this.runOperationsAndFinishUp({ entity, state });
         });
       case ContractSchema.ERC1155:
-        return this.doTransferType({
+        return this.doTransferTypeBatch(
           entity,
           schema,
-          latestBlockNo: batchTypeLatestBlock,
-          transferType: 'batch',
+          batchTypeLatestBlock,
           state,
-        })
+        )
           .then((job) => {
             if (job.continue) {
               return job;
             }
-            return this.doTransferType({
+            return this.doTransferTypeSingle(
               entity,
               schema,
-              latestBlockNo: singleTypeLatestBlock,
-              transferType: 'single',
+              singleTypeLatestBlock,
               state,
-            });
+            );
           })
           .then((job) => {
             if (job.continue) {
@@ -222,6 +218,36 @@ export class TokenPoolDownloaderService {
         assertUnreachable(schema);
         break;
     }
+  }
+
+  private doTransferTypeBatch(
+    entity: TokenPoolDownloadEntity,
+    schema,
+    batchTypeLatestBlock: number,
+    state: TokenPoolDownloaderParamsState,
+  ) {
+    return this.doTransferType({
+      entity,
+      schema,
+      latestBlockNo: batchTypeLatestBlock,
+      transferType: 'batch',
+      state,
+    });
+  }
+
+  private doTransferTypeSingle(
+    entity: TokenPoolDownloadEntity,
+    schema,
+    singleTypeLatestBlock: number,
+    state: TokenPoolDownloaderParamsState,
+  ) {
+    return this.doTransferType({
+      entity,
+      schema,
+      latestBlockNo: singleTypeLatestBlock,
+      transferType: 'single',
+      state,
+    });
   }
 
   private async attemptThroughAlchemy(entity: TokenPoolDownloadEntity) {
