@@ -17,6 +17,7 @@ import { AllowlistEntity } from '../repository/allowlist/allowlist.entity';
 import { DB } from '../repository/db';
 import { PhaseComponentItemEntity } from '../repository/phase-component-item/phase-component-item.entity';
 import { Time } from '../time';
+import { stringifyError } from '../app.utils';
 
 @Injectable()
 export class RunnerService {
@@ -75,17 +76,9 @@ export class RunnerService {
     } catch (e) {
       this.logger.error(`Error running run for allowlist ${allowlistId}`, e);
       await connection.rollback();
-      let errorReason: string;
-      if (e === 'string') {
-        errorReason = e;
-      } else if (e.message === 'string') {
-        errorReason = e.message;
-      } else {
-        errorReason = JSON.stringify(e);
-      }
       await this.allowlistRepository.changeStatusToError({
         allowlistId,
-        errorReason,
+        errorReason: stringifyError(e),
       });
       return null;
     } finally {
@@ -316,10 +309,6 @@ export class RunnerService {
     try {
       const results = await this.run(allowlist);
       this.logger.log(`Inserting results for run for allowlist ${allowlistId}`);
-      // fs.writeFileSync(
-      //   `./results/${params.run.id}.json`,
-      //   JSON.stringify(results, null, 2),
-      // );
       await this.insertResults({
         allowlist,
         results,
@@ -333,12 +322,7 @@ export class RunnerService {
       this.logger.error(`Error running for allowlist ${allowlistId}`);
       await this.allowlistRepository.changeStatusToError({
         allowlistId,
-        errorReason:
-          typeof e === 'string'
-            ? e
-            : typeof e.message === 'string'
-            ? e.message
-            : JSON.stringify(e),
+        errorReason: stringifyError(e),
       });
       throw e;
     }

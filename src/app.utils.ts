@@ -36,3 +36,13 @@ export const assertUnreachable = (_x: never): never => {
   // introduced without updating the relevant switch-case or if-else constructs.
   throw new Error("Didn't expect to get here");
 };
+
+export function stringifyError(error: any): string {
+  if (typeof error === 'string') {
+    return error;
+  } else if (error instanceof Error) {
+    return error.message;
+  } else {
+    return JSON.stringify(error);
+  }
+}
