@@ -352,7 +352,6 @@ export class TokenPoolDownloaderService {
         error: `Persisting state for token pool ${tokenPoolId} failed: ${e.message}`,
       };
     }
-    return { continue: false, entity, state };
   }
 
   private async persistTokenOwnerships({

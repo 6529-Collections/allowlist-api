@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CustomTokenPoolRepository } from '../../repository/custom-token-pool/custom-token-pool.repository';
 import { CustomTokenPoolResponseApiModel } from './model/custom-token-pool-response-api.model';
+import { CustomTokenPoolEntity } from '../../repository/custom-token-pool/custom-token-pool.entity';
 
 @Injectable()
 export class CustomTokenPoolService {
@@ -23,7 +24,7 @@ export class CustomTokenPoolService {
   }): Promise<CustomTokenPoolResponseApiModel> {
     const { allowlistId, customTokenPoolId } = param;
     const customTokenPool =
-      this.customTokenPoolRepository.getByExternalIdAndAllowlistId({
+      await this.customTokenPoolRepository.getByExternalIdAndAllowlistId({
         allowlistId,
         customTokenPoolId,
       });
@@ -34,7 +35,7 @@ export class CustomTokenPoolService {
   }
 
   private customTokenPoolEntityToApiModel(
-    model: any,
+    model: CustomTokenPoolEntity,
   ): CustomTokenPoolResponseApiModel {
     return {
       id: model.id,
