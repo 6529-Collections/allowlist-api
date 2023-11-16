@@ -10,10 +10,10 @@ export class AccessTokenGuard extends AuthGuard('jwt') {
   }
 
   canActivate(context: ExecutionContext) {
-    const authEnabled = process.env.ALLOWLIST_AUTH_ENABLED === 'true';
-    // if (!authEnabled) {
-    //   return true;
-    // }
+    const authDisabled = process.env.ALLOWLIST_AUTH_DISABLED === 'true';
+    if (!authDisabled) {
+      return true;
+    }
     return this.isPublic(context);
   }
 
