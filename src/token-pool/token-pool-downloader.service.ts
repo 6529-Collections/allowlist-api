@@ -17,7 +17,6 @@ import { AllowlistState } from '@6529-collections/allowlist-lib/allowlist/state-
 import { TransferRepository } from '../repository/transfer/transfer.repository';
 import { ContractSchema } from '@6529-collections/allowlist-lib/app-types';
 import { Time } from '../time';
-import { assertUnreachable } from '../app.utils';
 import { Alchemy } from 'alchemy-sdk';
 import {
   TokenPoolDownloaderParams,
@@ -165,65 +164,30 @@ export class TokenPoolDownloaderService {
       await this.allowlistCreator.etherscanService.getContractSchema({
         contractAddress: entity.contract,
       });
-    switch (schema) {
-      case ContractSchema.ERC721:
-        return this.doTransferTypeSingle(
-          entity,
-          schema,
-          singleTypeLatestBlock,
-          state,
-        ).then((job) => {
-          if (job.continue) {
-            return job;
-          }
-          return this.runOperationsAndFinishUp({ entity, state });
-        });
-      case ContractSchema.ERC721Old:
-        return this.doTransferTypeSingle(
-          entity,
-          schema,
-          singleTypeLatestBlock,
-          state,
-        ).then((job) => {
-          if (job.continue) {
-            return job;
-          }
-          return this.runOperationsAndFinishUp({ entity, state });
-        });
-      case ContractSchema.ERC1155:
-        return this.doTransferTypeBatch(
-          entity,
-          schema,
-          batchTypeLatestBlock,
-          state,
-        )
-          .then((job) => {
-            if (job.continue) {
-              return job;
-            }
-            return this.doTransferTypeSingle(
-              entity,
-              schema,
-              singleTypeLatestBlock,
-              state,
-            );
-          })
-          .then((job) => {
-            if (job.continue) {
-              return job;
-            }
-            return this.runOperationsAndFinishUp({ entity, state });
-          });
-      default:
-        assertUnreachable(schema);
-        break;
+    if ([ContractSchema.ERC721, ContractSchema.ERC721Old].includes(schema)) {
+      return this.doTransferTypeSingle(
+        entity,
+        schema,
+        singleTypeLatestBlock,
+        state,
+      );
+    } else if (schema === ContractSchema.ERC1155) {
+      return this.doTransferTypeBatch(
+        entity,
+        schema,
+        batchTypeLatestBlock,
+        singleTypeLatestBlock,
+        state,
+      );
     }
+    throw new Error("Didn't expect to get here");
   }
 
   private doTransferTypeBatch(
     entity: TokenPoolDownloadEntity,
     schema,
     batchTypeLatestBlock: number,
+    singleTypeLatestBlock: number,
     state: TokenPoolDownloaderParamsState,
   ) {
     return this.doTransferType({
@@ -232,7 +196,24 @@ export class TokenPoolDownloaderService {
       latestBlockNo: batchTypeLatestBlock,
       transferType: 'batch',
       state,
-    });
+    })
+      .then((job) => {
+        if (job.continue) {
+          return job;
+        }
+        return this.doTransferTypeSingle(
+          entity,
+          schema,
+          singleTypeLatestBlock,
+          state,
+        );
+      })
+      .then((job) => {
+        if (job.continue) {
+          return job;
+        }
+        return this.runOperationsAndFinishUp({ entity, state });
+      });
   }
 
   private doTransferTypeSingle(
@@ -247,6 +228,11 @@ export class TokenPoolDownloaderService {
       latestBlockNo: singleTypeLatestBlock,
       transferType: 'single',
       state,
+    }).then((job) => {
+      if (job.continue) {
+        return job;
+      }
+      return this.runOperationsAndFinishUp({ entity, state });
     });
   }
 
