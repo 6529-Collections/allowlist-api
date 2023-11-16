@@ -206,6 +206,7 @@ export class TokenPoolDownloaderService {
           schema,
           singleTypeLatestBlock,
           state,
+          true,
         );
       })
       .then((job) => {
@@ -221,6 +222,7 @@ export class TokenPoolDownloaderService {
     schema,
     singleTypeLatestBlock: number,
     state: TokenPoolDownloaderParamsState,
+    skipFinishUp = false,
   ) {
     return this.doTransferType({
       entity,
@@ -229,7 +231,7 @@ export class TokenPoolDownloaderService {
       transferType: 'single',
       state,
     }).then((job) => {
-      if (job.continue) {
+      if (job.continue || skipFinishUp) {
         return job;
       }
       return this.runOperationsAndFinishUp({ entity, state });
