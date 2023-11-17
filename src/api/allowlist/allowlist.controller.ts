@@ -20,10 +20,14 @@ import { AllowlistDescriptionResponseApiModel } from './model/allowlist-descript
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { isEthereumAddress } from 'class-validator';
 import { HaveAllowlistAccess } from '../../decorators/have-allowlist-access.decorator';
+import { AllowlistUniqueWalletsCalculationService } from './allowlist-unique-wallets-calculation.service';
 
 @Controller('/allowlists')
 export class AllowlistController {
-  constructor(private readonly allowlistService: AllowlistService) {}
+  constructor(
+    private readonly allowlistService: AllowlistService,
+    private readonly allowlistUniqueWalletsCalculationService: AllowlistUniqueWalletsCalculationService,
+  ) {}
 
   @ApiOperation({
     summary:
@@ -95,7 +99,7 @@ export class AllowlistController {
   async getUniqueWalletsCountFromOperations(
     @Body() operations: AllowlistOperation[],
   ): Promise<number> {
-    return await this.allowlistService.getUniqueWalletsCountFromOperations(
+    return await this.allowlistUniqueWalletsCalculationService.getUniqueWalletsCountFromOperations(
       operations,
     );
   }

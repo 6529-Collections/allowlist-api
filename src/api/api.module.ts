@@ -47,6 +47,7 @@ import { TokenPoolDownloadController } from './token-pool-download/token-pool-do
 import { SeizeApiModule } from '../seize-api/seize-api.module';
 import { AppLoggerMiddleware } from '../app.logger.middleware';
 import * as Sentry from '@sentry/serverless';
+import { AllowlistUniqueWalletsCalculationService } from './allowlist/allowlist-unique-wallets-calculation.service';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
 
@@ -95,6 +96,7 @@ import * as Sentry from '@sentry/serverless';
     PhaseComponentItemService,
     PhaseFullService,
     ResultService,
+    AllowlistUniqueWalletsCalculationService,
     // Placeholder for future services, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
   ],
   controllers: [

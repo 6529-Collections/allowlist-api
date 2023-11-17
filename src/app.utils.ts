@@ -37,6 +37,13 @@ export const assertUnreachable = (_x: never): never => {
   throw new Error("Didn't expect to get here");
 };
 
+export function associateByToMap<T>(
+  arr: T[],
+  keyFinder: (item: T) => string,
+): Map<string, T> {
+  return new Map(arr.map((item) => [keyFinder(item), item]));
+}
+
 export function stringifyError(error: any): string {
   if (typeof error === 'string') {
     return error;
