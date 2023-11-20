@@ -72,12 +72,18 @@ export class PhaseComponentWinnerRepository {
   async getUniqueWalletsByComponentIds(param: {
     componentIds: string[];
   }): Promise<string[]> {
-    const componentIds = param.componentIds.map((id) => `'${id}'`).join(',');
+    const componentIds = param.componentIds;
+    if (!componentIds.length) {
+      return [];
+    }
     return (
       await this.db.many<{ wallet: string }>(
         `SELECT DISTINCT wallet
               FROM phase_component_winner
-              WHERE phase_component_external_id IN (${componentIds})`,
+              WHERE phase_component_external_id IN (${componentIds
+                .map(() => '?')
+                .join(',')})`,
+        componentIds,
       )
     ).map((item) => item.wallet.toLowerCase());
   }
@@ -85,12 +91,17 @@ export class PhaseComponentWinnerRepository {
   async getWinnersByComponentIds(param: {
     componentIds: string[];
   }): Promise<PhaseComponentWinnerEntity[]> {
-    if (!param.componentIds.length) return [];
-    const componentIds = param.componentIds.map((id) => `'${id}'`).join(',');
+    const componentIds = param.componentIds;
+    if (!componentIds.length) {
+      return [];
+    }
     return this.db.many<PhaseComponentWinnerEntity>(
       `SELECT id, wallet, phase_external_id as phase_id, allowlist_id, amount, phase_component_external_id as phase_component_id
               FROM phase_component_winner
-              WHERE phase_component_external_id IN (${componentIds})`,
+              WHERE phase_component_external_id IN (${componentIds
+                .map(() => '?')
+                .join(',')})`,
+      componentIds,
     );
   }
 }
