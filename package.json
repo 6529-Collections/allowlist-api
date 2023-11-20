@@ -41,7 +41,7 @@
     "@sentry/profiling-node": "^1.2.1",
     "@sentry/serverless": "^7.74.0",
     "@vendia/serverless-express": "^4.10.4",
-    "alchemy-sdk": "^2.10.1",
+    "alchemy-sdk": "^3.0.0",
     "aws-lambda": "^1.0.7",
     "aws-serverless-express": "^3.4.0",
     "axios": "^1.6.2",
