@@ -174,7 +174,7 @@ export class AllowlistService {
     return this.allowlistEntityToResponseModel(entity);
   }
 
-  async delete(allowlistId: string): Promise<void> {
+  async delete(allowlistId: string): Promise<string> {
     const entity = await this.allowlistRepository.findById(allowlistId);
     if (!entity) {
       throw new NotFoundException(
@@ -189,6 +189,7 @@ export class AllowlistService {
     }
 
     await this.commonService.deleteAllowlist(allowlistId);
+    return entity.id;
   }
 
   private async prepNewRun({ allowlistId }: { allowlistId: string }) {

@@ -4,12 +4,16 @@ import { AllowlistEntity } from './allowlist.entity';
 import * as mariadb from 'mariadb';
 import { Time } from '../../time';
 import { DB } from '../db';
+import { createQuestionMarks } from '../db.utility';
 
 @Injectable()
 export class AllowlistRepository {
   constructor(private readonly db: DB) {}
 
   async findByIds({ ids }: { ids: string[] }): Promise<AllowlistEntity[]> {
+    if (!ids.length) {
+      return [];
+    }
     return this.db.many<AllowlistEntity>(
       `select allowlist.*,
                     allowlist_run.status     as run_status,
@@ -18,7 +22,7 @@ export class AllowlistRepository {
                     allowlist_run.error_reason as error_reason
              from allowlist
                       left join allowlist_run on allowlist.id = allowlist_run.allowlist_id
-             where allowlist.id in (${ids.map(() => '?').join(',')});`,
+             where allowlist.id in (${createQuestionMarks(ids.length)});`,
       ids,
     );
   }

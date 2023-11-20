@@ -3,6 +3,7 @@ import * as mariadb from 'mariadb';
 import { DB } from '../db';
 import { PhaseComponentWinnerEntity } from './phase-component-winner.entity';
 import { randomUUID } from 'crypto';
+import { createQuestionMarks } from '../db.utility';
 
 @Injectable()
 export class PhaseComponentWinnerRepository {
@@ -80,9 +81,9 @@ export class PhaseComponentWinnerRepository {
       await this.db.many<{ wallet: string }>(
         `SELECT DISTINCT wallet
               FROM phase_component_winner
-              WHERE phase_component_external_id IN (${componentIds
-                .map(() => '?')
-                .join(',')})`,
+              WHERE phase_component_external_id IN (${createQuestionMarks(
+                componentIds.length,
+              )})`,
         componentIds,
       )
     ).map((item) => item.wallet.toLowerCase());
@@ -98,9 +99,9 @@ export class PhaseComponentWinnerRepository {
     return this.db.many<PhaseComponentWinnerEntity>(
       `SELECT id, wallet, phase_external_id as phase_id, allowlist_id, amount, phase_component_external_id as phase_component_id
               FROM phase_component_winner
-              WHERE phase_component_external_id IN (${componentIds
-                .map(() => '?')
-                .join(',')})`,
+              WHERE phase_component_external_id IN (${createQuestionMarks(
+                componentIds.length,
+              )})`,
       componentIds,
     );
   }

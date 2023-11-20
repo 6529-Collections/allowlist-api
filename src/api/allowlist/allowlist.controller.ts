@@ -90,8 +90,7 @@ export class AllowlistController {
   @HaveAllowlistAccess()
   @Delete(':allowlistId')
   async delete(@Param('allowlistId') allowlistId: string): Promise<string> {
-    await this.allowlistService.delete(allowlistId);
-    return allowlistId;
+    return await this.allowlistService.delete(allowlistId);
   }
 
   @HaveAllowlistAccess()

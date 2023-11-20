@@ -1,1 +1,3 @@
-export const APP_POOL = 'APP_POOL';
+export function createQuestionMarks(count: number): string {
+  return new Array(count).fill('?').join(', ');
+}
