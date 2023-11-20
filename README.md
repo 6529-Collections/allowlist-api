@@ -61,7 +61,7 @@ Github actions CI pipelines are used to build and redeploy everything to staging
 
 New migrations are called on first invocation of any lambda.
 
-In production the app is ran in three lambas:
+In production the app is ran in 3 lambas:
 
 1. API lambda - Serves all API requests (entrypoint: `src/api-lambda.ts/handle`)
 2. Worker lambda - Does the actual final allowlist creation (entrypoint: `src/worker-lambda.ts/handle`)
