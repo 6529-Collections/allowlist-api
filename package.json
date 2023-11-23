@@ -25,7 +25,7 @@
     "sentry:sourcemaps": "./node_modules/.bin/sentry-cli sourcemaps inject --org seize-ff --project allowlist-api ./dist && ./node_modules/.bin/sentry-cli sourcemaps upload --org seize-ff --project allowlist-api ./dist"
   },
   "dependencies": {
-    "@6529-collections/allowlist-lib": "0.0.111",
+    "@6529-collections/allowlist-lib": "0.0.112",
     "@aws-sdk/client-secrets-manager": "^3.334.0",
     "@aws-sdk/client-sns": "^3.335.0",
     "@nestjs/axios": "^3.0.1",
@@ -41,7 +41,7 @@
     "@sentry/profiling-node": "^1.2.1",
     "@sentry/serverless": "^7.74.0",
     "@vendia/serverless-express": "^4.10.4",
-    "alchemy-sdk": "^3.0.0",
+    "alchemy-sdk": "^2.10.1",
     "aws-lambda": "^1.0.7",
     "aws-serverless-express": "^3.4.0",
     "axios": "^1.6.2",
