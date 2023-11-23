@@ -10,12 +10,12 @@
     d "1"
     es5-ext "^0.10.47"
 
-"@6529-collections/allowlist-lib@0.0.111":
-  version "0.0.111"
-  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.111/c7fc706b670855995320d09af6f686f6e14ff4ed#c7fc706b670855995320d09af6f686f6e14ff4ed"
-  integrity sha512-kzlD1CtI7yFtpuNKc4YZVF534eUDMJhrys8qJXIvx25x8GzJcYuXI3H5okjaKMVRia+P7+VQ+W2oJEfvlC8BTw==
+"@6529-collections/allowlist-lib@0.0.112":
+  version "0.0.112"
+  resolved "https://npm.pkg.github.com/download/@6529-collections/allowlist-lib/0.0.112/da20abbdceeeed634dbd8429c41b3dd0080b8c62#da20abbdceeeed634dbd8429c41b3dd0080b8c62"
+  integrity sha512-3iYiJ4mgUN2grjpJNQCiE92tTmB1JfmVonPYayNgS6s9zYcSi5KGYgaI8tQyAxxsZzw9XepkOuK83g5L8PK1JQ==
   dependencies:
-    alchemy-sdk "^3.0.0"
+    alchemy-sdk "^2.10.1"
     axios "^1.6.2"
     csv "^6.3.1"
     seedrandom "^3.0.5"
@@ -4831,10 +4831,10 @@ ajv@^6.12.4, ajv@^6.12.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-alchemy-sdk@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/alchemy-sdk/-/alchemy-sdk-3.0.0.tgz#20ecb1dce4a8881d126e7062b96109c26e4ab186"
-  integrity sha512-mTvL9+ly55dz2h+/qElLNy2KM6yJY15bAHr7HCCaYquIYpdBHd1kKSosFBUKRGpWECngFoq+ZF+78hmEPMrZkw==
+alchemy-sdk@^2.10.1:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/alchemy-sdk/-/alchemy-sdk-2.11.0.tgz#a6c9e32c56150492760c44debcc5ad73672d8aa5"
+  integrity sha512-0fiMINLaDQvok9b3FehZkZ71QJmaM5dLe9VP1IXxDQjEJ4e+CJyASpvZVXf9A9ydfTfskRW5J9kiyYQCwZhkfg==
   dependencies:
     "@ethersproject/abi" "^5.7.0"
     "@ethersproject/abstract-provider" "^5.7.0"
