@@ -27,7 +27,7 @@
   "dependencies": {
     "@6529-collections/allowlist-lib": "0.0.113",
     "@aws-sdk/client-secrets-manager": "^3.334.0",
-    "@aws-sdk/client-sns": "^3.335.0",
+    "@aws-sdk/client-sns": "^3.529.0",
     "@nestjs/axios": "^3.0.1",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
