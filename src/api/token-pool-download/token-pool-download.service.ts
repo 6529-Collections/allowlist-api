@@ -109,10 +109,10 @@ export class TokenPoolDownloadService {
       tokenPoolId,
     ]);
     return tokens.map((token) => ({
+      address: token.wallet,
+      token_id: token.token_id,
+      balance: token.amount,
       contract: token.contract,
-      tokenId: token.token_id,
-      amount: token.amount,
-      wallet: token.wallet,
     }));
   }
 }
