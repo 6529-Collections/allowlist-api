@@ -41,7 +41,7 @@ export class SeizeApiService {
   async getWalletConsolidatedMetrics(
     wallet: string,
   ): Promise<SeizeAPIWalletConsolidatedMetricsResponse> {
-    const url = `${this.BASE_URL}/consolidated_owner_metrics?wallet=${wallet}`;
+    const url = `${this.BASE_URL}/tdh/consolidated_metrics?search=${wallet}`;
     return await this.seizeGet<SeizeAPIWalletConsolidatedMetricsResponse>(
       url,
       {},

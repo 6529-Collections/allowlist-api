@@ -109,14 +109,15 @@ export class AllowlistService {
   ): Promise<{ wallets: string[]; tdh: number }> {
     const consolidationsResponse =
       await this.seizeApiService.getWalletConsolidatedMetrics(wallet);
-    if (!consolidationsResponse?.data?.at(0)?.wallets?.length) {
+    if (!consolidationsResponse?.data?.at(0)?.consolidation_key?.length) {
       return { wallets: [wallet], tdh: 0 };
     }
     return {
       wallets: consolidationsResponse.data
         .at(0)
-        .wallets.map((wallet) => wallet.toLowerCase()),
-      tdh: consolidationsResponse.data.at(0).boosted_memes_tdh ?? 0,
+        .consolidation_key.split('-')
+        .map((w) => w.toLowerCase()),
+      tdh: consolidationsResponse.data.at(0).boosted_tdh ?? 0,
     };
   }
 
