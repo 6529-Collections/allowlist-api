@@ -13,19 +13,19 @@ export class TokenPoolDownloadTokenResponseApiModel {
     type: String,
     required: true,
   })
-  readonly tokenId: string;
+  readonly token_id: string;
 
   @ApiProperty({
     description: 'Amount of tokens',
     type: Number,
     required: true,
   })
-  readonly amount: number;
+  readonly balance: number;
 
   @ApiProperty({
     description: 'Wallet address',
     type: String,
     required: true,
   })
-  readonly wallet: string;
+  readonly address: string;
 }
