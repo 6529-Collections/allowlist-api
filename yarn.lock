@@ -12,7 +12,7 @@
 
 "@6529-collections/allowlist-lib@file:vendor/6529-collections-allowlist-lib-0.0.114.tgz":
   version "0.0.114"
-  resolved "vendor/6529-collections-allowlist-lib-0.0.114.tgz"
+  resolved "file:vendor/6529-collections-allowlist-lib-0.0.114.tgz"
   integrity sha512-kKQM1Wi5WwDKxM+xkBKBhnqQ2FRCZIJFblf/5QIyYPs6jPtoTjAy8lsLX2j5Qz5QhDAa/a8IxcZ5fBl6494GMg==
   dependencies:
     alchemy-sdk "^2.10.1"
