@@ -12,10 +12,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OperationDescriptionsResponseApiModel } from './model/operation-descriptions-response-api.model';
-import { AlchemyApiService } from '../../alchemy-api/alchemy-api.service';
+import {
+  AlchemyApiService,
+  ContractMetadataResponse,
+} from '../../alchemy-api/alchemy-api.service';
 import { SearchContractMetadataResponseApiModel } from './model/search-contract-metadata-response-api.model';
-import { ReservoirApiService } from '../../reservoir-api/reservoir-api.service';
-import { ReservoirCollection } from '../../reservoir-api/reservoir-api.types';
 import { formatNumberRange } from '../../app.utils';
 import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
 import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
@@ -25,12 +26,13 @@ import { EtherscanApiService } from '../../etherscan-api/etherscan-api.service';
 import { Time } from '../../time';
 import { PredictBlockNumbersResponseApiModel } from './model/predict-block-numbers-response-api.model';
 import { countSubNumbersInRange } from './other.utils';
+import { TransposeApiService } from '../../transpose-api/transpose-api.service';
 
 @Injectable()
 export class OtherService {
   constructor(
     private readonly alchemyApiService: AlchemyApiService,
-    private readonly reservoirApiService: ReservoirApiService,
+    private readonly transposeApiService: TransposeApiService,
     private readonly seizeApiService: SeizeApiService,
     private readonly etherscanApiService: EtherscanApiService,
   ) {}
@@ -63,29 +65,26 @@ export class OtherService {
   }
 
   private mapContractMetadata(
-    contract: ReservoirCollection,
+    contract: ContractMetadataResponse,
   ): SearchContractMetadataResponseApiModel {
     return {
       id: contract.id,
-      address: contract.primaryContract,
+      address: contract.address,
       name: contract.name ?? contract.name ?? 'N/A',
-      tokenType: contract.contractKind ?? 'N/A',
-      floorPrice: contract.floorAsk?.price?.amount?.native ?? null,
-      imageUrl: contract.image ?? null,
+      tokenType: contract.tokenType ?? 'N/A',
+      floorPrice: null,
+      imageUrl: contract.imageUrl ?? null,
       description: contract.description ?? null,
-      allTimeVolume: contract.volume?.allTime ?? null,
-      openseaVerified: contract.openseaVerificationStatus === 'verified',
+      allTimeVolume: null,
+      openseaVerified: contract.openseaVerified,
     };
   }
 
   async searchContractMetadata(
     kw: string,
   ): Promise<SearchContractMetadataResponseApiModel[]> {
-    const reservoirContracts =
-      await this.reservoirApiService.searchContractMetadata(kw);
-    return (reservoirContracts?.collections ?? []).map(
-      this.mapContractMetadata,
-    );
+    const contracts = await this.alchemyApiService.searchContractMetadata(kw);
+    return (contracts ?? []).map(this.mapContractMetadata);
   }
 
   async getLatestBlockNumber(): Promise<number> {
@@ -178,39 +177,40 @@ export class OtherService {
       '0x0c58ef43ff3032005e472cb5709f8908acb00205',
       '0x07e24ee32163da59297b5341bef8f8a2eead271e',
     ];
-    const defaultSubContracts: string[] = [
-      '0x495f947276749ce646f68ac8c248420045cb7b5e:opensea-6529internjpg',
-    ];
 
-    const defaultContractsMetadata =
-      await this.reservoirApiService.getContractsMetadataByAddresses(
-        defaultContracts,
-      );
+    const defaultContractsMetadata = await Promise.all(
+      defaultContracts.map((contract) =>
+        this.alchemyApiService.getContractMetadata(contract),
+      ),
+    );
 
-    for (const contract of defaultContractsMetadata.collections ?? []) {
-      results.push(this.mapContractMetadata(contract));
-    }
-
-    for (const subContractId of defaultSubContracts) {
-      const contractMetadata =
-        await this.reservoirApiService.getContractMetadataById(subContractId);
-      const subContractMetadata = contractMetadata.collections?.find(
-        (collection) => collection.id === subContractId,
-      );
-      if (subContractMetadata) {
-        results.push(this.mapContractMetadata(subContractMetadata));
+    for (const contract of defaultContractsMetadata ?? []) {
+      if (contract) {
+        results.push(this.mapContractMetadata(contract));
       }
     }
+    results.push({
+      id: '0x495f947276749ce646f68ac8c248420045cb7b5e:opensea-6529internjpg',
+      address: '0x495f947276749ce646f68ac8c248420045cb7b5e',
+      name: '6529 Intern JPGs',
+      tokenType: 'erc1155',
+      floorPrice: null,
+      imageUrl:
+        'https://i2.seadn.io/ethereum/0x495f947276749ce646f68ac8c248420045cb7b5e/b7b5b774da194235d7a5baf0fed900c8.png?h=250&w=250',
+      description: '',
+      allTimeVolume: 0,
+      openseaVerified: false,
+    });
+
     return results;
   }
 
   async getContractMetadata(
     contract: string,
   ): Promise<SearchContractMetadataResponseApiModel | null> {
-    const results =
-      await this.reservoirApiService.getContractsMetadataByAddress(contract);
-    if (results.collections?.length) {
-      return this.mapContractMetadata(results.collections.at(0));
+    const result = await this.alchemyApiService.getContractMetadata(contract);
+    if (result) {
+      return this.mapContractMetadata(result);
     }
     return null;
   }
@@ -220,9 +220,17 @@ export class OtherService {
   ): Promise<ContractTokenIdsAsStringResponseApiModel> {
     const tokenIds: string[] = [];
     let continuation: string | null = null;
-
+    if (
+      contractId ===
+      '0x495f947276749ce646f68ac8c248420045cb7b5e:opensea-6529internjpg'
+    ) {
+      return {
+        tokenIds:
+          '114495225433585396360028190551351025332882118060143334094864210829510638043137,114495225433585396360028190551351025332882118060143334094864210830610149670913,114495225433585396360028190551351025332882118060143334094864210831709661298689,114495225433585396360028190551351025332882118060143334094864210832809172926465,114495225433585396360028190551351025332882118060143334094864210833908684554241,114495225433585396360028190551351025332882118060143334094864210835008196182017,114495225433585396360028190551351025332882118060143334094864210836107707809793,114495225433585396360028190551351025332882118060143334094864210837207219437569,114495225433585396360028190551351025332882118060143334094864210838306731065345,114495225433585396360028190551351025332882118060143334094864210839406242693121,114495225433585396360028190551351025332882118060143334094864210840505754320897,114495225433585396360028190551351025332882118060143334094864210841605265948673,114495225433585396360028190551351025332882118060143334094864210842704777576449,114495225433585396360028190551351025332882118060143334094864210843804289204225,114495225433585396360028190551351025332882118060143334094864210844903800832001,114495225433585396360028190551351025332882118060143334094864210846003312459777,114495225433585396360028190551351025332882118060143334094864210847102824087553,114495225433585396360028190551351025332882118060143334094864210848202335715329,114495225433585396360028190551351025332882118060143334094864210849301847343105,114495225433585396360028190551351025332882118060143334094864210850401358970881',
+      };
+    }
     do {
-      const response = await this.reservoirApiService.getContractTokenIds({
+      const response = await this.transposeApiService.getContractTokenIds({
         address: contractId,
         continuation,
       });
