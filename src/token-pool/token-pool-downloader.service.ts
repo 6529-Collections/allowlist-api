@@ -141,7 +141,9 @@ export class TokenPoolDownloaderService {
     });
 
     this.logger.log(`Batch type latest block is ${batchTypeLatestBlock}`);
-
+    this.logger.log(
+      `Starting to index with${doableThroughAlchemy ? `` : `out`} Alchemy`,
+    );
     if (doableThroughAlchemy) {
       return this.runOperationsAndFinishUp({ entity, state });
     } else {
@@ -164,6 +166,7 @@ export class TokenPoolDownloaderService {
       await this.allowlistCreator.etherscanService.getContractSchema({
         contractAddress: entity.contract,
       });
+    this.logger.log(`${entity.contract} schema: ${schema}`);
     if ([ContractSchema.ERC721, ContractSchema.ERC721Old].includes(schema)) {
       return this.doTransferTypeSingle(
         entity,
@@ -268,15 +271,22 @@ export class TokenPoolDownloaderService {
     state: TokenPoolDownloaderParamsState;
   }> {
     const start = Time.now();
+    const params = {
+      contractAddress: entity.contract,
+      contractSchema: schema,
+      startingBlock: latestBlockNo.toString(),
+      toBlock: entity.block_no.toString(),
+      transferType: transferType,
+    };
+    this.logger.log(
+      `Starting fetch transfers through etherscan ${JSON.stringify(params)}`,
+    );
     for await (const transfers of this.allowlistCreator.etherscanService.getTransfers(
-      {
-        contractAddress: entity.contract,
-        contractSchema: schema,
-        startingBlock: latestBlockNo.toString(),
-        toBlock: entity.block_no.toString(),
-        transferType: transferType,
-      },
+      params,
     )) {
+      this.logger.log(
+        `Got ${transfers.length} transfers. ${JSON.stringify(params)}`,
+      );
       await this.transferRepository.saveContractTransfers(
         entity.contract,
         transfers,
