@@ -34,6 +34,7 @@ export const handler = Sentry.AWSLambda.wrapHandler(
     const params: TokenPoolDownloaderParams = JSON.parse(
       JSON.parse(message.body).Message,
     );
+    console.log('Event params', params);
     if (!params) {
       throw new Error('No params provided');
     }
