@@ -4,6 +4,7 @@ import { Transfer } from '@6529-collections/allowlist-lib/allowlist/state-types/
 import { DB } from '../db';
 import { TransferEntity } from './transfer.entity';
 import { bigInt2Number } from '../../app.utils';
+import { createQuestionMarks } from '../db.utility';
 
 @Injectable()
 export class TransferRepository implements TransfersStorage {
@@ -66,8 +67,8 @@ export class TransferRepository implements TransfersStorage {
              WHERE contract = ?
                AND block_number <= ?`;
     if (hasTokenFilter) {
-      query += ' AND token_id IN (?)';
-      params.push(normalizedTokenIds);
+      query += ` AND token_id IN (${createQuestionMarks(tokenIds.length)})`;
+      params.push(...normalizedTokenIds);
     }
     query += ' ORDER BY block_number, transaction_index, log_index';
     const entities = await this.db.many<TransferEntity>(query, params);
