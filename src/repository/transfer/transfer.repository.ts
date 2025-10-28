@@ -44,9 +44,14 @@ export class TransferRepository implements TransfersStorage {
   async getContractTransfersOrdered(
     contract: string,
     blockNo: number,
+    tokenIds: string[] = [],
   ): Promise<Transfer[]> {
-    const entities = await this.db.many<TransferEntity>(
-      `SELECT transaction_hash,
+    const hasTokenFilter = Array.isArray(tokenIds) && tokenIds.length > 0;
+    const normalizedTokenIds = hasTokenFilter
+      ? [...new Set(tokenIds.map((id) => id.toString()))]
+      : [];
+    const params: unknown[] = [contract, blockNo];
+    let query = `SELECT transaction_hash,
                     amount,
                     block_number,
                     contract,
@@ -59,12 +64,18 @@ export class TransferRepository implements TransfersStorage {
                     transfer_type
              FROM transfer
              WHERE contract = ?
-               AND block_number <= ?
-             ORDER BY block_number, transaction_index, log_index`,
-      [contract, blockNo],
-    );
+               AND block_number <= ?`;
+    if (hasTokenFilter) {
+      query += ' AND token_id IN (?)';
+      params.push(normalizedTokenIds);
+    }
+    query += ' ORDER BY block_number, transaction_index, log_index';
+    const entities = await this.db.many<TransferEntity>(query, params);
+    const filterInfo = hasTokenFilter
+      ? ` (filtered to ${normalizedTokenIds.length} token ids)`
+      : '';
     this.logger.log(
-      `Pulled ${entities.length} transfers from DB for contract ${contract}`,
+      `Pulled ${entities.length} transfers from DB for contract ${contract}${filterInfo}`,
     );
     return entities.map((e) => ({
       amount: bigInt2Number(e.amount),
