@@ -318,6 +318,9 @@ export class TokenPoolDownloaderService {
     error?: string;
   }> {
     const { token_pool_id: tokenPoolId } = entity;
+    this.logger.log(
+      `Running operations and finishing up for tokenpool ${tokenPoolId}`,
+    );
     const mockAllowlistId = randomUUID();
     const mockPoolId = randomUUID();
     const allowlistOpParams: DescribableEntity = {
@@ -355,6 +358,9 @@ export class TokenPoolDownloaderService {
     }
     try {
       const con = await this.db.getConnection();
+      this.logger.log(
+        `Running operations and finishing up for tokenpool ${tokenPoolId}`,
+      );
       try {
         await con.beginTransaction();
         await this.persistTokenOwnerships({
