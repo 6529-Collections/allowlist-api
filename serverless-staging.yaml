@@ -3,7 +3,6 @@ service: allowlist-api
 plugins:
   - serverless-plugin-typescript
   - serverless-plugin-optimize
-  - serverless-offline
   - serverless-plugin-warmup
   - serverless-plugin-tracing
 
@@ -68,8 +67,6 @@ functions:
     handler: ./src/api-lambda.handler
     name: allowlist-api
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
-    memorySize: 512
-    timeout: 30
     vpc:
       securityGroupIds:
         - sg-08e10923e6cff59a8
@@ -78,6 +75,8 @@ functions:
         - subnet-00dfa69df6e94f877
         - subnet-07ddc88c08df15ad3
         - subnet-0470704bff1eac2f5
+    memorySize: 512
+    timeout: 30
     events:
       - http:
           method: any
