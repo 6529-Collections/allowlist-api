@@ -9,7 +9,9 @@ export function bigInt2Number(value?: bigint): number | undefined {
   return undefined;
 }
 
-export function formatNumberRange(numbers: (string | bigint)[]): string {
+export function formatNumberRange(
+  numbers: (string | bigint | number)[],
+): string {
   const uniqueNumbers = [...new Set(numbers)];
   const sortedNumbers = uniqueNumbers
     .map((n) => BigInt(n))

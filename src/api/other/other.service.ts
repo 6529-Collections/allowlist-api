@@ -245,10 +245,16 @@ export class OtherService {
 
   async getMemesSeasons(): Promise<MemesSeasonResponseApiModel[]> {
     const seasons = await this.seizeApiService.getMemesSeasons();
-    return seasons.map((season) => ({
-      season: season.season,
-      tokenIds: formatNumberRange(season.token_ids.split(',')),
-    }));
+    return seasons.map((season) => {
+      const tokens = Array.from(
+        { length: season.end_index - season.start_index + 1 },
+        (_, i) => season.start_index + i,
+      );
+      return {
+        season: Number.parseInt(season.name.replace('Season ', '')),
+        tokenIds: formatNumberRange(tokens),
+      };
+    });
   }
 
   async resolveEnsToAddress(

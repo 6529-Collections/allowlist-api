@@ -1,7 +1,12 @@
 export interface SeizeApiSeizeSeasonResponse {
-  readonly season: number;
+  readonly id: number;
+  readonly created_at: string;
+  readonly start_index: number;
+  readonly end_index: number;
   readonly count: number;
-  readonly token_ids: string;
+  readonly name: string;
+  readonly display: string;
+  readonly boost: number;
 }
 
 export interface SeizeAPIWalletConsolidatedMetricsResponse {
@@ -26,16 +31,4 @@ export interface SeizeAPIWalletConsolidatedMetrics {
   readonly level: number;
   readonly day_change: number;
   readonly unique_memes_total: number;
-}
-
-export interface SeizeAPIWalletConsolidatedMetricsMeme {
-  id: number;
-  tdh: number;
-  balance: number;
-  tdh__raw: number;
-}
-
-export interface SeizeAPIWalletConsolidatedMetricsMemesRank {
-  id: number;
-  rank: number;
 }
