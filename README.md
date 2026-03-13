@@ -34,6 +34,8 @@ ALLOWLIST_DB_PASSWORD=allowlist
 ALLOWLIST_ETHERSCAN_API_KEY=<your-etherscan-api-key>
 ALLOWLIST_SEIZE_API_PATH=<seize-api-endpoint> (don't put a slash in the end. https://api.6529.io/api for example)
 ALLOWLIST_SEIZE_API_KEY=<seize-api-key> (can omit if using only public endpoints)
+ALLOWLIST_SEIZE_METADATA_TIMEOUT_MS=10000 (optional)
+ALLOWLIST_ARWEAVE_DOWNLOAD_TIMEOUT_MS=30000 (optional)
 ```
 
 To install app dependencies run `yarn`

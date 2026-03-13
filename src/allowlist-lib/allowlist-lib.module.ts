@@ -9,10 +9,16 @@ import { AlchemyApiModule } from '../alchemy-api/alchemy-api.module';
 import { Alchemy } from 'alchemy-sdk';
 import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-pool-token.repository';
 import { EtherscanService } from '@6529-collections/allowlist-lib/services/etherscan.service';
+import { AllowlistLibExecutionContextService } from './allowlist-lib-execution-context.service';
+import {
+  parseTimeoutMs,
+  patchAllowlistCreatorSeizeApi,
+} from './allowlist-lib-seize-timeout-patch';
 
 @Module({
   imports: [RepositoryModule, AlchemyApiModule],
   providers: [
+    AllowlistLibExecutionContextService,
     AllowlistLibLogListener,
     {
       provide: AllowlistCreator,
@@ -26,7 +32,8 @@ import { EtherscanService } from '@6529-collections/allowlist-lib/services/ether
         const etherscanApiKey = configService.get(
           'ALLOWLIST_ETHERSCAN_API_KEY',
         );
-        return AllowlistCreator.getInstance({
+        const loggerFactory = new LoggerFactory(allowlistLibLogListener);
+        const allowlistCreator = AllowlistCreator.getInstance({
           seizeApiPath: configService.get('ALLOWLIST_SEIZE_API_PATH'),
           seizeApiKey: configService.get('ALLOWLIST_SEIZE_API_KEY'),
           alchemy,
@@ -35,8 +42,21 @@ import { EtherscanService } from '@6529-collections/allowlist-lib/services/ether
             transfersStorage: transferRepository,
             tokenPoolStorage: tokenPoolTokenRepository,
           },
-          loggerFactory: new LoggerFactory(allowlistLibLogListener),
+          loggerFactory,
         });
+        patchAllowlistCreatorSeizeApi({
+          allowlistCreator,
+          loggerFactory,
+          seizeMetadataTimeoutMs: parseTimeoutMs(
+            configService.get('ALLOWLIST_SEIZE_METADATA_TIMEOUT_MS'),
+            10000,
+          ),
+          arweaveDownloadTimeoutMs: parseTimeoutMs(
+            configService.get('ALLOWLIST_ARWEAVE_DOWNLOAD_TIMEOUT_MS'),
+            30000,
+          ),
+        });
+        return allowlistCreator;
       },
       inject: [
         ConfigService,
@@ -54,6 +74,10 @@ import { EtherscanService } from '@6529-collections/allowlist-lib/services/ether
       inject: [AllowlistCreator],
     },
   ],
-  exports: [AllowlistCreator, EtherscanService],
+  exports: [
+    AllowlistCreator,
+    EtherscanService,
+    AllowlistLibExecutionContextService,
+  ],
 })
 export class AllowlistLibModule {}
