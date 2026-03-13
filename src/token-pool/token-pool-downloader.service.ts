@@ -22,6 +22,7 @@ import {
   TokenPoolDownloaderParams,
   TokenPoolDownloaderParamsState,
 } from './token-pool.types';
+import { AllowlistLibExecutionContextService } from '../allowlist-lib/allowlist-lib-execution-context.service';
 
 @Injectable()
 export class TokenPoolDownloaderService {
@@ -34,6 +35,7 @@ export class TokenPoolDownloaderService {
     private readonly transferRepository: TransferRepository,
     private readonly alchemy: Alchemy,
     private readonly db: DB,
+    private readonly allowlistLibExecutionContext: AllowlistLibExecutionContextService,
   ) {}
 
   async prepare({
@@ -339,22 +341,32 @@ export class TokenPoolDownloaderService {
     };
     let allowlistState: AllowlistState;
     try {
-      allowlistState = await this.allowlistCreator.execute([
+      allowlistState = await this.allowlistLibExecutionContext.run(
         {
-          code: AllowlistOperationCode.CREATE_ALLOWLIST,
-          params: allowlistOpParams,
+          tokenPoolId,
+          contract: entity.contract,
+          blockNo: entity.block_no,
+          consolidateBlockNo: entity.consolidate_block_no,
         },
-        {
-          code: AllowlistOperationCode.CREATE_TOKEN_POOL,
-          params: tokenPoolOpParams,
-        },
-      ]);
+        () =>
+          this.allowlistCreator.execute([
+            {
+              code: AllowlistOperationCode.CREATE_ALLOWLIST,
+              params: allowlistOpParams,
+            },
+            {
+              code: AllowlistOperationCode.CREATE_TOKEN_POOL,
+              params: tokenPoolOpParams,
+            },
+          ]),
+      );
     } catch (e) {
-      console.error(`Persisting state for token pool ${tokenPoolId} failed`, e);
+      const error = this.toTokenPoolExecutionError(tokenPoolId, e);
+      console.error(error.message, e);
       await this.tokenPoolDownloadRepository.changeStatusToError({
         tokenPoolId,
       });
-      throw e;
+      throw error;
     }
     try {
       const con = await this.db.getConnection();
@@ -434,5 +446,13 @@ export class TokenPoolDownloaderService {
       }, {} as Record<string, TokenPoolTokenEntity>),
     );
     await this.tokenPoolTokenRepository.insert(entities, { connection });
+  }
+
+  private toTokenPoolExecutionError(tokenPoolId: string, error: unknown) {
+    const message =
+      error instanceof Error ? error.message : 'Unknown allowlist-lib error';
+    return new Error(
+      `Token pool ${tokenPoolId} execution failed during consolidation or download: ${message}`,
+    );
   }
 }
