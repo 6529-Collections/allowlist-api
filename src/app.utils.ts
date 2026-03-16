@@ -8,7 +8,8 @@ export function bigInt2Number(
   if (value === undefined || value === null) {
     return undefined;
   }
-  return Number(value);
+  const result = Number(value);
+  return Number.isFinite(result) ? result : undefined;
 }
 
 export function formatNumberRange(

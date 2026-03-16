@@ -148,6 +148,11 @@ export class TokenPoolDownloadService {
       allowlistId,
       tokenPoolId,
     });
+    if (!refreshed) {
+      throw new NotFoundException(
+        `Token pool download with ID ${tokenPoolId} no longer exists after retry`,
+      );
+    }
     return this.entityToApiModel(refreshed);
   }
 

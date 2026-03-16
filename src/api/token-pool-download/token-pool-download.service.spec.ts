@@ -180,4 +180,63 @@ describe('TokenPoolDownloadService', () => {
       }),
     );
   });
+
+  it('throws if a retry cannot refetch the token pool download row', async () => {
+    process.env.TOKEN_POOL_DOWNLOAD_STALE_AFTER_MS = '1200000';
+    jest.spyOn(Date, 'now').mockReturnValue(2_500_000);
+    const entity = {
+      contract: '0xabc',
+      token_pool_id: 'pool-1',
+      allowlist_id: 'allowlist-1',
+      block_no: 123,
+      consolidate_block_no: null,
+      status: TokenPoolDownloadStatus.FAILED,
+      created_at: BigInt(1000),
+      updated_at: BigInt(1000),
+      claimed_at: BigInt(1000),
+      last_heartbeat_at: BigInt(1000),
+      attempt_count: 2,
+      failure_count: 1,
+      stage: TokenPoolDownloadStage.FAILED,
+    };
+    const tokenPoolDownloadRepository = {
+      getByAllowlistId: jest.fn(),
+      getByTokenPoolId: jest
+        .fn()
+        .mockResolvedValueOnce(entity)
+        .mockResolvedValueOnce(null),
+      recordFailureHistory: jest.fn().mockResolvedValue(undefined),
+    };
+    const allowlistOperationRepository = {
+      getAllowlistOperationsByCode: jest.fn().mockResolvedValue([
+        {
+          params: JSON.stringify({
+            id: 'pool-1',
+            contract: '0xabc',
+            blockNo: 123,
+            consolidateBlockNo: null,
+          }),
+        },
+      ]),
+    };
+    const tokenPoolAsyncDownloader = {
+      start: jest.fn().mockResolvedValue(undefined),
+    };
+    const service = new TokenPoolDownloadService(
+      tokenPoolDownloadRepository as any,
+      {} as any,
+      {} as any,
+      allowlistOperationRepository as any,
+      tokenPoolAsyncDownloader as any,
+    );
+
+    await expect(
+      service.retry({
+        allowlistId: 'allowlist-1',
+        tokenPoolId: 'pool-1',
+      }),
+    ).rejects.toThrow(
+      'Token pool download with ID pool-1 no longer exists after retry',
+    );
+  });
 });
