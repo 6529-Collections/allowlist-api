@@ -52,8 +52,35 @@ export function associateByToMap<T>(
 export function stringifyError(error: any): string {
   if (typeof error === 'string') {
     return error;
-  } else if (error instanceof Error) {
-    return error.message;
+  }
+
+  if (error instanceof Error || (error && typeof error === 'object')) {
+    const code =
+      typeof error.code === 'string' && error.code.length
+        ? `[${error.code}] `
+        : '';
+    const metadata =
+      error.metadata && typeof error.metadata === 'object'
+        ? Object.entries(error.metadata)
+            .filter(([, value]) => value !== undefined)
+            .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
+            .join(', ')
+        : '';
+    const details = metadata ? ` (${metadata})` : '';
+    const cause =
+      error.cause !== undefined
+        ? ` Cause: ${stringifyError(error.cause)}`
+        : '';
+    const message =
+      typeof error.message === 'string' && error.message.length
+        ? error.message
+        : JSON.stringify(error);
+
+    return `${code}${message}${details}${cause}`;
+  }
+
+  if (error === undefined) {
+    return 'undefined';
   } else {
     return JSON.stringify(error);
   }
