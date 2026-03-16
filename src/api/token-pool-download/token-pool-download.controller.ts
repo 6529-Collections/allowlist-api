@@ -62,4 +62,21 @@ export class TokenPoolDownloadController {
       tokenPoolId,
     });
   }
+
+  @ApiOperation({
+    summary: 'Retry token pool download',
+  })
+  @ApiOkResponse({
+    type: TokenPoolDownloadResponseApiModel,
+  })
+  @Post('token-pool/:tokenPoolId/retry')
+  async retry(
+    @Param('allowlistId') allowlistId: string,
+    @Param('tokenPoolId') tokenPoolId: string,
+  ): Promise<TokenPoolDownloadResponseApiModel> {
+    return await this.tokenPoolDownloadService.retry({
+      allowlistId,
+      tokenPoolId,
+    });
+  }
 }

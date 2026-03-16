@@ -22,6 +22,10 @@ import {
   TokenPoolDownloaderParams,
   TokenPoolDownloaderParamsState,
 } from './token-pool.types';
+import { TokenPoolDownloadStage } from '../repository/token-pool-download/token-pool-download-stage';
+import { stringifyError } from '../app.utils';
+
+type TokenPoolExecutionPath = 'FAST' | 'SLOW';
 
 @Injectable()
 export class TokenPoolDownloaderService {
@@ -51,7 +55,7 @@ export class TokenPoolDownloaderService {
     readonly blockNo: number;
     readonly consolidateBlockNo: number | null;
   }) {
-    await this.tokenPoolDownloadRepository.delete(tokenPoolId);
+    const now = BigInt(Time.currentMillis());
     await this.tokenPoolDownloadRepository.save({
       contract,
       token_ids: tokenIds,
@@ -60,6 +64,37 @@ export class TokenPoolDownloaderService {
       block_no: blockNo,
       consolidate_block_no: consolidateBlockNo ?? null,
       status: TokenPoolDownloadStatus.PENDING,
+      created_at: now,
+      updated_at: now,
+      claimed_at: null,
+      last_heartbeat_at: now,
+      completed_at: null,
+      failed_at: null,
+      error_reason: null,
+      attempt_count: 0,
+      stage: TokenPoolDownloadStage.PREPARING,
+      progress: this.serializeProgress({
+        contract,
+        tokenIds: tokenIds ?? null,
+        blockNo,
+        consolidateBlockNo: consolidateBlockNo ?? null,
+      }),
+    });
+  }
+
+  async requeue({
+    tokenPoolId,
+    state,
+  }: {
+    tokenPoolId: string;
+    state: TokenPoolDownloaderParamsState;
+  }) {
+    await this.tokenPoolDownloadRepository.requeue({
+      tokenPoolId,
+      progress: this.serializeProgress({
+        runsCount: state.runsCount,
+        startingBlocks: state.startingBlocks,
+      }),
     });
   }
 
@@ -69,7 +104,9 @@ export class TokenPoolDownloaderService {
     const connection = await this.db.getConnection();
     try {
       await connection.beginTransaction();
-      const entity = await this.tokenPoolDownloadRepository.claim(tokenPoolId);
+      const entity = await this.tokenPoolDownloadRepository.claim(tokenPoolId, {
+        connection,
+      });
       await connection.commit();
       return entity;
     } catch (e) {
@@ -82,7 +119,7 @@ export class TokenPoolDownloaderService {
 
   async start({ config, state }: TokenPoolDownloaderParams): Promise<{
     continue: boolean;
-    entity: TokenPoolDownloadEntity;
+    entity: TokenPoolDownloadEntity | null;
     state: TokenPoolDownloaderParamsState;
     error?: string;
   }> {
@@ -94,65 +131,97 @@ export class TokenPoolDownloaderService {
       );
       return { continue: false, entity: null, state };
     }
-    const { startingBlocks } = state;
-    this.logger.log(
-      `Claimed tokenpool download with id ${tokenPoolId}. Starting...`,
-    );
-    const doableThroughAlchemy = await this.attemptThroughAlchemy(entity);
-    this.logger.log(`Asking for single type latest block...`);
-    const singleTypeLatestBlock =
-      await this.transferRepository.getLatestTransferBlockNo({
-        contract: entity.contract,
-        transferType: 'single',
-      });
-    this.logger.log(`Single type latest block is ${singleTypeLatestBlock}`);
 
-    this.logger.log(`Asking for batch type latest block...`);
-    const batchTypeLatestBlock =
-      await this.transferRepository.getLatestTransferBlockNo({
-        contract: entity.contract,
-        transferType: 'batch',
-      });
-    if (
-      !!startingBlocks.length &&
-      startingBlocks.at(-1)?.single === singleTypeLatestBlock &&
-      startingBlocks.at(-1)?.batch === batchTypeLatestBlock
-    ) {
-      this.logger.log(`Already processed this block. Erroring...`);
-      await this.tokenPoolDownloadRepository.changeStatusToError({
+    try {
+      const { startingBlocks } = state;
+      this.logger.log(
+        `Claimed tokenpool download with id ${tokenPoolId}. Starting...`,
+      );
+      await this.updateProgress({
         tokenPoolId,
+        stage: TokenPoolDownloadStage.CHECKING_ALCHEMY,
+        progress: {
+          runsCount: state.runsCount,
+          startingBlocks,
+        },
       });
-      return {
-        continue: false,
-        entity,
-        state,
-        error: `Tried to reprocess already processed block for contract ${entity.contract}`,
-      };
-    }
+      const doableThroughAlchemy = await this.attemptThroughAlchemy(entity);
+      this.logger.log(`Asking for single type latest block...`);
+      const singleTypeLatestBlock =
+        await this.transferRepository.getLatestTransferBlockNo({
+          contract: entity.contract,
+          transferType: 'single',
+        });
+      this.logger.log(`Single type latest block is ${singleTypeLatestBlock}`);
 
-    this.logger.log(`Old single type block: ${startingBlocks.at(-1)?.single}`);
-    this.logger.log(`New single type block: ${singleTypeLatestBlock}`);
-    this.logger.log(`Old batch type block: ${startingBlocks.at(-1)?.batch}`);
-    this.logger.log(`New batch type block: ${batchTypeLatestBlock}`);
+      this.logger.log(`Asking for batch type latest block...`);
+      const batchTypeLatestBlock =
+        await this.transferRepository.getLatestTransferBlockNo({
+          contract: entity.contract,
+          transferType: 'batch',
+        });
+      if (
+        !!startingBlocks.length &&
+        startingBlocks.at(-1)?.single === singleTypeLatestBlock &&
+        startingBlocks.at(-1)?.batch === batchTypeLatestBlock
+      ) {
+        const error = `Tried to reprocess already processed block for contract ${entity.contract}`;
+        this.logger.log(`Already processed this block. Erroring...`);
+        await this.tokenPoolDownloadRepository.changeStatusToError({
+          tokenPoolId,
+          errorReason: error,
+        });
+        return {
+          continue: false,
+          entity,
+          state,
+          error,
+        };
+      }
 
-    startingBlocks.push({
-      single: singleTypeLatestBlock,
-      batch: batchTypeLatestBlock,
-    });
+      this.logger.log(`Old single type block: ${startingBlocks.at(-1)?.single}`);
+      this.logger.log(`New single type block: ${singleTypeLatestBlock}`);
+      this.logger.log(`Old batch type block: ${startingBlocks.at(-1)?.batch}`);
+      this.logger.log(`New batch type block: ${batchTypeLatestBlock}`);
 
-    this.logger.log(`Batch type latest block is ${batchTypeLatestBlock}`);
-    this.logger.log(
-      `Starting to index with${doableThroughAlchemy ? `` : `out`} Alchemy`,
-    );
-    if (doableThroughAlchemy) {
-      return this.runOperationsAndFinishUp({ entity, state });
-    } else {
+      startingBlocks.push({
+        single: singleTypeLatestBlock,
+        batch: batchTypeLatestBlock,
+      });
+
+      this.logger.log(`Batch type latest block is ${batchTypeLatestBlock}`);
+      this.logger.log(
+        `Starting to index with${doableThroughAlchemy ? `` : `out`} Alchemy`,
+      );
+      if (doableThroughAlchemy) {
+        return this.runOperationsAndFinishUp({
+          entity,
+          state,
+          executionPath: 'FAST',
+        });
+      }
       return await this.doWithoutAlchemy(
         entity,
         singleTypeLatestBlock,
         state,
         batchTypeLatestBlock,
       );
+    } catch (e) {
+      const error = stringifyError(e);
+      this.logger.error(
+        `Tokenpool download with id ${tokenPoolId} failed`,
+        error,
+      );
+      await this.tokenPoolDownloadRepository.changeStatusToError({
+        tokenPoolId,
+        errorReason: error,
+      });
+      return {
+        continue: false,
+        entity,
+        state,
+        error,
+      };
     }
   }
 
@@ -166,6 +235,20 @@ export class TokenPoolDownloaderService {
       await this.allowlistCreator.etherscanService.getContractSchema({
         contractAddress: entity.contract,
       });
+    await this.updateProgress({
+      tokenPoolId: entity.token_pool_id,
+      stage:
+        schema === ContractSchema.ERC1155
+          ? TokenPoolDownloadStage.INDEXING_BATCH
+          : TokenPoolDownloadStage.INDEXING_SINGLE,
+      progress: {
+        executionPath: 'SLOW',
+        schema,
+        latestSingleBlockNo: singleTypeLatestBlock,
+        latestBatchBlockNo: batchTypeLatestBlock,
+        targetBlockNo: entity.block_no,
+      },
+    });
     this.logger.log(`${entity.contract} schema: ${schema}`);
     if ([ContractSchema.ERC721, ContractSchema.ERC721Old].includes(schema)) {
       return this.doTransferTypeSingle(
@@ -216,7 +299,11 @@ export class TokenPoolDownloaderService {
         if (job.continue) {
           return job;
         }
-        return this.runOperationsAndFinishUp({ entity, state });
+        return this.runOperationsAndFinishUp({
+          entity,
+          state,
+          executionPath: 'SLOW',
+        });
       });
   }
 
@@ -237,7 +324,11 @@ export class TokenPoolDownloaderService {
       if (job.continue || skipFinishUp) {
         return job;
       }
-      return this.runOperationsAndFinishUp({ entity, state });
+      return this.runOperationsAndFinishUp({
+        entity,
+        state,
+        executionPath: 'SLOW',
+      });
     });
   }
 
@@ -281,6 +372,20 @@ export class TokenPoolDownloaderService {
     this.logger.log(
       `Starting fetch transfers through etherscan ${JSON.stringify(params)}`,
     );
+    await this.updateProgress({
+      tokenPoolId: entity.token_pool_id,
+      stage:
+        transferType === 'single'
+          ? TokenPoolDownloadStage.INDEXING_SINGLE
+          : TokenPoolDownloadStage.INDEXING_BATCH,
+        progress: {
+          executionPath: 'SLOW',
+          transferType,
+          currentBlockNo: latestBlockNo,
+          startingBlock: latestBlockNo,
+          targetBlockNo: entity.block_no,
+      },
+    });
     for await (const transfers of this.allowlistCreator.etherscanService.getTransfers(
       params,
     )) {
@@ -291,6 +396,28 @@ export class TokenPoolDownloaderService {
         entity.contract,
         transfers,
       );
+      await this.updateProgress({
+        tokenPoolId: entity.token_pool_id,
+        stage:
+          transferType === 'single'
+            ? TokenPoolDownloadStage.INDEXING_SINGLE
+            : TokenPoolDownloadStage.INDEXING_BATCH,
+        progress: {
+          executionPath: 'SLOW',
+          transferType,
+          startingBlock: latestBlockNo,
+          currentBlockNo: transfers.reduce(
+            (acc, transfer) => Math.max(acc, transfer.blockNumber),
+            latestBlockNo,
+          ),
+          latestFetchedBlockNo: transfers.reduce(
+            (acc, transfer) => Math.max(acc, transfer.blockNumber),
+            latestBlockNo,
+          ),
+          targetBlockNo: entity.block_no,
+          transfersPersisted: transfers.length,
+        },
+      });
       if (this.isTimeUp(start)) {
         this.logger.log(
           `Exceeded the 5 minute timeout. Marking as in progress and rescheduling...`,
@@ -298,6 +425,20 @@ export class TokenPoolDownloaderService {
         return { continue: true, entity, state };
       }
     }
+    await this.updateProgress({
+      tokenPoolId: entity.token_pool_id,
+      stage:
+        transferType === 'single'
+          ? TokenPoolDownloadStage.INDEXING_SINGLE
+          : TokenPoolDownloadStage.INDEXING_BATCH,
+      progress: {
+        executionPath: 'SLOW',
+        transferType,
+        startingBlock: latestBlockNo,
+        currentBlockNo: entity.block_no,
+        targetBlockNo: entity.block_no,
+      },
+    });
     return { continue: false, entity, state };
   }
 
@@ -308,9 +449,11 @@ export class TokenPoolDownloaderService {
   private async runOperationsAndFinishUp({
     entity,
     state,
+    executionPath,
   }: {
     entity: TokenPoolDownloadEntity;
     state: TokenPoolDownloaderParamsState;
+    executionPath: TokenPoolExecutionPath;
   }): Promise<{
     continue: boolean;
     entity: TokenPoolDownloadEntity;
@@ -321,6 +464,18 @@ export class TokenPoolDownloaderService {
     this.logger.log(
       `Running operations and finishing up for tokenpool ${tokenPoolId}`,
     );
+    await this.updateProgress({
+      tokenPoolId,
+      stage: TokenPoolDownloadStage.BUILDING_TOKEN_OWNERS,
+      progress: {
+        executionPath,
+        source: 'allowlist-lib',
+        contract: entity.contract,
+        currentBlockNo: entity.block_no,
+        blockNo: entity.block_no,
+        targetBlockNo: entity.block_no,
+      },
+    });
     const mockAllowlistId = randomUUID();
     const mockPoolId = randomUUID();
     const allowlistOpParams: DescribableEntity = {
@@ -353,6 +508,7 @@ export class TokenPoolDownloaderService {
       console.error(`Persisting state for token pool ${tokenPoolId} failed`, e);
       await this.tokenPoolDownloadRepository.changeStatusToError({
         tokenPoolId,
+        errorReason: stringifyError(e),
       });
       throw e;
     }
@@ -363,20 +519,41 @@ export class TokenPoolDownloaderService {
       );
       try {
         await con.beginTransaction();
+        const ownerships = Object.values(allowlistState.tokenPools).flatMap(
+          (tokenPool) =>
+            tokenPool.tokens.map((token) => ({
+              ownership: token,
+              tokenPoolId: entity.token_pool_id,
+            })),
+        );
+        await this.updateProgress({
+          tokenPoolId,
+          stage: TokenPoolDownloadStage.PERSISTING_RESULTS,
+          progress: {
+            executionPath,
+            currentBlockNo: entity.block_no,
+            targetBlockNo: entity.block_no,
+            tokenOwnershipsCount: ownerships.length,
+            uniqueWalletsCount: new Set(
+              ownerships.map((ownership) => ownership.ownership.owner),
+            ).size,
+          },
+        });
         await this.persistTokenOwnerships({
-          ownerships: Object.values(allowlistState.tokenPools).flatMap(
-            (tokenPool) =>
-              tokenPool.tokens.map((token) => ({
-                ownership: token,
-                tokenPoolId: entity.token_pool_id,
-              })),
-          ),
+          ownerships,
           allowlistId: entity.allowlist_id,
           connection: con,
         });
         await this.tokenPoolDownloadRepository.changeStatusToCompleted({
           tokenPoolId,
           connection: con,
+          progress: this.serializeProgress({
+            executionPath,
+            tokenOwnershipsCount: ownerships.length,
+            uniqueWalletsCount: new Set(
+              ownerships.map((ownership) => ownership.ownership.owner),
+            ).size,
+          }),
         });
         await con.commit();
         this.logger.log(`Finished tokenpool download with id ${tokenPoolId}.`);
@@ -391,6 +568,7 @@ export class TokenPoolDownloaderService {
       console.error(`Persisting state for token pool ${tokenPoolId} failed`, e);
       await this.tokenPoolDownloadRepository.changeStatusToError({
         tokenPoolId,
+        errorReason: stringifyError(e),
       });
       return {
         continue: false,
@@ -434,5 +612,28 @@ export class TokenPoolDownloaderService {
       }, {} as Record<string, TokenPoolTokenEntity>),
     );
     await this.tokenPoolTokenRepository.insert(entities, { connection });
+  }
+
+  private serializeProgress(progress?: Record<string, unknown>): string | null {
+    if (!progress) {
+      return null;
+    }
+    return JSON.stringify(progress);
+  }
+
+  private async updateProgress({
+    tokenPoolId,
+    stage,
+    progress,
+  }: {
+    tokenPoolId: string;
+    stage: TokenPoolDownloadStage;
+    progress?: Record<string, unknown>;
+  }) {
+    await this.tokenPoolDownloadRepository.updateProgress({
+      tokenPoolId,
+      stage,
+      progress: this.serializeProgress(progress),
+    });
   }
 }

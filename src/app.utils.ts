@@ -2,11 +2,13 @@ export const isValidMongoId = (id: string): boolean => {
   return /^[a-f\d]{24}$/i.test(id);
 };
 
-export function bigInt2Number(value?: bigint): number | undefined {
-  if (value) {
-    return Number(value);
+export function bigInt2Number(
+  value?: bigint | number | string | null,
+): number | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
   }
-  return undefined;
+  return Number(value);
 }
 
 export function formatNumberRange(

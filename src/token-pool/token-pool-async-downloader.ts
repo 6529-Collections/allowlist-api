@@ -22,14 +22,21 @@ export class TokenPoolAsyncDownloader {
       consolidateBlockNo,
     } = config;
 
-    await this.tokenPoolDownloaderService.prepare({
-      contract,
-      tokenIds,
-      tokenPoolId,
-      allowlistId,
-      blockNo,
-      consolidateBlockNo,
-    });
+    if (!state.runsCount && !state.startingBlocks.length) {
+      await this.tokenPoolDownloaderService.prepare({
+        contract,
+        tokenIds,
+        tokenPoolId,
+        allowlistId,
+        blockNo,
+        consolidateBlockNo,
+      });
+    } else {
+      await this.tokenPoolDownloaderService.requeue({
+        tokenPoolId,
+        state,
+      });
+    }
     const snsTopicArn = process.env.SNS_TOKEN_POOL_DOWNLOADER_TOPIC_ARN;
     if (snsTopicArn) {
       await this.snsService.publishMessage({

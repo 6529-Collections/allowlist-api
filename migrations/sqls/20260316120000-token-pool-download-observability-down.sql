@@ -1,0 +1,14 @@
+ALTER TABLE token_pool_download
+    DROP COLUMN progress,
+    DROP COLUMN stage,
+    DROP COLUMN attempt_count,
+    DROP COLUMN last_failure_reason,
+    DROP COLUMN last_failure_at,
+    DROP COLUMN failure_count,
+    DROP COLUMN error_reason,
+    DROP COLUMN failed_at,
+    DROP COLUMN completed_at,
+    DROP COLUMN last_heartbeat_at,
+    DROP COLUMN claimed_at,
+    DROP COLUMN updated_at,
+    DROP COLUMN created_at;
