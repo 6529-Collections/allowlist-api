@@ -4,9 +4,18 @@ import { ValidationPipe } from '@nestjs/common';
 import { initEnv } from './env';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { migrateDb } from './migrate';
+import { json, urlencoded } from 'express';
+import { REQUEST_BODY_LIMIT } from './common/request-body-limit';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(json({ limit: REQUEST_BODY_LIMIT }));
+  app.use(
+    urlencoded({
+      extended: true,
+      limit: REQUEST_BODY_LIMIT,
+    }),
+  );
   app.enableShutdownHooks();
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());

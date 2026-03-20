@@ -8,9 +8,10 @@ import { initEnv } from './env';
 import { migrateDb } from './migrate';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as Sentry from '@sentry/serverless';
-import express from 'express';
+import express, { json, urlencoded } from 'express';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { eventContext } from 'aws-serverless-express/middleware';
+import { REQUEST_BODY_LIMIT } from './common/request-body-limit';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -23,6 +24,13 @@ async function bootstrap(): Promise<Server> {
   await initEnv();
   await migrateDb();
   const expressApp = express();
+  expressApp.use(json({ limit: REQUEST_BODY_LIMIT }));
+  expressApp.use(
+    urlencoded({
+      extended: true,
+      limit: REQUEST_BODY_LIMIT,
+    }),
+  );
   const nestApp = await NestFactory.create(
     AppModule,
     new ExpressAdapter(expressApp),
