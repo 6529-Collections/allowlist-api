@@ -1,10 +1,17 @@
 version: "3.7"
 services:
-  mariadb:
+  mysql:
     build:
       context: ./dockerfiles/allowlist-dev-db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
+      TZ: UTC
     ports:
       - 3307:3306
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./dockerfiles/allowlist-dev-db/my.cnf:/etc/mysql/conf.d/z-custom.cnf:ro
+
+volumes:
+  dbdata:
