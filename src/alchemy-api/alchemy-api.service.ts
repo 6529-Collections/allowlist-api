@@ -1,7 +1,21 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Alchemy, OpenSeaSafelistRequestStatus } from 'alchemy-sdk';
 import { AlchemyConfig } from './alchemy.config';
+
+const MEMES_CONTRACT_ADDRESS = '0x33fd426905f149f8376e227d0c9d3340aad17af1';
+const MEMES_CANONICAL_METADATA = {
+  id: MEMES_CONTRACT_ADDRESS,
+  address: MEMES_CONTRACT_ADDRESS,
+  name: 'The Memes by 6529',
+  tokenType: 'ERC1155',
+  imageUrl: 'https://6529.io/memes-preview.png',
+  description:
+    'The Memes Collection is focused on the fight for the open metaverse (decentralization, community, self-sovereignty) and spreading this message to many people, many wallets.\n\nIt is a collection that is meant to be open and accessible. Edition sizes will generally be large and inexpensive, to spread the word and to avoid gas wars.\n\nWe will try to have a good time along the way, make some fun art, do great collabs and just generally have a good time.\n\nFor more information visit https://6529.io/about/the-memes',
+} as const;
+// These exact provider sentinel values are treated as absent only after the
+// response has been gated to the canonical Memes contract address.
+const CONTRACT_METADATA_PLACEHOLDERS = new Set(['n/a', 'unknown']);
 
 export interface ContractMetadataResponse {
   id: string;
@@ -15,6 +29,7 @@ export interface ContractMetadataResponse {
 
 @Injectable()
 export class AlchemyApiService {
+  private readonly logger = new Logger(AlchemyApiService.name);
   private readonly BASE_URI = 'https://eth-mainnet.g.alchemy.com/';
   private readonly HEADERS = {
     accept: '*/*',
@@ -29,11 +44,42 @@ export class AlchemyApiService {
   async getContractMetadata(
     address: string,
   ): Promise<ContractMetadataResponse | null> {
-    const metadata = await this.alchemy.nft.getContractMetadata(address);
-    if (!metadata) {
-      return null;
+    let metadata;
+    try {
+      metadata = await this.alchemy.nft.getContractMetadata(address);
+    } catch (error) {
+      if (address.toLowerCase() !== MEMES_CONTRACT_ADDRESS) {
+        throw error;
+      }
+      this.logCanonicalFallback(address, [
+        'provider-error',
+        'name',
+        'tokenType',
+        'imageUrl',
+        'description',
+      ]);
+      return {
+        ...MEMES_CANONICAL_METADATA,
+        openseaVerified: false,
+      };
     }
-    return {
+    if (!metadata) {
+      if (address.toLowerCase() !== MEMES_CONTRACT_ADDRESS) {
+        return null;
+      }
+      this.logCanonicalFallback(address, [
+        'provider-empty',
+        'name',
+        'tokenType',
+        'imageUrl',
+        'description',
+      ]);
+      return {
+        ...MEMES_CANONICAL_METADATA,
+        openseaVerified: false,
+      };
+    }
+    return this.applyCanonicalFallback({
       id: address,
       address,
       name: metadata.name ?? metadata.openSea?.collectionName ?? 'N/A',
@@ -43,7 +89,7 @@ export class AlchemyApiService {
       openseaVerified:
         metadata.openSea?.safelistRequestStatus ===
         OpenSeaSafelistRequestStatus.VERIFIED,
-    };
+    });
   }
 
   public async getBlockNumber(): Promise<number> {
@@ -97,16 +143,95 @@ export class AlchemyApiService {
   ): Promise<ContractMetadataResponse[]> {
     const contracts = await this.alchemy.nft.searchContractMetadata(kw);
 
-    return contracts.map((metadata) => ({
-      id: metadata.address,
-      address: metadata.address,
-      name: metadata?.name ?? 'N/A',
-      tokenType: metadata?.tokenType ?? 'N/A',
-      description: metadata?.openSea?.description ?? 'N/A',
-      imageUrl: metadata?.openSea?.imageUrl ?? null, // optional
-      openseaVerified:
-        metadata?.openSea?.safelistRequestStatus ===
-        OpenSeaSafelistRequestStatus.VERIFIED,
-    }));
+    return contracts.map((metadata) =>
+      this.applyCanonicalFallback({
+        id: metadata.address,
+        address: metadata.address,
+        name: metadata?.name ?? 'N/A',
+        tokenType: metadata?.tokenType ?? 'N/A',
+        description: metadata?.openSea?.description ?? 'N/A',
+        imageUrl: metadata?.openSea?.imageUrl ?? null, // optional
+        openseaVerified:
+          metadata?.openSea?.safelistRequestStatus ===
+          OpenSeaSafelistRequestStatus.VERIFIED,
+      }),
+    );
+  }
+
+  private applyCanonicalFallback(
+    metadata: ContractMetadataResponse,
+  ): ContractMetadataResponse {
+    if (metadata.address.toLowerCase() !== MEMES_CONTRACT_ADDRESS) {
+      return metadata;
+    }
+
+    const fallbackFields: string[] = [];
+    const name = this.withCanonicalFallback(
+      metadata.name,
+      MEMES_CANONICAL_METADATA.name,
+      'name',
+      fallbackFields,
+    );
+    const tokenType = this.withCanonicalFallback(
+      metadata.tokenType,
+      MEMES_CANONICAL_METADATA.tokenType,
+      'tokenType',
+      fallbackFields,
+    );
+    const imageUrl = this.withCanonicalFallback(
+      metadata.imageUrl,
+      MEMES_CANONICAL_METADATA.imageUrl,
+      'imageUrl',
+      fallbackFields,
+    );
+    const description = this.withCanonicalFallback(
+      metadata.description,
+      MEMES_CANONICAL_METADATA.description,
+      'description',
+      fallbackFields,
+    );
+
+    const usedFallback = fallbackFields.length > 0;
+    if (usedFallback) {
+      this.logCanonicalFallback(metadata.address, fallbackFields);
+    }
+
+    return {
+      ...metadata,
+      ...(usedFallback
+        ? {
+            id: MEMES_CANONICAL_METADATA.id,
+            address: MEMES_CANONICAL_METADATA.address,
+          }
+        : {}),
+      name,
+      tokenType,
+      imageUrl,
+      description,
+    };
+  }
+
+  private withCanonicalFallback(
+    value: string | null | undefined,
+    fallback: string,
+    field: string,
+    fallbackFields: string[],
+  ): string {
+    if (
+      !value?.trim() ||
+      CONTRACT_METADATA_PLACEHOLDERS.has(value.trim().toLowerCase())
+    ) {
+      fallbackFields.push(field);
+      return fallback;
+    }
+    return value;
+  }
+
+  private logCanonicalFallback(address: string, fields: string[]): void {
+    this.logger.warn(
+      `[CONTRACT_METADATA_CANONICAL_FALLBACK] address=${address.toLowerCase()} fields=${fields.join(
+        ',',
+      )}`,
+    );
   }
 }
