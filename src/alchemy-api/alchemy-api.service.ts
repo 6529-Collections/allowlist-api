@@ -13,6 +13,8 @@ const MEMES_CANONICAL_METADATA = {
   description:
     'The Memes Collection is focused on the fight for the open metaverse (decentralization, community, self-sovereignty) and spreading this message to many people, many wallets.\n\nIt is a collection that is meant to be open and accessible. Edition sizes will generally be large and inexpensive, to spread the word and to avoid gas wars.\n\nWe will try to have a good time along the way, make some fun art, do great collabs and just generally have a good time.\n\nFor more information visit https://6529.io/about/the-memes',
 } as const;
+// These exact provider sentinel values are treated as absent only after the
+// response has been gated to the canonical Memes contract address.
 const CONTRACT_METADATA_PLACEHOLDERS = new Set(['n/a', 'unknown']);
 
 export interface ContractMetadataResponse {
@@ -189,14 +191,19 @@ export class AlchemyApiService {
       fallbackFields,
     );
 
-    if (fallbackFields.length) {
+    const usedFallback = fallbackFields.length > 0;
+    if (usedFallback) {
       this.logCanonicalFallback(metadata.address, fallbackFields);
     }
 
     return {
       ...metadata,
-      id: MEMES_CANONICAL_METADATA.id,
-      address: MEMES_CANONICAL_METADATA.address,
+      ...(usedFallback
+        ? {
+            id: MEMES_CANONICAL_METADATA.id,
+            address: MEMES_CANONICAL_METADATA.address,
+          }
+        : {}),
       name,
       tokenType,
       imageUrl,

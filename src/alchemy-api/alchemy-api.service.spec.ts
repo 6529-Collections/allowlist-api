@@ -11,10 +11,11 @@ describe(AlchemyApiService.name, () => {
   const getContractMetadata = jest.fn();
   const searchContractMetadata = jest.fn();
   let service: AlchemyApiService;
+  let warnSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     service = new AlchemyApiService(
       {
         nft: {
@@ -64,14 +65,32 @@ describe(AlchemyApiService.name, () => {
       },
     });
 
-    await expect(service.getContractMetadata(MEMES_CONTRACT)).resolves.toEqual({
-      id: MEMES_CONTRACT,
-      address: MEMES_CONTRACT,
+    await expect(
+      service.getContractMetadata(MEMES_CHECKSUM_CONTRACT),
+    ).resolves.toEqual({
+      id: MEMES_CHECKSUM_CONTRACT,
+      address: MEMES_CHECKSUM_CONTRACT,
       name: 'Provider Memes Name',
       tokenType: 'ERC1155',
       imageUrl: 'https://provider.example/memes.png',
       description: 'Provider description',
       openseaVerified: true,
+    });
+  });
+
+  it('returns canonical Memes identity metadata when the provider returns no metadata', async () => {
+    getContractMetadata.mockResolvedValue(null);
+
+    await expect(service.getContractMetadata(MEMES_CONTRACT)).resolves.toEqual({
+      id: MEMES_CONTRACT,
+      address: MEMES_CONTRACT,
+      name: 'The Memes by 6529',
+      tokenType: 'ERC1155',
+      imageUrl: 'https://6529.io/memes-preview.png',
+      description: expect.stringContaining(
+        'focused on the fight for the open metaverse',
+      ),
+      openseaVerified: false,
     });
   });
 
@@ -89,6 +108,33 @@ describe(AlchemyApiService.name, () => {
       ),
       openseaVerified: false,
     });
+  });
+
+  it('only substitutes and logs degraded Memes fields', async () => {
+    getContractMetadata.mockResolvedValue({
+      name: 'Provider Memes Name',
+      tokenType: 'ERC1155',
+      openSea: {
+        description: 'N/A',
+        imageUrl: 'https://provider.example/memes.png',
+        safelistRequestStatus: OpenSeaSafelistRequestStatus.VERIFIED,
+      },
+    });
+
+    await expect(service.getContractMetadata(MEMES_CONTRACT)).resolves.toEqual(
+      expect.objectContaining({
+        name: 'Provider Memes Name',
+        tokenType: 'ERC1155',
+        imageUrl: 'https://provider.example/memes.png',
+        description: expect.stringContaining(
+          'focused on the fight for the open metaverse',
+        ),
+        openseaVerified: true,
+      }),
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      `[CONTRACT_METADATA_CANONICAL_FALLBACK] address=${MEMES_CONTRACT} fields=description`,
+    );
   });
 
   it('does not alter degraded metadata for other contracts', async () => {
