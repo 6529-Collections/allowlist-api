@@ -34,7 +34,13 @@ ALLOWLIST_DB_PASSWORD=allowlist
 ALLOWLIST_ETHERSCAN_API_KEY=<your-etherscan-api-key>
 ALLOWLIST_SEIZE_API_PATH=<seize-api-endpoint> (don't put a slash in the end. https://api.6529.io/api for example)
 ALLOWLIST_SEIZE_API_KEY=<seize-api-key> (can omit if using only public endpoints)
+OFAC_CHECK=true
 ```
+
+`OFAC_CHECK` defaults to enabled. Only the exact value `false` disables OFAC
+screening; missing or malformed values keep screening enabled. In AWS, configure
+it in the `prod/lambdas` Secrets Manager secret in the target environment's
+region. Disabling it is intended only as an emergency bypass.
 
 To install app dependencies run `yarn`
 
@@ -44,7 +50,7 @@ To explore and interact with the api, open `http://localhost:3000/api` in your b
 
 To create new migrations run `yarn create-migration <migration-name>`. This creates up an down migration SQL's in migrations/sqls. Migrations are applied automatically on application startup.
 
-Note: As everything is ran in one process if you run the specified allowlist, the API will still return immediately and the allowlist will be created in the background in a dangling promise. 
+Note: As everything is ran in one process if you run the specified allowlist, the API will still return immediately and the allowlist will be created in the background in a dangling promise.
 This is not ideal, but is good enough for development environment.
 
 To start with a clean database, stop the application and run:

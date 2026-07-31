@@ -10,34 +10,41 @@ import { Alchemy } from 'alchemy-sdk';
 import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-pool-token.repository';
 import { EtherscanService } from '@6529-collections/allowlist-lib/services/etherscan.service';
 
+export function isOfacCheckEnabled(value?: string): boolean {
+  return value !== 'false';
+}
+
+export function createAllowlistCreator(
+  configService: ConfigService,
+  transferRepository: TransferRepository,
+  tokenPoolTokenRepository: TokenPoolTokenRepository,
+  allowlistLibLogListener: AllowlistLibLogListener,
+  alchemy: Alchemy,
+): AllowlistCreator {
+  const etherscanApiKey = configService.get('ALLOWLIST_ETHERSCAN_API_KEY');
+  return AllowlistCreator.getInstance({
+    seizeApiPath: configService.get('ALLOWLIST_SEIZE_API_PATH'),
+    seizeApiKey: configService.get('ALLOWLIST_SEIZE_API_KEY'),
+    alchemy,
+    etherscanApiKey,
+    ofacCheckEnabled: isOfacCheckEnabled(
+      configService.get<string>('OFAC_CHECK'),
+    ),
+    storage: {
+      transfersStorage: transferRepository,
+      tokenPoolStorage: tokenPoolTokenRepository,
+    },
+    loggerFactory: new LoggerFactory(allowlistLibLogListener),
+  });
+}
+
 @Module({
   imports: [RepositoryModule, AlchemyApiModule],
   providers: [
     AllowlistLibLogListener,
     {
       provide: AllowlistCreator,
-      useFactory: (
-        configService: ConfigService,
-        transferRepository: TransferRepository,
-        tokenPoolTokenRepository: TokenPoolTokenRepository,
-        allowlistLibLogListener: AllowlistLibLogListener,
-        alchemy: Alchemy,
-      ): AllowlistCreator => {
-        const etherscanApiKey = configService.get(
-          'ALLOWLIST_ETHERSCAN_API_KEY',
-        );
-        return AllowlistCreator.getInstance({
-          seizeApiPath: configService.get('ALLOWLIST_SEIZE_API_PATH'),
-          seizeApiKey: configService.get('ALLOWLIST_SEIZE_API_KEY'),
-          alchemy,
-          etherscanApiKey,
-          storage: {
-            transfersStorage: transferRepository,
-            tokenPoolStorage: tokenPoolTokenRepository,
-          },
-          loggerFactory: new LoggerFactory(allowlistLibLogListener),
-        });
-      },
+      useFactory: createAllowlistCreator,
       inject: [
         ConfigService,
         TransferRepository,
