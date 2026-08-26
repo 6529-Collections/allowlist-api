@@ -3,20 +3,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Alchemy, OpenSeaSafelistRequestStatus } from 'alchemy-sdk';
 import { AlchemyConfig } from './alchemy.config';
 
-const MEMES_CONTRACT_ADDRESS = '0x33fd426905f149f8376e227d0c9d3340aad17af1';
-const MEMES_CANONICAL_METADATA = {
-  id: MEMES_CONTRACT_ADDRESS,
-  address: MEMES_CONTRACT_ADDRESS,
-  name: 'The Memes by 6529',
-  tokenType: 'ERC1155',
-  imageUrl: 'https://6529.io/memes-preview.png',
-  description:
-    'The Memes Collection is focused on the fight for the open metaverse (decentralization, community, self-sovereignty) and spreading this message to many people, many wallets.\n\nIt is a collection that is meant to be open and accessible. Edition sizes will generally be large and inexpensive, to spread the word and to avoid gas wars.\n\nWe will try to have a good time along the way, make some fun art, do great collabs and just generally have a good time.\n\nFor more information visit https://6529.io/about/the-memes',
-} as const;
-// These exact provider sentinel values are treated as absent only after the
-// response has been gated to the canonical Memes contract address.
-const CONTRACT_METADATA_PLACEHOLDERS = new Set(['n/a', 'unknown']);
-
 export interface ContractMetadataResponse {
   id: string;
   address: string;
@@ -26,6 +12,65 @@ export interface ContractMetadataResponse {
   description?: string | null;
   openseaVerified: boolean;
 }
+
+interface CanonicalContractMetadata {
+  id: string;
+  address: string;
+  name: string;
+  tokenType: string;
+  imageUrl: string;
+  description: string;
+}
+
+const MEMES_CONTRACT_ADDRESS = '0x33fd426905f149f8376e227d0c9d3340aad17af1';
+const MEME_LAB_CONTRACT_ADDRESS = '0x4db52a61dc491e15a2f78f5ac001c14ffe3568cb';
+const GRADIENT_CONTRACT_ADDRESS = '0x0c58ef43ff3032005e472cb5709f8908acb00205';
+const RAW_CONTRACT_ADDRESS = '0x07e24ee32163da59297b5341bef8f8a2eead271e';
+
+const CANONICAL_CONTRACT_METADATA: Record<string, CanonicalContractMetadata> = {
+  [MEMES_CONTRACT_ADDRESS]: {
+    id: MEMES_CONTRACT_ADDRESS,
+    address: MEMES_CONTRACT_ADDRESS,
+    name: 'The Memes by 6529',
+    tokenType: 'ERC1155',
+    imageUrl: 'https://6529.io/memes-preview.png',
+    description:
+      'The Memes Collection is focused on the fight for the open metaverse (decentralization, community, self-sovereignty) and spreading this message to many people, many wallets.\n\nIt is a collection that is meant to be open and accessible. Edition sizes will generally be large and inexpensive, to spread the word and to avoid gas wars.\n\nWe will try to have a good time along the way, make some fun art, do great collabs and just generally have a good time.\n\nFor more information visit https://6529.io/about/the-memes',
+  },
+  [MEME_LAB_CONTRACT_ADDRESS]: {
+    id: MEME_LAB_CONTRACT_ADDRESS,
+    address: MEME_LAB_CONTRACT_ADDRESS,
+    name: 'Meme Lab',
+    tokenType: 'ERC1155',
+    imageUrl:
+      'https://i2c.seadn.io/ethereum/35e37c625ffb45f3a5e669d5b267a1ad/dd9de48b32f23da6535a028f1d8c36/d1dd9de48b32f23da6535a028f1d8c36.jpeg',
+    description:
+      'Meme Lab is a collection for [The Memes by 6529](https://opensea.io/collection/thememes6529) artists to run whatever experiments they like',
+  },
+  [GRADIENT_CONTRACT_ADDRESS]: {
+    id: GRADIENT_CONTRACT_ADDRESS,
+    address: GRADIENT_CONTRACT_ADDRESS,
+    name: '6529 Gradient',
+    tokenType: 'ERC721',
+    imageUrl:
+      'https://i2c.seadn.io/ethereum/9415f36597d64ab9be239e0c818430d4/dfbae56955745a231e038d7ad712ac/0fdfbae56955745a231e038d7ad712ac.png',
+    description:
+      "The 6529 Gradient Collection represents the 6529 symbol in its original two stark black and white forms as well 98 grayscale gradients in-between.\n\nIt is the artist's (@6529er) preferred interpretation and genesis drop of his work.\n\nEach of the 100 pieces is represented as a 100% on-chain SVG with a secondary IPFS link.\n\nThe 101st piece is Gradient #50 which is a special GIF – it moves!\n\nAs always, 6529 fam fights for an Open Metaverse",
+  },
+  [RAW_CONTRACT_ADDRESS]: {
+    id: RAW_CONTRACT_ADDRESS,
+    address: RAW_CONTRACT_ADDRESS,
+    name: '6529 RAW',
+    tokenType: 'ERC721',
+    imageUrl:
+      'https://i2c.seadn.io/ethereum/37e7c49010bc4d2ea70fe6908c0659a4/30ad5c9e46fc60931cb68ae69e36ea/3b30ad5c9e46fc60931cb68ae69e36ea.png',
+    description:
+      "6529 Raw is 6529's CC0 personal photography collection.\n\nFor more information: https://6529.io/collections/6529raw/",
+  },
+};
+// These exact provider sentinel values are treated as absent only after the
+// response has been gated to a contract with canonical metadata.
+const CONTRACT_METADATA_PLACEHOLDERS = new Set(['n/a', 'unknown']);
 
 @Injectable()
 export class AlchemyApiService {
@@ -44,40 +89,21 @@ export class AlchemyApiService {
   async getContractMetadata(
     address: string,
   ): Promise<ContractMetadataResponse | null> {
+    const canonicalMetadata = this.findCanonicalMetadata(address);
     let metadata;
     try {
       metadata = await this.alchemy.nft.getContractMetadata(address);
     } catch (error) {
-      if (address.toLowerCase() !== MEMES_CONTRACT_ADDRESS) {
+      if (!canonicalMetadata) {
         throw error;
       }
-      this.logCanonicalFallback(address, [
-        'provider-error',
-        'name',
-        'tokenType',
-        'imageUrl',
-        'description',
-      ]);
-      return {
-        ...MEMES_CANONICAL_METADATA,
-        openseaVerified: false,
-      };
+      return this.getCanonicalFallback(canonicalMetadata, 'provider-error');
     }
     if (!metadata) {
-      if (address.toLowerCase() !== MEMES_CONTRACT_ADDRESS) {
+      if (!canonicalMetadata) {
         return null;
       }
-      this.logCanonicalFallback(address, [
-        'provider-empty',
-        'name',
-        'tokenType',
-        'imageUrl',
-        'description',
-      ]);
-      return {
-        ...MEMES_CANONICAL_METADATA,
-        openseaVerified: false,
-      };
+      return this.getCanonicalFallback(canonicalMetadata, 'provider-empty');
     }
     return this.applyCanonicalFallback({
       id: address,
@@ -161,32 +187,33 @@ export class AlchemyApiService {
   private applyCanonicalFallback(
     metadata: ContractMetadataResponse,
   ): ContractMetadataResponse {
-    if (metadata.address.toLowerCase() !== MEMES_CONTRACT_ADDRESS) {
+    const canonicalMetadata = this.findCanonicalMetadata(metadata.address);
+    if (!canonicalMetadata) {
       return metadata;
     }
 
     const fallbackFields: string[] = [];
     const name = this.withCanonicalFallback(
       metadata.name,
-      MEMES_CANONICAL_METADATA.name,
+      canonicalMetadata.name,
       'name',
       fallbackFields,
     );
     const tokenType = this.withCanonicalFallback(
       metadata.tokenType,
-      MEMES_CANONICAL_METADATA.tokenType,
+      canonicalMetadata.tokenType,
       'tokenType',
       fallbackFields,
     );
     const imageUrl = this.withCanonicalFallback(
       metadata.imageUrl,
-      MEMES_CANONICAL_METADATA.imageUrl,
+      canonicalMetadata.imageUrl,
       'imageUrl',
       fallbackFields,
     );
     const description = this.withCanonicalFallback(
       metadata.description,
-      MEMES_CANONICAL_METADATA.description,
+      canonicalMetadata.description,
       'description',
       fallbackFields,
     );
@@ -200,14 +227,37 @@ export class AlchemyApiService {
       ...metadata,
       ...(usedFallback
         ? {
-            id: MEMES_CANONICAL_METADATA.id,
-            address: MEMES_CANONICAL_METADATA.address,
+            id: canonicalMetadata.id,
+            address: canonicalMetadata.address,
           }
         : {}),
       name,
       tokenType,
       imageUrl,
       description,
+    };
+  }
+
+  private findCanonicalMetadata(
+    address: string,
+  ): CanonicalContractMetadata | null {
+    return CANONICAL_CONTRACT_METADATA[address.toLowerCase()] ?? null;
+  }
+
+  private getCanonicalFallback(
+    canonicalMetadata: CanonicalContractMetadata,
+    reason: 'provider-error' | 'provider-empty',
+  ): ContractMetadataResponse {
+    this.logCanonicalFallback(canonicalMetadata.address, [
+      reason,
+      'name',
+      'tokenType',
+      'imageUrl',
+      'description',
+    ]);
+    return {
+      ...canonicalMetadata,
+      openseaVerified: false,
     };
   }
 
