@@ -5,9 +5,6 @@ on:
     branches:
       - main
 
-env:
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
 jobs:
   build-and-test:
     name: Build and test
@@ -19,7 +16,7 @@ jobs:
       - name: Install node gyp
         run: yarn global add node-gyp
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile --registry=https://registry.npmjs.org/
       - name: Build
         run: yarn build
       - name: Run unit tests

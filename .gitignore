@@ -8,6 +8,9 @@ serverless.yaml
 /dist
 /node_modules
 
+# Yarn is the project's package manager
+/package-lock.json
+
 .env.*
 .build
 
