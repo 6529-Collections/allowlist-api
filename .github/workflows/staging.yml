@@ -3,7 +3,6 @@ name: Allowlist API Staging CI
 on: workflow_dispatch
 
 env:
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   AWS_REGION: eu-west-1
   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -18,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile --registry=https://registry.npmjs.org/
       - name: Build
         run: yarn build
       - name: Run unit tests

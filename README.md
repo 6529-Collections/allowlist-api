@@ -42,7 +42,10 @@ screening; missing or malformed values keep screening enabled. In AWS, configure
 it in the `prod/lambdas` Secrets Manager secret in the target environment's
 region. Disabling it is intended only as an emergency bypass.
 
-To install app dependencies run `yarn`
+To install app dependencies run
+`yarn install --frozen-lockfile --registry=https://registry.npmjs.org/`.
+`@6529-collections/allowlist-lib` is installed from the public npm registry;
+GitHub Packages credentials and `NPM_TOKEN` are not required.
 
 To start the app run `yarn start:local` or `yarn start:dev` to run with nodemon.
 
