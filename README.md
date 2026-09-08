@@ -47,6 +47,11 @@ To install app dependencies run
 `@6529-collections/allowlist-lib` is installed from the public npm registry;
 GitHub Packages credentials and `NPM_TOKEN` are not required.
 
+Use Yarn 1 for development, CI, and deployment. `yarn.lock` is the only
+maintained lockfile; update it with Yarn when changing dependencies, then
+verify the frozen install command above from a clean checkout. The npm registry
+hosts the packages; using npmjs does not require switching package managers.
+
 To start the app run `yarn start:local` or `yarn start:dev` to run with nodemon.
 
 To explore and interact with the api, open `http://localhost:3000/api` in your browser.
