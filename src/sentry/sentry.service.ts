@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { Injectable } from '@nestjs/common';
 import * as Sentry from '@sentry/serverless';
-import { Span, SpanContext } from '@sentry/types';
+import type { Span, SpanContext } from '@sentry/types';
 
 @Injectable()
 export class SentryService {
