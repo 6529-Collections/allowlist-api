@@ -6,6 +6,12 @@ import {
 } from '@6529-collections/allowlist-lib';
 import axios from 'axios';
 import { isError } from 'ethers';
+import {
+  getProviderRequestId,
+  sanitizeProviderMessage,
+  UpstreamProviderError,
+  UpstreamProviderFailureKind,
+} from '../common/upstream-provider.error';
 import { AlchemyConfig } from './alchemy.config';
 
 const OPENSEA_SAFELIST_STATUSES = new Set([
@@ -173,17 +179,25 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
     const response = await this.alchemyGet<RawContractTokensResponse>(
       `${this.nftV3BaseUrl}/getNFTsForContract`,
       {
-        withMetadata: 'false',
+        withMetadata: false,
         contractAddress: address,
         startToken: continuation ?? undefined,
+        limit: 100,
       },
     );
     if (
       !Array.isArray(response?.nfts) ||
-      response.nfts.some((nft) => typeof nft?.tokenId !== 'string') ||
-      (response.pageKey != null && typeof response.pageKey !== 'string')
+      response.nfts.some((nft) => !this.isTokenId(nft?.tokenId)) ||
+      (response.pageKey != null && !this.isTokenId(response.pageKey))
     ) {
-      throw new Error('Invalid Alchemy contract tokens response');
+      throw new UpstreamProviderError(
+        'Alchemy',
+        'invalid-response',
+        200,
+        undefined,
+        'Invalid contract tokens response',
+        'Invalid Alchemy contract tokens response',
+      );
     }
     return {
       tokens: response.nfts.map((nft) => nft.tokenId),
@@ -230,6 +244,10 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
     }
   }
 
+  private isTokenId(value: unknown): value is string {
+    return typeof value === 'string' && /^(?:\d+|0x[0-9a-fA-F]+)$/.test(value);
+  }
+
   private normalizeOpenSeaMetadata(
     openSea?: RawOpenSeaMetadata,
   ): AlchemyOpenSeaMetadata | undefined {
@@ -252,13 +270,9 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
     url: string,
     queryParams: Record<string, unknown>,
   ): Promise<T> {
-    let lastError: Error | undefined;
+    let lastError: UpstreamProviderError | undefined;
     for (let attempt = 0; attempt < MAX_HTTP_ATTEMPTS; attempt++) {
-      if (attempt > 0) {
-        await this.sleep(
-          INITIAL_RETRY_DELAY_MS * RETRY_MULTIPLIER ** (attempt - 1),
-        );
-      }
+      await this.waitBeforeAttempt(attempt);
       try {
         const { data } = await this.httpService.axiosRef.get<T>(url, {
           params: queryParams,
@@ -266,40 +280,63 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
         });
         return data;
       } catch (error) {
-        if (!axios.isAxiosError(error)) {
-          throw error;
-        }
-        if (!error.response) {
-          lastError = new Error(
-            error.message || 'Alchemy network request failed',
-          );
-          continue;
-        }
-        lastError = new Error(
-          `${error.response.status}: ${this.formatHttpErrorData(
-            error.response.data,
-          )}`,
-        );
-        if (error.response.status !== 429 && error.response.status < 500) {
+        lastError = this.toProviderError(error);
+        if (!lastError.isTemporary) {
           throw lastError;
         }
       }
     }
-    throw lastError ?? new Error('Alchemy request failed');
+    throw lastError ?? new UpstreamProviderError('Alchemy', 'unavailable');
+  }
+
+  private toProviderError(error: unknown): UpstreamProviderError {
+    if (!axios.isAxiosError(error)) {
+      throw error;
+    }
+    if (!error.response) {
+      const message = error.message || 'Alchemy network request failed';
+      return new UpstreamProviderError(
+        'Alchemy',
+        'unavailable',
+        undefined,
+        undefined,
+        sanitizeProviderMessage(message),
+        message,
+      );
+    }
+
+    const status = error.response.status;
+    const providerMessage = sanitizeProviderMessage(error.response.data);
+    return new UpstreamProviderError(
+      'Alchemy',
+      this.getFailureKind(status),
+      status,
+      getProviderRequestId(error.response.headers),
+      providerMessage,
+      `${status}: ${providerMessage}`,
+    );
+  }
+
+  private getFailureKind(status: number): UpstreamProviderFailureKind {
+    if (status === 429) {
+      return 'rate-limited';
+    }
+    if (status >= 500) {
+      return 'unavailable';
+    }
+    return 'rejected';
+  }
+
+  private async waitBeforeAttempt(attempt: number): Promise<void> {
+    if (attempt === 0) {
+      return;
+    }
+    await this.sleep(
+      INITIAL_RETRY_DELAY_MS * RETRY_MULTIPLIER ** (attempt - 1),
+    );
   }
 
   private async sleep(milliseconds: number): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, milliseconds));
-  }
-
-  private formatHttpErrorData(data: unknown): string {
-    if (typeof data === 'string') {
-      return data;
-    }
-    try {
-      return JSON.stringify(data) ?? String(data);
-    } catch {
-      return String(data);
-    }
   }
 }
