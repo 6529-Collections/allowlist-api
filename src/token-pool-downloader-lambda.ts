@@ -1,4 +1,4 @@
-import { Context } from 'aws-lambda';
+import type { Context } from 'aws-lambda';
 
 import { NestFactory } from '@nestjs/core';
 import { INestApplication } from '@nestjs/common';
