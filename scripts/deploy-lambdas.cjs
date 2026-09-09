@@ -178,16 +178,32 @@ for (const lambda of functions) {
       ([key, value]) => finalConfiguration.environment?.[key] !== value,
     )
     .map(([key]) => key);
-  if (
-    finalConfiguration.state !== 'Active' ||
-    finalConfiguration.lastUpdateStatus !== 'Successful' ||
-    finalConfiguration.revisionId !== expectedRevisionId ||
-    finalConfiguration.runtime !== 'nodejs24.x' ||
-    finalConfiguration.handler !== lambda.handler ||
-    changedEnvironmentKeys.length > 0
-  ) {
+  const mismatches = [];
+  // Long-idle functions can legitimately be Inactive after a successful
+  // update. The staging smoke invocation below reactivates and exercises them.
+  if (!['Active', 'Inactive'].includes(finalConfiguration.state)) {
+    mismatches.push(`state=${finalConfiguration.state}`);
+  }
+  if (finalConfiguration.lastUpdateStatus !== 'Successful') {
+    mismatches.push(
+      `lastUpdateStatus=${finalConfiguration.lastUpdateStatus}`,
+    );
+  }
+  if (finalConfiguration.revisionId !== expectedRevisionId) {
+    mismatches.push('revisionId');
+  }
+  if (finalConfiguration.runtime !== 'nodejs24.x') {
+    mismatches.push(`runtime=${finalConfiguration.runtime}`);
+  }
+  if (finalConfiguration.handler !== lambda.handler) {
+    mismatches.push(`handler=${finalConfiguration.handler}`);
+  }
+  if (changedEnvironmentKeys.length > 0) {
+    mismatches.push(`environment=${changedEnvironmentKeys.join(',')}`);
+  }
+  if (mismatches.length > 0) {
     throw new Error(
-      `Post-deploy verification failed for ${lambda.name}; mismatched environment keys: ${changedEnvironmentKeys.join(', ') || 'none'}.`,
+      `Post-deploy verification failed for ${lambda.name}: ${mismatches.join('; ')}.`,
     );
   }
   console.log(

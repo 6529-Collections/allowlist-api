@@ -20,6 +20,11 @@ async function bootstrap(): Promise<INestApplication> {
 export const handler: Handler = Sentry.wrapHandler(async (event: any) => {
   const nestApp = await bootstrap();
   const db = nestApp.get(DB);
+  if (event?.__allowlistLambdaSmokeTest === true) {
+    await db.close();
+    await nestApp.close();
+    return { ok: true };
+  }
   console.log('Received event', event);
   const message = event.Records[0];
   const params = JSON.parse(JSON.parse(message.body).Message);
