@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { TokenPoolDownloadEntity } from '../../repository/token-pool-download/token-pool-download.entity';
 import { TokenPoolDownloadResponseApiModel } from './model/token-pool-download-response-api.model';
 import { TokenPoolDownloadRepository } from '../../repository/token-pool-download/token-pool-download.repository';
@@ -186,7 +190,8 @@ export class TokenPoolDownloadService {
       attemptCount: entity.attempt_count ?? 0,
       failureCount,
       lastFailureAt:
-        bigInt2Number(entity.last_failure_at) ?? bigInt2Number(entity.failed_at),
+        bigInt2Number(entity.last_failure_at) ??
+        bigInt2Number(entity.failed_at),
       lastFailureReason:
         entity.last_failure_reason ?? entity.error_reason ?? undefined,
       stale,
@@ -210,9 +215,10 @@ export class TokenPoolDownloadService {
 
   private isStale(entity: TokenPoolDownloadEntity): boolean {
     if (
-      ![TokenPoolDownloadStatus.PENDING, TokenPoolDownloadStatus.CLAIMED].includes(
-        entity.status,
-      )
+      ![
+        TokenPoolDownloadStatus.PENDING,
+        TokenPoolDownloadStatus.CLAIMED,
+      ].includes(entity.status)
     ) {
       return false;
     }
@@ -239,7 +245,9 @@ export class TokenPoolDownloadService {
     if (entity.status === TokenPoolDownloadStatus.PENDING) {
       return `Token pool download has been pending for more than ${minutes} minutes without new progress`;
     }
-    return `Token pool download has not reported progress for more than ${minutes} minutes while in stage ${entity.stage ?? 'UNKNOWN'}`;
+    return `Token pool download has not reported progress for more than ${minutes} minutes while in stage ${
+      entity.stage ?? 'UNKNOWN'
+    }`;
   }
 
   private async getCreateTokenPoolOperation({

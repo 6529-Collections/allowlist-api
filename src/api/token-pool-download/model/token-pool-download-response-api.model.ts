@@ -95,7 +95,8 @@ export class TokenPoolDownloadResponseApiModel {
   @ApiProperty({
     required: false,
     type: Object,
-    description: 'Latest persisted progress details for the token pool download.',
+    description:
+      'Latest persisted progress details for the token pool download.',
   })
   readonly progress?: Record<string, unknown>;
 
@@ -112,7 +113,8 @@ export class TokenPoolDownloadResponseApiModel {
   @ApiProperty({
     required: false,
     type: Number,
-    description: 'Timestamp of the previous failure recorded for this snapshot.',
+    description:
+      'Timestamp of the previous failure recorded for this snapshot.',
   })
   readonly lastFailureAt?: number;
 
@@ -134,7 +136,8 @@ export class TokenPoolDownloadResponseApiModel {
   readonly errorReason?: string | null;
 
   @ApiProperty({
-    description: 'Whether the UI may offer an in-place retry for this snapshot.',
+    description:
+      'Whether the UI may offer an in-place retry for this snapshot.',
   })
   readonly retryable: boolean;
 }

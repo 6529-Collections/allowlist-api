@@ -4,6 +4,9 @@
 
 In local the app is ran in one process.
 
+Use Node.js 24 and Yarn 1.22.22 for development, CI, and deployment. If you use
+NVM, run `nvm use`; the checked-in `.nvmrc` selects the supported Node.js major.
+
 To run local DB, make sure you have docker installed:
 
 First run in project root:
@@ -47,7 +50,7 @@ To install app dependencies run
 `@6529-collections/allowlist-lib` is installed from the public npm registry;
 GitHub Packages credentials and `NPM_TOKEN` are not required.
 
-Use Yarn 1 for development, CI, and deployment. `yarn.lock` is the only
+Use Yarn 1.22.22 for development, CI, and deployment. `yarn.lock` is the only
 maintained lockfile; update it with Yarn when changing dependencies, then
 verify the frozen install command above from a clean checkout. The npm registry
 hosts the packages; using npmjs does not require switching package managers.
@@ -72,6 +75,15 @@ Start the application again and you'll have a clean database.
 ## Deployment to staging and production lambdas
 
 Github actions CI pipelines are used to build and redeploy everything to staging and production.
+
+All three managed Lambda functions use the `nodejs24.x` runtime, which is based
+on Amazon Linux 2023. Build and package deployments with Node.js 24 so native
+dependencies, if introduced, target the same runtime generation.
+
+Deployment remains on Serverless Framework v3 so the existing CI does not gain
+the v4 sign-in/license-key requirement. Its configuration validator predates
+`nodejs24.x` and emits a non-fatal runtime warning, but the generated
+CloudFormation uses `nodejs24.x` for every function.
 
 New migrations are called on first invocation of any lambda.
 

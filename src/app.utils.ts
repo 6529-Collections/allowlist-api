@@ -68,9 +68,7 @@ export function stringifyError(error: any): string {
         : '';
     const details = metadata ? ` (${metadata})` : '';
     const cause =
-      error.cause !== undefined
-        ? ` Cause: ${stringifyError(error.cause)}`
-        : '';
+      error.cause !== undefined ? ` Cause: ${stringifyError(error.cause)}` : '';
     const message =
       typeof error.message === 'string' && error.message.length
         ? error.message
