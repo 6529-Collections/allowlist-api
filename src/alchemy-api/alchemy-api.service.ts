@@ -1,7 +1,5 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
-import { Alchemy, OpenSeaSafelistRequestStatus } from 'alchemy-sdk';
-import { AlchemyConfig } from './alchemy.config';
+import { AlchemyApiClient } from './alchemy-api.client';
 
 export interface ContractMetadataResponse {
   id: string;
@@ -71,20 +69,13 @@ const CANONICAL_CONTRACT_METADATA: Record<string, CanonicalContractMetadata> = {
 // These exact provider sentinel values are treated as absent only after the
 // response has been gated to a contract with canonical metadata.
 const CONTRACT_METADATA_PLACEHOLDERS = new Set(['n/a', 'unknown']);
+const OPENSEA_VERIFIED_STATUS = 'verified';
 
 @Injectable()
 export class AlchemyApiService {
   private readonly logger = new Logger(AlchemyApiService.name);
-  private readonly BASE_URI = 'https://eth-mainnet.g.alchemy.com/';
-  private readonly HEADERS = {
-    accept: '*/*',
-  };
 
-  constructor(
-    private readonly alchemy: Alchemy,
-    private readonly alchemyConfig: AlchemyConfig,
-    private readonly httpService: HttpService,
-  ) {}
+  constructor(private readonly alchemyClient: AlchemyApiClient) {}
 
   async getContractMetadata(
     address: string,
@@ -92,7 +83,7 @@ export class AlchemyApiService {
     const canonicalMetadata = this.findCanonicalMetadata(address);
     let metadata;
     try {
-      metadata = await this.alchemy.nft.getContractMetadata(address);
+      metadata = await this.alchemyClient.getContractMetadata(address);
     } catch (error) {
       if (!canonicalMetadata) {
         throw error;
@@ -113,17 +104,16 @@ export class AlchemyApiService {
       description: metadata.openSea?.description ?? 'N/A',
       imageUrl: metadata.openSea?.imageUrl ?? null,
       openseaVerified:
-        metadata.openSea?.safelistRequestStatus ===
-        OpenSeaSafelistRequestStatus.VERIFIED,
+        metadata.openSea?.safelistRequestStatus === OPENSEA_VERIFIED_STATUS,
     });
   }
 
   public async getBlockNumber(): Promise<number> {
-    return await this.alchemy.core.getBlockNumber();
+    return await this.alchemyClient.getBlockNumber();
   }
 
   public async resolveEnsToAddress(ens: string): Promise<string | null> {
-    const address = await this.alchemy.core.resolveName(ens);
+    const address = await this.alchemyClient.core.resolveName(ens);
     return address?.toLowerCase() ?? null;
   }
 
@@ -138,36 +128,16 @@ export class AlchemyApiService {
     address: string;
     continuation: string | null;
   }): Promise<{ tokens: string[]; continuation: string | null }> {
-    const url = `${this.BASE_URI}nft/v3/${this.alchemyConfig.key}/getNFTsForContract`;
-    return await this.alchemyGet<{
-      nfts: { tokenId: string }[];
-    }>(url, {
-      withMetadata: 'false',
-      contractAddress: address,
-      startToken: continuation ?? undefined,
-    }).then((response) => ({
-      tokens: response.nfts.map((nft) => nft.tokenId),
-      continuation: response.nfts.at(-1)?.tokenId
-        ? `${parseInt(response.nfts.at(-1)?.tokenId) + 1}`
-        : null,
-    }));
-  }
-
-  private async alchemyGet<T>(
-    url: string,
-    queryParams: Record<string, string>,
-  ): Promise<T> {
-    const { data } = await this.httpService.axiosRef.get<T>(url, {
-      params: queryParams,
-      headers: this.HEADERS,
+    return await this.alchemyClient.getContractTokenIds({
+      address,
+      continuation,
     });
-    return data;
   }
 
   async searchContractMetadata(
     kw: string,
   ): Promise<ContractMetadataResponse[]> {
-    const contracts = await this.alchemy.nft.searchContractMetadata(kw);
+    const contracts = await this.alchemyClient.searchContractMetadata(kw);
 
     return contracts.map((metadata) =>
       this.applyCanonicalFallback({
@@ -178,8 +148,7 @@ export class AlchemyApiService {
         description: metadata?.openSea?.description ?? 'N/A',
         imageUrl: metadata?.openSea?.imageUrl ?? null, // optional
         openseaVerified:
-          metadata?.openSea?.safelistRequestStatus ===
-          OpenSeaSafelistRequestStatus.VERIFIED,
+          metadata?.openSea?.safelistRequestStatus === OPENSEA_VERIFIED_STATUS,
       }),
     );
   }

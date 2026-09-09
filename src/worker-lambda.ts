@@ -1,5 +1,3 @@
-import type { Context } from 'aws-lambda';
-
 import { NestFactory } from '@nestjs/core';
 import { INestApplication } from '@nestjs/common';
 import { initEnv } from './env';
@@ -22,26 +20,23 @@ async function bootstrap(): Promise<INestApplication> {
   return nestApp;
 }
 
-export const handler = Sentry.AWSLambda.wrapHandler(
-  async (event: any, context: Context) => {
-    const nestApp = await bootstrap();
-    const db = nestApp.get(DB);
-    console.log('Received event', event);
-    const message = event.Records[0];
-    const params = JSON.parse(JSON.parse(message.body).Message);
-    const id = params?.allowlistRunId;
-    if (!id) {
-      throw new Error('No id provided');
-    }
-    const runsService = nestApp.get(RunnerService);
-    await runsService.start(id);
-    try {
-      await db.close();
-      await nestApp.close();
-    } catch (e) {
-      console.error(`Error closing server`, e);
-    }
-    await context.succeed(event);
-    return {};
-  },
-);
+export const handler = Sentry.AWSLambda.wrapHandler(async (event: any) => {
+  const nestApp = await bootstrap();
+  const db = nestApp.get(DB);
+  console.log('Received event', event);
+  const message = event.Records[0];
+  const params = JSON.parse(JSON.parse(message.body).Message);
+  const id = params?.allowlistRunId;
+  if (!id) {
+    throw new Error('No id provided');
+  }
+  const runsService = nestApp.get(RunnerService);
+  await runsService.start(id);
+  try {
+    await db.close();
+    await nestApp.close();
+  } catch (e) {
+    console.error(`Error closing server`, e);
+  }
+  return {};
+});
