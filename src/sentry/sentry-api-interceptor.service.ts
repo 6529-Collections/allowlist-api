@@ -28,7 +28,9 @@ export class SentryApiInterceptor implements NestInterceptor {
         const skipCapture =
           error instanceof HttpException && error.getStatus() < 500;
         if (!skipCapture) {
-          Sentry.captureException(error, span.getTraceContext());
+          Sentry.captureException(error, {
+            contexts: { trace: span.getTraceContext() },
+          });
         }
         return throwError(() => error);
       }),
