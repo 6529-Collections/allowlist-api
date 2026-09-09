@@ -53,13 +53,13 @@ export class OtherService {
   ) {}
 
   getOperationDescriptions(): OperationDescriptionsResponseApiModel[] {
-    return Object.keys(AllowlistOperationCode).map(
-      (code: AllowlistOperationCode) => ({
-        code,
-        title: ALLOWLIST_CODE_DESCRIPTIONS[code].title,
-        description: ALLOWLIST_CODE_DESCRIPTIONS[code].description,
-      }),
-    );
+    return (
+      Object.keys(AllowlistOperationCode) as AllowlistOperationCode[]
+    ).map((code) => ({
+      code,
+      title: ALLOWLIST_CODE_DESCRIPTIONS[code].title,
+      description: ALLOWLIST_CODE_DESCRIPTIONS[code].description,
+    }));
   }
 
   getOperationDescriptionsForType(

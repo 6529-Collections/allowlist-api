@@ -25,18 +25,30 @@ jobs:
         run: corepack enable
       - name: Install dependencies
         run: yarn install --frozen-lockfile --registry=https://registry.npmjs.org/
+      - name: Audit production dependencies
+        run: yarn audit:production
+      - name: Audit full dependency graph
+        run: yarn audit:all
       - name: Build
         run: yarn build
       - name: Run unit tests
         run: yarn test
+      - name: Inject Sentry source-map metadata
+        run: yarn sentry:sourcemaps:inject
+      - name: Package Lambdas
+        run: yarn lambda:package
+      - name: Verify Lambda artifact
+        run: yarn lambda:package:verify
+      - name: Upload Sentry source maps
+        run: yarn sentry:sourcemaps:upload
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
-      - name: Deploy
-        run: cp serverless-staging.yaml serverless.yaml && yarn sls:deploy && yarn sentry:sourcemaps
+      - name: Deploy Lambdas sequentially
+        run: yarn lambda:deploy:staging
       - name: Notify about failure
         uses: sarisia/actions-status-discord@v1
         if: failure()

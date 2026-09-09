@@ -1,8 +1,5 @@
 export type UpstreamProviderFailureKind =
-  | 'invalid-response'
-  | 'rate-limited'
-  | 'rejected'
-  | 'unavailable';
+  'invalid-response' | 'rate-limited' | 'rejected' | 'unavailable';
 
 const PROVIDER_SECRET_KEYS = [
   'api_key',
@@ -90,10 +87,14 @@ export function getProviderRequestId(headers: unknown): string | undefined {
   ]) {
     const value = values[header] ?? values.get?.(header);
     if (typeof value === 'string' && value.length > 0) {
-      return value
-        .replace(/[\u0000-\u001f\u007f]+/g, ' ')
-        .trim()
-        .slice(0, 128);
+      return (
+        value
+          // Matching control characters is intentional to prevent log injection.
+          // eslint-disable-next-line no-control-regex
+          .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+          .trim()
+          .slice(0, 128)
+      );
     }
   }
   return undefined;

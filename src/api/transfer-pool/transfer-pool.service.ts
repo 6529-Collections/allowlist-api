@@ -26,9 +26,8 @@ export class TransferPoolService {
   async getByAllowlistId(
     allowlistId: string,
   ): Promise<TransferPoolResponseApiModel[]> {
-    const entities = await this.transferPoolRepository.getByAllowlistId(
-      allowlistId,
-    );
+    const entities =
+      await this.transferPoolRepository.getByAllowlistId(allowlistId);
     return entities.map(this.entityToApiModel);
   }
 

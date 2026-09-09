@@ -80,15 +80,46 @@ All three managed Lambda functions use the `nodejs24.x` runtime, which is based
 on Amazon Linux 2023. Build and package deployments with Node.js 24 so native
 dependencies, if introduced, target the same runtime generation.
 
-Deployment remains on Serverless Framework v3 so the existing CI does not gain
-the v4 sign-in/license-key requirement. Its configuration validator predates
-`nodejs24.x` and emits a non-fatal runtime warning, but the generated
-CloudFormation uses `nodejs24.x` for every function.
+`yarn lambda:package` creates one reproducible `.serverless/allowlist-api.zip`
+from the compiled `dist/` tree, migrations, configuration, and a frozen
+production-only dependency install. The artifact contains no compiler, test,
+Serverless Framework, or optimizer dependencies. Run
+`yarn lambda:package:verify` before deployment; it checks both handler paths,
+loads every handler under the current Node runtime, confirms Sentry debug IDs,
+enforces Lambda size limits, and prints the artifact SHA-256.
+
+The checked-in `serverless-*.yaml` files remain as records of the provisioned
+infrastructure, but deployment workflows no longer install or run the obsolete
+Serverless v3/plugin build chain. They update the existing functions directly
+with the AWS CLI, waiting for each function to finish before continuing. The
+order is token-pool downloader, allowlist worker, then API, so workers are ready
+before the API can enqueue new work. Compatibility handlers under `src/` are
+included in the artifact, so changing the configured handlers to `dist/` cannot
+create a code/config transition outage.
+
+Sentry source-map debug IDs are injected before packaging. The matching maps
+are uploaded before the Lambda code update, ensuring the deployed JavaScript
+and uploaded source maps have the same debug IDs.
 
 New migrations are called on first invocation of any lambda.
 
 In production the app is ran in 3 lambas:
 
-1. API lambda - Serves all API requests (entrypoint: `src/api-lambda.ts/handle`)
-2. Worker lambda - Does the actual final allowlist creation (entrypoint: `src/worker-lambda.ts/handle`)
-3. Tokenpool downloader lambda - Helps to get aggregated tokenpool data needed for worker lambda (entrypoint: `src/token-pool-downloader-lambda.ts/handle`)
+1. API lambda - Serves all API requests (handler: `dist/api-lambda.handler`)
+2. Worker lambda - Does the actual final allowlist creation (handler: `dist/worker-lambda.handler`)
+3. Tokenpool downloader lambda - Helps to get aggregated tokenpool data needed for worker lambda (handler: `dist/token-pool-downloader-lambda.handler`)
+
+## Dependency security policy
+
+CI and both deployment workflows run two independent audits:
+
+- `yarn audit:production` checks the deployable dependency graph.
+- `yarn audit:all` checks production and development dependencies.
+
+Both commands fail on any unapproved high or critical advisory, fail closed if
+the registry returns no audit result, and print each remaining advisory with
+its dependency path. Lower-severity findings remain visible but do not block.
+If an advisory truly cannot be removed immediately, add only its exact advisory
+ID and dependency path to `dependency-audit-exceptions.json`, together with a
+reason and ISO expiry date. Broad package exceptions are not supported. The
+exception file is intentionally empty at present.

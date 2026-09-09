@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { associateByToMap } from '../../app.utils';
+import { associateByToMap, stringifyError } from '../../app.utils';
 import { AllowlistOperation } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation';
 import { AllowlistOperationCode } from '@6529-collections/allowlist-lib/allowlist/allowlist-operation-code';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
@@ -101,7 +101,7 @@ export class AllowlistUniqueWalletsCalculationService {
         return acc + wallets.size;
       }, 0);
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw new BadRequestException(stringifyError(e));
     }
   }
 

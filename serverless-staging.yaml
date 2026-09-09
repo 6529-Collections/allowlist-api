@@ -1,16 +1,20 @@
 service: allowlist-api
 
-plugins:
-  - serverless-plugin-typescript
-  - serverless-plugin-warmup
-
 package:
-  include:
+  excludeDevDependencies: true
+  patterns:
+    - 'dist/**'
     - 'migrations/**'
     - 'config/**'
-  exclude:
-    - 'node_modules/**/@types/**'
-    - 'node_modules/**/*.d.ts'
+    - '!src/**'
+    - '!_templates/**'
+    - '!.github/**'
+    - '!coverage/**'
+    - '!dockerfiles/**'
+    - '!build-dev-db.sh'
+    - '!docker-compose.yml'
+    - '!node_modules/**/@types/**'
+    - '!node_modules/**/*.d.ts'
 
 provider:
   name: aws
@@ -33,14 +37,9 @@ provider:
       Resource:
         - "*"
 
-custom:
-  warmup:
-    default:
-      enabled: false
-
 functions:
   main:
-    handler: ./src/api-lambda.handler
+    handler: dist/api-lambda.handler
     name: allowlist-api
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
     vpc:
@@ -60,7 +59,7 @@ functions:
           cors: true
 
   queue:
-    handler: src/worker-lambda.handler
+    handler: dist/worker-lambda.handler
     name: allowlist-worker
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
     memorySize: 4086
@@ -79,7 +78,7 @@ functions:
         - subnet-0470704bff1eac2f5
 
   token-pool-downloader:
-    handler: src/token-pool-downloader-lambda.handler
+    handler: dist/token-pool-downloader-lambda.handler
     name: allowlist-token-pool-downloader
     role: arn:aws:iam::987989283142:role/lambda-vpc-role
     memorySize: 4086

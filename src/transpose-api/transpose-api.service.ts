@@ -119,7 +119,7 @@ export class TransposeApiService {
     return {
       tokens: items,
       continuation:
-        items.length === TRANSPOSE_PAGE_SIZE ? items.at(-1) ?? null : null,
+        items.length === TRANSPOSE_PAGE_SIZE ? (items.at(-1) ?? null) : null,
     };
   }
 

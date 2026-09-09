@@ -31,9 +31,8 @@ export class TokenPoolDownloadService {
   async getByAllowlistId(
     allowlistId: string,
   ): Promise<TokenPoolDownloadResponseApiModel[]> {
-    const entity = await this.tokenPoolDownloadRepository.getByAllowlistId(
-      allowlistId,
-    );
+    const entity =
+      await this.tokenPoolDownloadRepository.getByAllowlistId(allowlistId);
     return entity.map((download) => this.entityToApiModel(download));
   }
 
@@ -208,7 +207,7 @@ export class TokenPoolDownloadService {
     }
     try {
       return JSON.parse(progress);
-    } catch (e) {
+    } catch {
       return { raw: progress };
     }
   }
@@ -272,7 +271,7 @@ export class TokenPoolDownloadService {
     const operation = operations.find((candidate) => {
       try {
         return JSON.parse(candidate.params)?.id === tokenPoolId;
-      } catch (e) {
+      } catch {
         return false;
       }
     });
