@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { createServer, proxy } from 'aws-serverless-express';
-import { Context, Handler } from 'aws-lambda';
+import type { Context, Handler } from 'aws-lambda';
 import { AppModule } from './app.module';
 import { Server } from 'http';
 import { ValidationPipe } from '@nestjs/common';
