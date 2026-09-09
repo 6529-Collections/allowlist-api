@@ -17,7 +17,7 @@ import { AllowlistState } from '@6529-collections/allowlist-lib/allowlist/state-
 import { TransferRepository } from '../repository/transfer/transfer.repository';
 import { ContractSchema } from '@6529-collections/allowlist-lib/app-types';
 import { Time } from '../time';
-import { Alchemy } from 'alchemy-sdk';
+import { AlchemyApiClient } from '../alchemy-api/alchemy-api.client';
 import {
   TokenPoolDownloaderParams,
   TokenPoolDownloaderParamsState,
@@ -36,7 +36,7 @@ export class TokenPoolDownloaderService {
     private readonly tokenPoolTokenRepository: TokenPoolTokenRepository,
     private readonly allowlistCreator: AllowlistCreator,
     private readonly transferRepository: TransferRepository,
-    private readonly alchemy: Alchemy,
+    private readonly alchemyClient: AlchemyApiClient,
     private readonly db: DB,
   ) {}
 
@@ -336,12 +336,19 @@ export class TokenPoolDownloaderService {
 
   private async attemptThroughAlchemy(entity: TokenPoolDownloadEntity) {
     try {
-      await this.alchemy.nft.getOwnersForContract(entity.contract, {
+      await this.alchemyClient.nft.getOwnersForContract(entity.contract, {
         withTokenBalances: true,
         block: entity.block_no.toString(),
       });
       return true;
     } catch (e) {
+      this.logger.warn(
+        `Alchemy historical-owner probe failed for ${
+          entity.contract
+        } at block ${entity.block_no}: ${stringifyError(
+          e,
+        )}. Falling back to the transfer-history path.`,
+      );
       return false;
     }
   }
