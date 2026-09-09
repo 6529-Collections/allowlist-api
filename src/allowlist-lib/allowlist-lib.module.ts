@@ -6,7 +6,7 @@ import { TransferRepository } from '../repository/transfer/transfer.repository';
 import { AllowlistLibLogListener } from './allowlist-lib-log-listener.service';
 import { LoggerFactory } from '@6529-collections/allowlist-lib/logging/logging-emitter';
 import { AlchemyApiModule } from '../alchemy-api/alchemy-api.module';
-import { Alchemy } from 'alchemy-sdk';
+import { AlchemyApiClient } from '../alchemy-api/alchemy-api.client';
 import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-pool-token.repository';
 import { EtherscanService } from '@6529-collections/allowlist-lib/services/etherscan.service';
 
@@ -19,13 +19,13 @@ export function createAllowlistCreator(
   transferRepository: TransferRepository,
   tokenPoolTokenRepository: TokenPoolTokenRepository,
   allowlistLibLogListener: AllowlistLibLogListener,
-  alchemy: Alchemy,
+  alchemyClient: AlchemyApiClient,
 ): AllowlistCreator {
   const etherscanApiKey = configService.get('ALLOWLIST_ETHERSCAN_API_KEY');
   return AllowlistCreator.getInstance({
     seizeApiPath: configService.get('ALLOWLIST_SEIZE_API_PATH'),
     seizeApiKey: configService.get('ALLOWLIST_SEIZE_API_KEY'),
-    alchemy,
+    alchemy: alchemyClient,
     etherscanApiKey,
     ofacCheckEnabled: isOfacCheckEnabled(
       configService.get<string>('OFAC_CHECK'),
@@ -50,7 +50,7 @@ export function createAllowlistCreator(
         TransferRepository,
         TokenPoolTokenRepository,
         AllowlistLibLogListener,
-        Alchemy,
+        AlchemyApiClient,
       ],
     },
 

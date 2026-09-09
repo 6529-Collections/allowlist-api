@@ -1,8 +1,6 @@
-import { HttpService } from '@nestjs/axios';
 import { Logger } from '@nestjs/common';
-import { Alchemy, OpenSeaSafelistRequestStatus } from 'alchemy-sdk';
+import { AlchemyApiClient } from './alchemy-api.client';
 import { AlchemyApiService } from './alchemy-api.service';
-import { AlchemyConfig } from './alchemy.config';
 
 const MEMES_CONTRACT = '0x33fd426905f149f8376e227d0c9d3340aad17af1';
 const MEMES_CHECKSUM_CONTRACT = '0x33FD426905F149f8376e227d0C9D3340AaD17aF1';
@@ -47,22 +45,22 @@ const CANONICAL_COLLECTIONS = [
 describe(AlchemyApiService.name, () => {
   const getContractMetadata = jest.fn();
   const searchContractMetadata = jest.fn();
+  const getBlockNumber = jest.fn();
+  const getContractTokenIds = jest.fn();
+  const resolveName = jest.fn();
   let service: AlchemyApiService;
   let warnSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
     warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    service = new AlchemyApiService(
-      {
-        nft: {
-          getContractMetadata,
-          searchContractMetadata,
-        },
-      } as unknown as Alchemy,
-      {} as AlchemyConfig,
-      {} as HttpService,
-    );
+    service = new AlchemyApiService({
+      getContractMetadata,
+      searchContractMetadata,
+      getBlockNumber,
+      getContractTokenIds,
+      core: { resolveName },
+    } as unknown as AlchemyApiClient);
   });
 
   afterEach(() => {
@@ -97,7 +95,7 @@ describe(AlchemyApiService.name, () => {
       openSea: {
         description: 'Provider description',
         imageUrl: 'https://provider.example/memes.png',
-        safelistRequestStatus: OpenSeaSafelistRequestStatus.VERIFIED,
+        safelistRequestStatus: 'verified',
       },
     });
 
@@ -155,7 +153,7 @@ describe(AlchemyApiService.name, () => {
       openSea: {
         description: 'N/A',
         imageUrl: 'https://provider.example/memes.png',
-        safelistRequestStatus: OpenSeaSafelistRequestStatus.VERIFIED,
+        safelistRequestStatus: 'verified',
       },
     });
 
@@ -223,5 +221,84 @@ describe(AlchemyApiService.name, () => {
         imageUrl: CANONICAL_COLLECTIONS[1].imageUrl,
       }),
     ]);
+  });
+
+  it('maps only the OpenSea verified status to true in search results', async () => {
+    searchContractMetadata.mockResolvedValue([
+      {
+        address: '0x1111111111111111111111111111111111111111',
+        name: 'Verified',
+        tokenType: 'ERC721',
+        openSea: { safelistRequestStatus: 'verified' },
+      },
+      {
+        address: '0x2222222222222222222222222222222222222222',
+        name: 'Approved',
+        tokenType: 'ERC721',
+        openSea: { safelistRequestStatus: 'approved' },
+      },
+    ]);
+
+    await expect(service.searchContractMetadata('collection')).resolves.toEqual(
+      [
+        expect.objectContaining({
+          address: '0x1111111111111111111111111111111111111111',
+          openseaVerified: true,
+        }),
+        expect.objectContaining({
+          address: '0x2222222222222222222222222222222222222222',
+          openseaVerified: false,
+        }),
+      ],
+    );
+  });
+
+  it('propagates contract metadata search provider errors', async () => {
+    const providerError = new Error('provider unavailable');
+    searchContractMetadata.mockRejectedValue(providerError);
+
+    await expect(service.searchContractMetadata('collection')).rejects.toBe(
+      providerError,
+    );
+  });
+
+  it('returns the Ethereum mainnet block number from the client', async () => {
+    getBlockNumber.mockResolvedValue(24_123_456);
+
+    await expect(service.getBlockNumber()).resolves.toBe(24_123_456);
+  });
+
+  it('normalizes resolved ENS addresses to lowercase', async () => {
+    resolveName.mockResolvedValue('0xAAbbCCddEEff0011223344556677889900aAbBcC');
+
+    await expect(service.resolveEnsToAddress('example.eth')).resolves.toBe(
+      '0xaabbccddeeff0011223344556677889900aabbcc',
+    );
+  });
+
+  it('preserves null ENS results', async () => {
+    resolveName.mockResolvedValue(null);
+
+    await expect(
+      service.resolveEnsToAddress('missing.eth'),
+    ).resolves.toBeNull();
+  });
+
+  it('delegates contract token pagination without changing its response', async () => {
+    getContractTokenIds.mockResolvedValue({
+      tokens: ['10', '11'],
+      continuation: '12',
+    });
+
+    await expect(
+      service.getContractTokenIds({
+        address: MEMES_CONTRACT,
+        continuation: '10',
+      }),
+    ).resolves.toEqual({ tokens: ['10', '11'], continuation: '12' });
+    expect(getContractTokenIds).toHaveBeenCalledWith({
+      address: MEMES_CONTRACT,
+      continuation: '10',
+    });
   });
 });

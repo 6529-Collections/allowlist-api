@@ -43,7 +43,6 @@
     "@nestjs/schedule": "^3.0.1",
     "@nestjs/swagger": "^6.3.0",
     "@sentry/serverless": "^7.74.0",
-    "alchemy-sdk": "^2.10.1",
     "aws-serverless-express": "^3.4.0",
     "axios": "^1.6.2",
     "class-transformer": "^0.5.1",

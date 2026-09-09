@@ -1,10 +1,10 @@
 import { ConfigService } from '@nestjs/config';
-import { Alchemy } from 'alchemy-sdk';
 import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allowlist-creator';
 import { TransferRepository } from '../repository/transfer/transfer.repository';
 import { TokenPoolTokenRepository } from '../repository/token-pool-token/token-pool-token.repository';
 import { AllowlistLibLogListener } from './allowlist-lib-log-listener.service';
 import { createAllowlistCreator } from './allowlist-lib.module';
+import { AlchemyApiClient } from '../alchemy-api/alchemy-api.client';
 
 describe('AllowlistLibModule', () => {
   afterEach(() => {
@@ -27,17 +27,19 @@ describe('AllowlistLibModule', () => {
     const getInstance = jest
       .spyOn(AllowlistCreator, 'getInstance')
       .mockReturnValue({} as AllowlistCreator);
+    const alchemyClient = {} as AlchemyApiClient;
 
     createAllowlistCreator(
       configService,
       {} as TransferRepository,
       {} as TokenPoolTokenRepository,
       {} as AllowlistLibLogListener,
-      {} as Alchemy,
+      alchemyClient,
     );
 
     expect(getInstance).toHaveBeenCalledWith(
       expect.objectContaining({
+        alchemy: alchemyClient,
         ofacCheckEnabled: expected,
       }),
     );
