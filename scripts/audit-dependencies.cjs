@@ -48,6 +48,10 @@ for (let attempt = 1; attempt <= 3; attempt += 1) {
   }
 }
 
+if (typeof output !== 'string') {
+  throw new Error('The registry returned no dependency audit output.');
+}
+
 const reports = output
   .split('\n')
   .filter(Boolean)

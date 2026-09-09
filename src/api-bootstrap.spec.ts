@@ -183,7 +183,10 @@ describe('Nest, Express, validation, Swagger, and auth compatibility', () => {
       .set('origin', 'https://example.test')
       .set('access-control-request-method', 'POST')
       .expect(204)
-      .expect('access-control-allow-origin', '*');
+      .expect('access-control-allow-origin', '*')
+      .expect((response) => {
+        expect(response.headers).not.toHaveProperty('x-powered-by');
+      });
   });
 
   it('serves API Gateway v1 events through the maintained Lambda adapter', async () => {

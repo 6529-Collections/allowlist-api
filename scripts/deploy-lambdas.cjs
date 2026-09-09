@@ -154,14 +154,44 @@ for (const lambda of functions) {
       lambda.name,
     ]);
   }
-  aws([
-    'lambda',
-    'get-function-configuration',
-    '--function-name',
-    lambda.name,
-    '--query',
-    '[State,LastUpdateStatus,Runtime,Handler,CodeSize]',
-    '--output',
-    'text',
-  ]);
+  const finalConfiguration = JSON.parse(
+    aws(
+      [
+        'lambda',
+        'get-function-configuration',
+        '--function-name',
+        lambda.name,
+        '--query',
+        '{codeSize:CodeSize,environment:Environment.Variables,handler:Handler,lastUpdateStatus:LastUpdateStatus,runtime:Runtime,state:State}',
+        '--output',
+        'json',
+      ],
+      true,
+    ),
+  );
+  const changedEnvironmentKeys = Object.entries(desiredEnvironment)
+    .filter(
+      ([key, value]) => finalConfiguration.environment?.[key] !== value,
+    )
+    .map(([key]) => key);
+  if (
+    finalConfiguration.state !== 'Active' ||
+    finalConfiguration.lastUpdateStatus !== 'Successful' ||
+    finalConfiguration.runtime !== 'nodejs24.x' ||
+    finalConfiguration.handler !== lambda.handler ||
+    changedEnvironmentKeys.length > 0
+  ) {
+    throw new Error(
+      `Post-deploy verification failed for ${lambda.name}; mismatched environment keys: ${changedEnvironmentKeys.join(', ') || 'none'}.`,
+    );
+  }
+  console.log(
+    [
+      finalConfiguration.state,
+      finalConfiguration.lastUpdateStatus,
+      finalConfiguration.runtime,
+      finalConfiguration.handler,
+      finalConfiguration.codeSize,
+    ].join('\t'),
+  );
 }
