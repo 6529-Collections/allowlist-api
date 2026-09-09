@@ -23,6 +23,11 @@ async function bootstrap(): Promise<INestApplication> {
 export const handler: Handler = Sentry.wrapHandler(async (event: any) => {
   const nestApp = await bootstrap();
   const service = nestApp.get(TokenPoolDownloaderService);
+  if (event?.__allowlistLambdaSmokeTest === true) {
+    await nestApp.get(DB).close();
+    await nestApp.close();
+    return { ok: true };
+  }
   console.log('Received event', event);
   const message = event.Records[0];
   const params: TokenPoolDownloaderParams = JSON.parse(
