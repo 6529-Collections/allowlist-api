@@ -20,8 +20,6 @@ jobs:
           cache: yarn
       - name: Enable Yarn
         run: corepack enable
-      - name: Install node gyp
-        run: yarn global add node-gyp@12
       - name: Install dependencies
         run: yarn install --frozen-lockfile --registry=https://registry.npmjs.org/
       - name: Build
