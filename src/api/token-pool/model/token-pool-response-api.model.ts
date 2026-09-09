@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TokenPool } from '@6529-collections/allowlist-lib/allowlist/state-types/token-pool';
 
-export class TokenPoolResponseApiModel
-  implements Omit<TokenPool, 'tokens' | 'tokenIds' | 'transferPoolId'>
-{
+export class TokenPoolResponseApiModel implements Omit<
+  TokenPool,
+  'tokens' | 'tokenIds' | 'transferPoolId'
+> {
   @ApiProperty({
     description: 'Contract address.',
   })

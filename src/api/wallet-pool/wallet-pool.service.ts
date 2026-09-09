@@ -22,9 +22,8 @@ export class WalletPoolService {
   async getByAllowlistId(
     allowlistId: string,
   ): Promise<WalletPoolResponseApiModel[]> {
-    const entities = await this.walletPoolRepository.getByAllowlistId(
-      allowlistId,
-    );
+    const entities =
+      await this.walletPoolRepository.getByAllowlistId(allowlistId);
     return entities.map(this.entityToApiModel);
   }
 

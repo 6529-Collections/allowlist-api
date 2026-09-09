@@ -583,7 +583,7 @@ export class TokenPoolDownloaderService {
         continue: false,
         entity,
         state,
-        error: `Persisting state for token pool ${tokenPoolId} failed: ${e.message}`,
+        error: `Persisting state for token pool ${tokenPoolId} failed: ${stringifyError(e)}`,
       };
     }
   }
@@ -598,27 +598,30 @@ export class TokenPoolDownloaderService {
     connection: Connection;
   }) {
     const entities = Object.values(
-      ownerships.reduce((acc, ownership) => {
-        const tokenPoolId = ownership.tokenPoolId;
-        const { id, contract, owner } = ownership.ownership;
-        const key = sha256(
-          `${tokenPoolId}_${owner}_${allowlistId}_${id}_${contract}`,
-        );
-        if (acc[key]) {
-          acc[key] = { ...acc[key], amount: acc[key].amount + 1 };
-        } else {
-          acc[key] = {
-            id: key,
-            allowlist_id: allowlistId,
-            token_pool_id: tokenPoolId,
-            token_id: id,
-            amount: 1,
-            wallet: owner,
-            contract,
-          };
-        }
-        return acc;
-      }, {} as Record<string, TokenPoolTokenEntity>),
+      ownerships.reduce(
+        (acc, ownership) => {
+          const tokenPoolId = ownership.tokenPoolId;
+          const { id, contract, owner } = ownership.ownership;
+          const key = sha256(
+            `${tokenPoolId}_${owner}_${allowlistId}_${id}_${contract}`,
+          );
+          if (acc[key]) {
+            acc[key] = { ...acc[key], amount: acc[key].amount + 1 };
+          } else {
+            acc[key] = {
+              id: key,
+              allowlist_id: allowlistId,
+              token_pool_id: tokenPoolId,
+              token_id: id,
+              amount: 1,
+              wallet: owner,
+              contract,
+            };
+          }
+          return acc;
+        },
+        {} as Record<string, TokenPoolTokenEntity>,
+      ),
     );
     await this.tokenPoolTokenRepository.insert(entities, { connection });
   }

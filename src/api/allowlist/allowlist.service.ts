@@ -215,9 +215,8 @@ export class AllowlistService {
   }
 
   async planRun(allowlistId: string) {
-    const allowlistEntity = await this.allowlistRepository.findById(
-      allowlistId,
-    );
+    const allowlistEntity =
+      await this.allowlistRepository.findById(allowlistId);
     if (!allowlistEntity) {
       throw new BadRequestException(
         `Allowlist with ID ${allowlistId} does not exist`,

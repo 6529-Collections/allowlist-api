@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { jest } from '@jest/globals';
 import { AlchemyApiClient } from './alchemy-api.client';
 import { AlchemyApiService } from './alchemy-api.service';
 

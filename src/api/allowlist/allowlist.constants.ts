@@ -12,8 +12,7 @@ export const UNIQUE_WALLET_COUNTS_OPS_RELEVANCY: Record<
   [AllowlistOperationCode.ADD_PHASE]: true,
   [AllowlistOperationCode.ADD_COMPONENT]: true,
   [AllowlistOperationCode.COMPONENT_ADD_SPOTS_TO_ALL_ITEM_WALLETS]: true,
-  [AllowlistOperationCode.COMPONENT_ADD_SPOTS_TO_WALLETS_EXCLUDING_CERTAIN_COMPONENTS]:
-    true,
+  [AllowlistOperationCode.COMPONENT_ADD_SPOTS_TO_WALLETS_EXCLUDING_CERTAIN_COMPONENTS]: true,
   [AllowlistOperationCode.COMPONENT_SELECT_RANDOM_WALLETS]: true,
   [AllowlistOperationCode.COMPONENT_SELECT_RANDOM_PERCENTAGE_WALLETS]: true,
   [AllowlistOperationCode.ADD_ITEM]: true,

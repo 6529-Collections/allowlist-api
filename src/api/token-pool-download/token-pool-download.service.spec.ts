@@ -1,4 +1,5 @@
 import { TokenPoolDownloadService } from './token-pool-download.service';
+import { jest } from '@jest/globals';
 import { TokenPoolDownloadStatus } from '../../repository/token-pool-download/token-pool-download-status';
 import { TokenPoolDownloadStage } from '../../repository/token-pool-download/token-pool-download-stage';
 

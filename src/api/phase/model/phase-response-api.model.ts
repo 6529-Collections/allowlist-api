@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AllowlistPhase } from '@6529-collections/allowlist-lib/allowlist/state-types/allowlist-phase';
 
-export class PhaseResponseApiModel
-  implements Omit<AllowlistPhase, 'components' | '_insertionOrder'>
-{
+export class PhaseResponseApiModel implements Omit<
+  AllowlistPhase,
+  'components' | '_insertionOrder'
+> {
   @ApiProperty({
     description: 'ID',
   })

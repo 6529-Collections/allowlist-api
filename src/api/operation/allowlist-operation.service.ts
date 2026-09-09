@@ -9,7 +9,7 @@ import { AllowlistCreator } from '@6529-collections/allowlist-lib/allowlist/allo
 import { AllowlistOperationResponseApiModel } from './model/allowlist-operation-response-api.model';
 import { AllowlistRunStatus } from '../allowlist/model/allowlist-run-status';
 import { AllowlistOperationEntity } from '../../repository/allowlist-operation/allowlist-operation.entity';
-import { bigInt2Number } from '../../app.utils';
+import { bigInt2Number, stringifyError } from '../../app.utils';
 import { randomUUID } from 'crypto';
 import { DB } from '../../repository/db';
 import { TokenPoolAsyncDownloader } from '../../token-pool/token-pool-async-downloader';
@@ -32,7 +32,7 @@ export class AllowlistOperationService {
     try {
       this.allowlistCreator.validateOperation(params);
     } catch (e) {
-      throw new BadRequestException(e.message);
+      throw new BadRequestException(stringifyError(e));
     }
   }
 
@@ -224,9 +224,8 @@ export class AllowlistOperationService {
   async findByAllowlistId(
     allowlistId: string,
   ): Promise<AllowlistOperationResponseApiModel[]> {
-    const entities = await this.allowlistOperationRepository.findByAllowlistId(
-      allowlistId,
-    );
+    const entities =
+      await this.allowlistOperationRepository.findByAllowlistId(allowlistId);
     return entities.map(this.allowlistOperationEntityToApiModel);
   }
 

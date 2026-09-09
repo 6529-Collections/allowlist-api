@@ -23,9 +23,8 @@ export class PhaseComponentItemService {
   async getByAllowlistId(
     allowlistId: string,
   ): Promise<PhaseComponentItemResponseApiModel[]> {
-    const entities = await this.phaseComponentItemRepository.getByAllowlistId(
-      allowlistId,
-    );
+    const entities =
+      await this.phaseComponentItemRepository.getByAllowlistId(allowlistId);
     return entities.map(this.phaseComponentItemEntityToResponseApiModel);
   }
 

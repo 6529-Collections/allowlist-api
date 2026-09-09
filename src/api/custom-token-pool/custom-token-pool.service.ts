@@ -12,9 +12,8 @@ export class CustomTokenPoolService {
   async getByAllowlistId(
     allowlistId: string,
   ): Promise<CustomTokenPoolResponseApiModel[]> {
-    const entities = await this.customTokenPoolRepository.getByAllowlistId(
-      allowlistId,
-    );
+    const entities =
+      await this.customTokenPoolRepository.getByAllowlistId(allowlistId);
     return entities.map(this.customTokenPoolEntityToApiModel);
   }
 

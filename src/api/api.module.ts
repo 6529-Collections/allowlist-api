@@ -46,7 +46,6 @@ import { TokenPoolDownloadService } from './token-pool-download/token-pool-downl
 import { TokenPoolDownloadController } from './token-pool-download/token-pool-download.controller';
 import { SeizeApiModule } from '../seize-api/seize-api.module';
 import { AppLoggerMiddleware } from '../app.logger.middleware';
-import * as Sentry from '@sentry/serverless';
 import { AllowlistUniqueWalletsCalculationService } from './allowlist/allowlist-unique-wallets-calculation.service';
 
 // Placeholder for future imports, please do not remove (auto-generated) - DO NOT REMOVE THIS LINE
@@ -118,9 +117,8 @@ import { AllowlistUniqueWalletsCalculationService } from './allowlist/allowlist-
 })
 export class ApiModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(AppLoggerMiddleware).forRoutes('*');
-    consumer.apply(Sentry.Handlers.requestHandler()).forRoutes({
-      path: '*',
+    consumer.apply(AppLoggerMiddleware).forRoutes({
+      path: '{*splat}',
       method: RequestMethod.ALL,
     });
   }

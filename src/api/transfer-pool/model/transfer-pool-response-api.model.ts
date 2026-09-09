@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransferPool } from '@6529-collections/allowlist-lib/allowlist/operations/get-collection-transfers/get-collection-transfers-operation.types';
 
-export class TransferPoolResponseApiModel
-  implements Omit<TransferPool, 'transfers'>
-{
+export class TransferPoolResponseApiModel implements Omit<
+  TransferPool,
+  'transfers'
+> {
   @ApiProperty({
     description: 'ID',
   })
