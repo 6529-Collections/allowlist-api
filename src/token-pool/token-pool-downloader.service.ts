@@ -179,7 +179,9 @@ export class TokenPoolDownloaderService {
         };
       }
 
-      this.logger.log(`Old single type block: ${startingBlocks.at(-1)?.single}`);
+      this.logger.log(
+        `Old single type block: ${startingBlocks.at(-1)?.single}`,
+      );
       this.logger.log(`New single type block: ${singleTypeLatestBlock}`);
       this.logger.log(`Old batch type block: ${startingBlocks.at(-1)?.batch}`);
       this.logger.log(`New batch type block: ${batchTypeLatestBlock}`);
@@ -378,12 +380,12 @@ export class TokenPoolDownloaderService {
         transferType === 'single'
           ? TokenPoolDownloadStage.INDEXING_SINGLE
           : TokenPoolDownloadStage.INDEXING_BATCH,
-        progress: {
-          executionPath: 'SLOW',
-          transferType,
-          currentBlockNo: latestBlockNo,
-          startingBlock: latestBlockNo,
-          targetBlockNo: entity.block_no,
+      progress: {
+        executionPath: 'SLOW',
+        transferType,
+        currentBlockNo: latestBlockNo,
+        startingBlock: latestBlockNo,
+        targetBlockNo: entity.block_no,
       },
     });
     for await (const transfers of this.allowlistCreator.etherscanService.getTransfers(
