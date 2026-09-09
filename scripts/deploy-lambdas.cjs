@@ -66,21 +66,29 @@ for (const lambda of functions) {
     ],
     true,
   ).trim();
-  aws([
-    'lambda',
-    'update-function-code',
-    '--function-name',
-    lambda.name,
-    '--zip-file',
-    `fileb://${archive}`,
-    '--publish',
-    '--revision-id',
-    revisionId,
-    '--query',
-    '[FunctionArn,Version,CodeSize]',
-    '--output',
-    'text',
-  ]);
+  const codeUpdate = JSON.parse(
+    aws(
+      [
+        'lambda',
+        'update-function-code',
+        '--function-name',
+        lambda.name,
+        '--zip-file',
+        `fileb://${archive}`,
+        '--publish',
+        '--revision-id',
+        revisionId,
+        '--query',
+        '{codeSha256:CodeSha256,codeSize:CodeSize,functionArn:FunctionArn,version:Version}',
+        '--output',
+        'json',
+      ],
+      true,
+    ),
+  );
+  console.log(
+    `${codeUpdate.functionArn}:${codeUpdate.version}\t${codeUpdate.codeSize}`,
+  );
   aws([
     'lambda',
     'wait',
@@ -112,7 +120,6 @@ for (const lambda of functions) {
   const environmentChanged = Object.entries(desiredEnvironment).some(
     ([key, value]) => configuration.environment?.[key] !== value,
   );
-  let expectedRevisionId = configuration.revisionId;
   if (
     configuration.handler !== lambda.handler ||
     configuration.runtime !== 'nodejs24.x' ||
@@ -126,27 +133,24 @@ for (const lambda of functions) {
         JSON.stringify({ Variables: desiredEnvironment }),
         { mode: 0o600 },
       );
-      expectedRevisionId = aws(
-        [
-          'lambda',
-          'update-function-configuration',
-          '--function-name',
-          lambda.name,
-          '--handler',
-          lambda.handler,
-          '--runtime',
-          'nodejs24.x',
-          '--environment',
-          `file://${environmentFile}`,
-          '--revision-id',
-          configuration.revisionId,
-          '--query',
-          'RevisionId',
-          '--output',
-          'text',
-        ],
-        true,
-      ).trim();
+      aws([
+        'lambda',
+        'update-function-configuration',
+        '--function-name',
+        lambda.name,
+        '--handler',
+        lambda.handler,
+        '--runtime',
+        'nodejs24.x',
+        '--environment',
+        `file://${environmentFile}`,
+        '--revision-id',
+        configuration.revisionId,
+        '--query',
+        '[FunctionArn,Runtime,Handler,LastUpdateStatus]',
+        '--output',
+        'text',
+      ]);
     } finally {
       rmSync(secretsDirectory, { recursive: true, force: true });
     }
@@ -166,7 +170,7 @@ for (const lambda of functions) {
         '--function-name',
         lambda.name,
         '--query',
-        '{codeSize:CodeSize,environment:Environment.Variables,handler:Handler,lastUpdateStatus:LastUpdateStatus,revisionId:RevisionId,runtime:Runtime,state:State}',
+        '{codeSha256:CodeSha256,codeSize:CodeSize,environment:Environment.Variables,handler:Handler,lastUpdateStatus:LastUpdateStatus,runtime:Runtime,state:State}',
         '--output',
         'json',
       ],
@@ -189,8 +193,8 @@ for (const lambda of functions) {
       `lastUpdateStatus=${finalConfiguration.lastUpdateStatus}`,
     );
   }
-  if (finalConfiguration.revisionId !== expectedRevisionId) {
-    mismatches.push('revisionId');
+  if (finalConfiguration.codeSha256 !== codeUpdate.codeSha256) {
+    mismatches.push('codeSha256');
   }
   if (finalConfiguration.runtime !== 'nodejs24.x') {
     mismatches.push(`runtime=${finalConfiguration.runtime}`);
