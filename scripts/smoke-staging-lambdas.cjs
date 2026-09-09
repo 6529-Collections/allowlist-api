@@ -130,17 +130,21 @@ try {
     );
     const response = JSON.parse(readFileSync(responseFile, 'utf8'));
 
-    if (metadata.StatusCode !== 200 || metadata.FunctionError) {
-      throw new Error(
-        `${lambda.name} returned a Lambda function error (${metadata.FunctionError ?? 'unknown'}).`,
-      );
-    }
     const forbiddenPattern = forbiddenLogPatterns.find((pattern) =>
       pattern.test(logs),
     );
     if (forbiddenPattern) {
       throw new Error(
         `${lambda.name} logs matched forbidden runtime pattern ${forbiddenPattern}.`,
+      );
+    }
+    if (metadata.StatusCode !== 200 || metadata.FunctionError) {
+      const errorType = String(response?.errorType ?? 'unknown error');
+      const errorMessage = String(response?.errorMessage ?? 'no error message')
+        .replace(/https?:\/\/\S+/gi, '[URL REDACTED]')
+        .slice(0, 500);
+      throw new Error(
+        `${lambda.name} returned a Lambda function error (${metadata.FunctionError ?? 'unknown'}): ${errorType}: ${errorMessage}`,
       );
     }
     if (!logs.includes('Init Duration:')) {
