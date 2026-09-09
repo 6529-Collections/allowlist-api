@@ -48,6 +48,26 @@ describe(AlchemyApiClient.name, () => {
     ).resolves.toBe('example.eth');
   });
 
+  it('maps an unregistered ENS name to the legacy null result', async () => {
+    resolveName.mockRejectedValue({
+      code: 'CALL_EXCEPTION',
+      revert: { name: 'ResolverNotFound' },
+    });
+
+    await expect(client.core.resolveName('missing.eth')).resolves.toBeNull();
+  });
+
+  it('preserves ENS provider failures unrelated to a missing resolver', async () => {
+    const providerError = Object.assign(new Error('RPC unavailable'), {
+      code: 'SERVER_ERROR',
+    });
+    resolveName.mockRejectedValue(providerError);
+
+    await expect(client.core.resolveName('example.eth')).rejects.toBe(
+      providerError,
+    );
+  });
+
   it('maps the maintained v3 contract metadata response to the existing contract', async () => {
     axiosGet.mockResolvedValue({
       data: {

@@ -5,6 +5,7 @@ import {
   AlchemyOwnersResponse,
 } from '@6529-collections/allowlist-lib';
 import axios from 'axios';
+import { isError } from 'ethers';
 import { AlchemyConfig } from './alchemy.config';
 
 const OPENSEA_SAFELIST_STATUSES = new Set([
@@ -81,7 +82,7 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
 
   readonly core = {
     resolveName: (name: string): Promise<string | null> =>
-      this.provider.resolveName(name),
+      this.resolveName(name),
     lookupAddress: (address: string): Promise<string | null> =>
       this.provider.lookupAddress(address),
   };
@@ -100,6 +101,20 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
 
   async getBlockNumber(): Promise<number> {
     return await this.provider.getBlockNumber();
+  }
+
+  private async resolveName(name: string): Promise<string | null> {
+    try {
+      return await this.provider.resolveName(name);
+    } catch (error) {
+      if (
+        isError(error, 'CALL_EXCEPTION') &&
+        error.revert?.name === 'ResolverNotFound'
+      ) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async getContractMetadata(
