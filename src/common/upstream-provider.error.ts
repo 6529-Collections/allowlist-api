@@ -30,11 +30,21 @@ export function sanitizeProviderMessage(value: unknown): string | undefined {
   let message: string;
   if (typeof value === 'string') {
     message = value;
+  } else if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    message = value.toString();
+  } else if (typeof value === 'symbol') {
+    message = value.description ?? '[symbol]';
+  } else if (typeof value === 'function') {
+    message = '[function]';
   } else {
     try {
-      message = JSON.stringify(value) ?? String(value);
+      message = JSON.stringify(value) ?? '[unserializable provider response]';
     } catch {
-      message = String(value);
+      message = '[unserializable provider response]';
     }
   }
 
@@ -42,7 +52,7 @@ export function sanitizeProviderMessage(value: unknown): string | undefined {
     .replace(/\s+/g, ' ')
     .replace(/Bearer\s+[^\s,}\]]+/gi, 'Bearer [REDACTED]')
     .replace(
-      /("?(?:api[_-]?key|apikey|authorization|secret)"?\s*[=:]\s*"?)[^"\s,}\]]+/gi,
+      /("?(?:api[_-]?key|apikey|authorization|secret|token|access[_-]?token|private[_-]?key|session)"?\s*[=:]\s*"?)[^"\s,}\]]+/gi,
       '$1[REDACTED]',
     )
     .slice(0, 300);
@@ -63,7 +73,10 @@ export function getProviderRequestId(headers: unknown): string | undefined {
   ]) {
     const value = values[header] ?? values.get?.(header);
     if (typeof value === 'string' && value.length > 0) {
-      return value.slice(0, 128);
+      return value
+        .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+        .trim()
+        .slice(0, 128);
     }
   }
   return undefined;

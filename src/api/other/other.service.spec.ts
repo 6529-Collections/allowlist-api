@@ -47,7 +47,7 @@ describe(OtherService.name, () => {
     expect(getBlockNumber).toHaveBeenCalledTimes(1);
     expect(getBlockTimeMillis).toHaveBeenCalledTimes(1);
     expect(getBlockTimeMillis).toHaveBeenCalledWith({
-      blockNumber: 24_000_002,
+      currentBlock: 24_000_000,
     });
   });
 
@@ -136,6 +136,21 @@ describe(OtherService.name, () => {
     );
     getAlchemyTokenIds.mockRejectedValue(
       new UpstreamProviderError('Alchemy', 'invalid-response', 200),
+    );
+
+    await expect(
+      service.getContractTokenIdsAsString(
+        '0x07e24ee32163da59297b5341bef8f8a2eead271e',
+      ),
+    ).rejects.toBeInstanceOf(BadGatewayException);
+  });
+
+  it('preserves a permanent primary failure when the fallback is temporary', async () => {
+    getTransposeTokenIds.mockRejectedValue(
+      new UpstreamProviderError('Transpose', 'invalid-response', 200),
+    );
+    getAlchemyTokenIds.mockRejectedValue(
+      new UpstreamProviderError('Alchemy', 'rate-limited', 429),
     );
 
     await expect(

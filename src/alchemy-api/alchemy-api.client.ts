@@ -10,6 +10,7 @@ import {
   getProviderRequestId,
   sanitizeProviderMessage,
   UpstreamProviderError,
+  UpstreamProviderFailureKind,
 } from '../common/upstream-provider.error';
 import { AlchemyConfig } from './alchemy.config';
 
@@ -271,11 +272,7 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
   ): Promise<T> {
     let lastError: UpstreamProviderError | undefined;
     for (let attempt = 0; attempt < MAX_HTTP_ATTEMPTS; attempt++) {
-      if (attempt > 0) {
-        await this.sleep(
-          INITIAL_RETRY_DELAY_MS * RETRY_MULTIPLIER ** (attempt - 1),
-        );
-      }
+      await this.waitBeforeAttempt(attempt);
       try {
         const { data } = await this.httpService.axiosRef.get<T>(url, {
           params: queryParams,
@@ -283,41 +280,60 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
         });
         return data;
       } catch (error) {
-        if (!axios.isAxiosError(error)) {
-          throw error;
-        }
-        if (!error.response) {
-          lastError = new UpstreamProviderError(
-            'Alchemy',
-            'unavailable',
-            undefined,
-            undefined,
-            sanitizeProviderMessage(
-              error.message || 'Alchemy network request failed',
-            ),
-            error.message || 'Alchemy network request failed',
-          );
-          continue;
-        }
-        const status = error.response.status;
-        lastError = new UpstreamProviderError(
-          'Alchemy',
-          status === 429
-            ? 'rate-limited'
-            : status >= 500
-            ? 'unavailable'
-            : 'rejected',
-          status,
-          getProviderRequestId(error.response.headers),
-          sanitizeProviderMessage(error.response.data),
-          `${status}: ${sanitizeProviderMessage(error.response.data)}`,
-        );
-        if (status !== 429 && status < 500) {
+        lastError = this.toProviderError(error);
+        if (!lastError.isTemporary) {
           throw lastError;
         }
       }
     }
     throw lastError ?? new UpstreamProviderError('Alchemy', 'unavailable');
+  }
+
+  private toProviderError(error: unknown): UpstreamProviderError {
+    if (!axios.isAxiosError(error)) {
+      throw error;
+    }
+    if (!error.response) {
+      const message = error.message || 'Alchemy network request failed';
+      return new UpstreamProviderError(
+        'Alchemy',
+        'unavailable',
+        undefined,
+        undefined,
+        sanitizeProviderMessage(message),
+        message,
+      );
+    }
+
+    const status = error.response.status;
+    const providerMessage = sanitizeProviderMessage(error.response.data);
+    return new UpstreamProviderError(
+      'Alchemy',
+      this.getFailureKind(status),
+      status,
+      getProviderRequestId(error.response.headers),
+      providerMessage,
+      `${status}: ${providerMessage}`,
+    );
+  }
+
+  private getFailureKind(status: number): UpstreamProviderFailureKind {
+    if (status === 429) {
+      return 'rate-limited';
+    }
+    if (status >= 500) {
+      return 'unavailable';
+    }
+    return 'rejected';
+  }
+
+  private async waitBeforeAttempt(attempt: number): Promise<void> {
+    if (attempt === 0) {
+      return;
+    }
+    await this.sleep(
+      INITIAL_RETRY_DELAY_MS * RETRY_MULTIPLIER ** (attempt - 1),
+    );
   }
 
   private async sleep(milliseconds: number): Promise<void> {

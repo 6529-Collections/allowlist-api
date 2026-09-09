@@ -6,6 +6,7 @@ import {
   getProviderRequestId,
   sanitizeProviderMessage,
   UpstreamProviderError,
+  UpstreamProviderFailureKind,
 } from '../common/upstream-provider.error';
 import { TransposeConfig } from './transpose.config';
 
@@ -38,6 +39,8 @@ export class TransposeApiService {
     continuation: string | null;
   }): Promise<{ tokens: string[]; continuation: string | null }> {
     const addressVariants = this.getAddressVariants(address);
+    // DISTINCT makes the last token ID a unique page boundary. Strict `>`
+    // intentionally excludes that already-returned boundary on the next page.
     const continuationClause = continuation
       ? `AND token_id > CAST('{{continuation}}' AS NUMERIC)`
       : '';
@@ -116,7 +119,7 @@ export class TransposeApiService {
     return {
       tokens: items,
       continuation:
-        items.length === TRANSPOSE_PAGE_SIZE ? items[items.length - 1] : null,
+        items.length === TRANSPOSE_PAGE_SIZE ? items.at(-1) ?? null : null,
     };
   }
 
@@ -147,17 +150,26 @@ export class TransposeApiService {
       );
       return new UpstreamProviderError(
         'Transpose',
-        status === 429 || this.isRateLimitMessage(providerMessage)
-          ? 'rate-limited'
-          : status === undefined || status >= 500
-          ? 'unavailable'
-          : 'rejected',
+        this.getFailureKind(status, providerMessage),
         status,
         getProviderRequestId(error.response?.headers),
         providerMessage,
       );
     }
     throw error;
+  }
+
+  private getFailureKind(
+    status: number | undefined,
+    message?: string,
+  ): UpstreamProviderFailureKind {
+    if (status === 429 || this.isRateLimitMessage(message)) {
+      return 'rate-limited';
+    }
+    if (status === undefined || status >= 500) {
+      return 'unavailable';
+    }
+    return 'rejected';
   }
 
   private isRateLimitMessage(message?: string): boolean {

@@ -115,10 +115,7 @@ export class OtherService {
     if (timestamp < now) {
       throw new NotFoundException('Timestamp must be in the future');
     }
-    const context = await this.createBlockPredictionContext({
-      now,
-      maxTimestamp: timestamp,
-    });
+    const context = await this.createBlockPredictionContext({ now });
     return this.predictBlockFromContext(timestamp, context);
   }
 
@@ -143,10 +140,7 @@ export class OtherService {
         'Min timestamp must be less than max timestamp',
       );
     }
-    const context = await this.createBlockPredictionContext({
-      now,
-      maxTimestamp,
-    });
+    const context = await this.createBlockPredictionContext({ now });
     const minBlock = this.predictBlockFromContext(minTimestamp, context);
     const maxBlock = this.predictBlockFromContext(maxTimestamp, context);
     return countSubNumbersInRange({
@@ -238,7 +232,10 @@ export class OtherService {
         );
       } catch (alchemyError) {
         this.logProviderFallback('Alchemy', alchemyError);
-        throw this.mapProviderError(alchemyError, 'Token ID providers');
+        throw this.mapProviderErrors(
+          [transposeError, alchemyError],
+          'Token ID providers',
+        );
       }
     }
 
@@ -249,10 +246,8 @@ export class OtherService {
 
   private async createBlockPredictionContext({
     now,
-    maxTimestamp,
   }: {
     now: number;
-    maxTimestamp: number;
   }): Promise<BlockPredictionContext> {
     let currentBlock: number;
     try {
@@ -262,12 +257,10 @@ export class OtherService {
       throw this.mapProviderError(error, 'Alchemy');
     }
 
-    const naiveTargetBlock =
-      currentBlock + Math.max(1, Math.ceil((maxTimestamp - now) / 12_000));
     let blockTimeMillis: number;
     try {
       blockTimeMillis = await this.etherscanApiService.getBlockTimeMillis({
-        blockNumber: naiveTargetBlock,
+        currentBlock,
       });
     } catch (error) {
       this.logProviderFallback('Etherscan', error);
@@ -344,6 +337,22 @@ export class OtherService {
     return new ServiceUnavailableException(
       `${provider} is temporarily unavailable`,
     );
+  }
+
+  private mapProviderErrors(errors: unknown[], provider: string) {
+    const typedErrors = errors.filter(
+      (error): error is UpstreamProviderError =>
+        error instanceof UpstreamProviderError,
+    );
+    if (
+      typedErrors.length === errors.length &&
+      typedErrors.every((error) => error.isTemporary)
+    ) {
+      return new ServiceUnavailableException(
+        `${provider} are temporarily unavailable`,
+      );
+    }
+    return new BadGatewayException(`${provider} returned an invalid response`);
   }
 
   private logProviderFallback(provider: string, error: unknown): void {
