@@ -55,10 +55,16 @@ describe(TokenPoolDownloaderService.name, () => {
   });
 
   it('selects the Etherscan fallback when historical owner probing fails', async () => {
+    const warn = jest
+      .spyOn((service as any).logger, 'warn')
+      .mockImplementation(() => undefined);
     getOwnersForContract.mockRejectedValue(new Error('snapshot unavailable'));
 
     await expect((service as any).attemptThroughAlchemy(entity)).resolves.toBe(
       false,
+    );
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('snapshot unavailable'),
     );
   });
 });

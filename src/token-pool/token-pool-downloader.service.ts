@@ -342,6 +342,13 @@ export class TokenPoolDownloaderService {
       });
       return true;
     } catch (e) {
+      this.logger.warn(
+        `Alchemy historical-owner probe failed for ${
+          entity.contract
+        } at block ${entity.block_no}: ${stringifyError(
+          e,
+        )}. Falling back to the transfer-history path.`,
+      );
       return false;
     }
   }

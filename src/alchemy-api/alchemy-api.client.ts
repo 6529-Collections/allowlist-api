@@ -64,6 +64,7 @@ interface RawOwnersResponse {
 
 interface RawContractTokensResponse {
   nfts: { tokenId: string }[];
+  pageKey?: string | null;
 }
 
 export class AlchemyApiClient implements AllowlistAlchemyClient {
@@ -164,22 +165,14 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
     );
     if (
       !Array.isArray(response?.nfts) ||
-      response.nfts.some((nft) => typeof nft?.tokenId !== 'string')
+      response.nfts.some((nft) => typeof nft?.tokenId !== 'string') ||
+      (response.pageKey != null && typeof response.pageKey !== 'string')
     ) {
       throw new Error('Invalid Alchemy contract tokens response');
     }
-    const lastToken = response.nfts.at(-1);
-    let nextToken: string | null = null;
-    if (lastToken) {
-      try {
-        nextToken = (BigInt(lastToken.tokenId) + 1n).toString();
-      } catch {
-        throw new Error('Invalid Alchemy token ID response');
-      }
-    }
     return {
       tokens: response.nfts.map((nft) => nft.tokenId),
-      continuation: nextToken,
+      continuation: response.pageKey ?? null,
     };
   }
 
@@ -194,7 +187,7 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
         contractAddress,
       },
     );
-    if (!Array.isArray(response.ownerAddresses)) {
+    if (!Array.isArray(response?.ownerAddresses)) {
       throw new Error('Invalid Alchemy owners response');
     }
     return {
@@ -258,15 +251,21 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
         });
         return data;
       } catch (error) {
-        if (!axios.isAxiosError(error) || !error.response) {
+        if (!axios.isAxiosError(error)) {
           throw error;
+        }
+        if (!error.response) {
+          lastError = new Error(
+            error.message || 'Alchemy network request failed',
+          );
+          continue;
         }
         lastError = new Error(
           `${error.response.status}: ${this.formatHttpErrorData(
             error.response.data,
           )}`,
         );
-        if (error.response.status !== 429) {
+        if (error.response.status !== 429 && error.response.status < 500) {
           throw lastError;
         }
       }

@@ -209,7 +209,7 @@ describe(AlchemyApiClient.name, () => {
   });
 
   it('rejects malformed owner responses', async () => {
-    axiosGet.mockResolvedValue({ data: { owners: [] } });
+    axiosGet.mockResolvedValue({ data: null });
 
     await expect(
       client.nft.getOwnersForContract(
@@ -221,7 +221,10 @@ describe(AlchemyApiClient.name, () => {
 
   it('preserves contract token pagination semantics', async () => {
     axiosGet.mockResolvedValue({
-      data: { nfts: [{ tokenId: '10' }, { tokenId: '11' }] },
+      data: {
+        nfts: [{ tokenId: '10' }, { tokenId: '42' }],
+        pageKey: 'opaque-next-page',
+      },
     });
 
     await expect(
@@ -229,11 +232,25 @@ describe(AlchemyApiClient.name, () => {
         address: '0x1111111111111111111111111111111111111111',
         continuation: '10',
       }),
-    ).resolves.toEqual({ tokens: ['10', '11'], continuation: '12' });
+    ).resolves.toEqual({
+      tokens: ['10', '42'],
+      continuation: 'opaque-next-page',
+    });
+    expect(axiosGet).toHaveBeenCalledWith(
+      'https://eth-mainnet.g.alchemy.com/nft/v3/api%20key%2Fwith-special-characters/getNFTsForContract',
+      {
+        params: {
+          withMetadata: 'false',
+          contractAddress: '0x1111111111111111111111111111111111111111',
+          startToken: '10',
+        },
+        headers: { accept: '*/*' },
+      },
+    );
   });
 
-  it('increments large and hexadecimal token IDs without losing precision', async () => {
-    axiosGet.mockResolvedValueOnce({
+  it('ends contract token pagination when Alchemy omits the page key', async () => {
+    axiosGet.mockResolvedValue({
       data: { nfts: [{ tokenId: '9007199254740993' }] },
     });
 
@@ -244,22 +261,11 @@ describe(AlchemyApiClient.name, () => {
       }),
     ).resolves.toEqual({
       tokens: ['9007199254740993'],
-      continuation: '9007199254740994',
+      continuation: null,
     });
-
-    axiosGet.mockResolvedValueOnce({
-      data: { nfts: [{ tokenId: '0xff' }] },
-    });
-
-    await expect(
-      client.getContractTokenIds({
-        address: '0x1111111111111111111111111111111111111111',
-        continuation: null,
-      }),
-    ).resolves.toEqual({ tokens: ['0xff'], continuation: '256' });
   });
 
-  it('rejects malformed contract token responses and token IDs', async () => {
+  it('rejects malformed contract token responses and page keys', async () => {
     axiosGet.mockResolvedValueOnce({ data: {} });
 
     await expect(
@@ -270,7 +276,7 @@ describe(AlchemyApiClient.name, () => {
     ).rejects.toThrow('Invalid Alchemy contract tokens response');
 
     axiosGet.mockResolvedValueOnce({
-      data: { nfts: [{ tokenId: 'not-a-token-id' }] },
+      data: { nfts: [{ tokenId: '42' }], pageKey: 42 },
     });
 
     await expect(
@@ -278,17 +284,17 @@ describe(AlchemyApiClient.name, () => {
         address: '0x1111111111111111111111111111111111111111',
         continuation: null,
       }),
-    ).rejects.toThrow('Invalid Alchemy token ID response');
+    ).rejects.toThrow('Invalid Alchemy contract tokens response');
   });
 
   it('maps non-retryable HTTP provider errors to the SDK-compatible error', async () => {
     axiosGet.mockRejectedValue({
       isAxiosError: true,
-      response: { status: 503, data: 'provider unavailable' },
+      response: { status: 400, data: 'invalid request' },
     });
 
     await expect(client.searchContractMetadata('collection')).rejects.toThrow(
-      '503: provider unavailable',
+      '400: invalid request',
     );
     expect(axiosGet).toHaveBeenCalledTimes(1);
   });
@@ -323,6 +329,22 @@ describe(AlchemyApiClient.name, () => {
     );
     expect(axiosGet).toHaveBeenCalledTimes(2);
     expect((client as any).sleep).toHaveBeenCalledWith(1_000);
+  });
+
+  it('retries transient network and server errors', async () => {
+    jest.spyOn(client as any, 'sleep').mockResolvedValue(undefined);
+    axiosGet
+      .mockRejectedValueOnce({ isAxiosError: true, message: 'socket reset' })
+      .mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 503, data: 'provider unavailable' },
+      })
+      .mockResolvedValueOnce({ data: [] });
+
+    await expect(client.searchContractMetadata('collection')).resolves.toEqual(
+      [],
+    );
+    expect(axiosGet).toHaveBeenCalledTimes(3);
   });
 });
 
