@@ -4,6 +4,20 @@ export type UpstreamProviderFailureKind =
   | 'rejected'
   | 'unavailable';
 
+const PROVIDER_SECRET_KEYS = [
+  'api_key',
+  'api-key',
+  'apikey',
+  'authorization',
+  'secret',
+  'token',
+  'access_token',
+  'access-token',
+  'private_key',
+  'private-key',
+  'session',
+];
+
 export class UpstreamProviderError extends Error {
   constructor(
     readonly provider: string,
@@ -48,14 +62,17 @@ export function sanitizeProviderMessage(value: unknown): string | undefined {
     }
   }
 
-  return message
+  let sanitized = message
     .replace(/\s+/g, ' ')
-    .replace(/Bearer\s+[^\s,}\]]+/gi, 'Bearer [REDACTED]')
-    .replace(
-      /("?(?:api[_-]?key|apikey|authorization|secret|token|access[_-]?token|private[_-]?key|session)"?\s*[=:]\s*"?)[^"\s,}\]]+/gi,
-      '$1[REDACTED]',
-    )
-    .slice(0, 300);
+    .replace(/Bearer\s+[^\s,}\]]+/gi, 'Bearer [REDACTED]');
+  for (const key of PROVIDER_SECRET_KEYS) {
+    const valuePattern = new RegExp(
+      `("?${key}"?\\s*[=:]\\s*"?)[^"\\s,}\\]]+`,
+      'gi',
+    );
+    sanitized = sanitized.replace(valuePattern, '$1[REDACTED]');
+  }
+  return sanitized.slice(0, 300);
 }
 
 export function getProviderRequestId(headers: unknown): string | undefined {

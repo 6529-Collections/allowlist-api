@@ -41,9 +41,9 @@ export class EtherscanApiService {
     }
     this.cachedBlockTimes.delete(estimateTargetBlock);
 
-    const pending = this.blockTimeRequests.get(estimateTargetBlock);
-    if (pending) {
-      return await pending;
+    if (this.blockTimeRequests.has(estimateTargetBlock)) {
+      const pending = this.blockTimeRequests.get(estimateTargetBlock);
+      return await (pending as Promise<number>);
     }
 
     const request = this.fetchBlockTimeMillis(estimateTargetBlock).finally(() =>
