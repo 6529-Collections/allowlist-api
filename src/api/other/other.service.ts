@@ -8,8 +8,11 @@ import {
 } from '@6529-collections/allowlist-lib/utils/allowlist-operation-code.utils';
 import {
   BadRequestException,
+  BadGatewayException,
   Injectable,
+  Logger,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { OperationDescriptionsResponseApiModel } from './model/operation-descriptions-response-api.model';
 import {
@@ -27,9 +30,21 @@ import { Time } from '../../time';
 import { PredictBlockNumbersResponseApiModel } from './model/predict-block-numbers-response-api.model';
 import { countSubNumbersInRange } from './other.utils';
 import { TransposeApiService } from '../../transpose-api/transpose-api.service';
+import { UpstreamProviderError } from '../../common/upstream-provider.error';
+
+const MAX_TOKEN_ID_PAGES = 100;
+const MAX_TOKEN_IDS = 100_000;
+
+interface BlockPredictionContext {
+  readonly now: number;
+  readonly currentBlock: number;
+  readonly blockTimeMillis: number;
+}
 
 @Injectable()
 export class OtherService {
+  private readonly logger = new Logger(OtherService.name);
+
   constructor(
     private readonly alchemyApiService: AlchemyApiService,
     private readonly transposeApiService: TransposeApiService,
@@ -96,45 +111,15 @@ export class OtherService {
   }: {
     timestamp: number;
   }): Promise<number> {
-    // Get current timestamp
     const now = Time.currentMillis();
     if (timestamp < now) {
       throw new NotFoundException('Timestamp must be in the future');
     }
-    // Get current block number
-    const currentBlock = await this.etherscanApiService.currentBlockNumber();
-    // Calculate the difference between the current timestamp and the given timestamp
-    const timeDiff = timestamp - now;
-    // Calculate the number of blocks that will be mined in the given time
-    const predictedBlocks = Math.ceil(timeDiff / 12000);
-    // Get predicted block number with naive approach (12sec per block)
-    const predictedBlockNaive = currentBlock + predictedBlocks;
-    // Get predicted block data from Etherscan API
-    const { result } = await this.etherscanApiService.getBlockCountdown({
-      blockNumber: predictedBlockNaive,
+    const context = await this.createBlockPredictionContext({
+      now,
+      maxTimestamp: timestamp,
     });
-    if (!result) {
-      throw new NotFoundException('Something went wrong');
-    }
-    const { RemainingBlock, EstimateTimeInSec } = result;
-    if (!RemainingBlock) {
-      throw new NotFoundException('Something went wrong');
-    }
-
-    if (!EstimateTimeInSec) {
-      throw new NotFoundException('Something went wrong');
-    }
-
-    // How many blocks will be mined in the given time
-    const blockCounts = parseInt(RemainingBlock, 10);
-    // How much time will be passed in the given time
-    const estimateTimeInMillis = parseInt(EstimateTimeInSec, 10) * 1000;
-    // Calculate the average block time
-    const blockTime = estimateTimeInMillis / blockCounts;
-    // Calculate the number of blocks that will be mined in the given time
-    const blocks = Math.ceil(timeDiff / blockTime);
-    // Return the predicted block number
-    return currentBlock + blocks;
+    return this.predictBlockFromContext(timestamp, context);
   }
 
   async predictBlockNumbers({
@@ -158,8 +143,12 @@ export class OtherService {
         'Min timestamp must be less than max timestamp',
       );
     }
-    const minBlock = await this.predictBlockNumber({ timestamp: minTimestamp });
-    const maxBlock = await this.predictBlockNumber({ timestamp: maxTimestamp });
+    const context = await this.createBlockPredictionContext({
+      now,
+      maxTimestamp,
+    });
+    const minBlock = this.predictBlockFromContext(minTimestamp, context);
+    const maxBlock = this.predictBlockFromContext(maxTimestamp, context);
     return countSubNumbersInRange({
       start: minBlock,
       end: maxBlock,
@@ -218,8 +207,6 @@ export class OtherService {
   async getContractTokenIdsAsString(
     contractId: string,
   ): Promise<ContractTokenIdsAsStringResponseApiModel> {
-    const tokenIds: string[] = [];
-    let continuation: string | null = null;
     if (
       contractId ===
       '0x495f947276749ce646f68ac8c248420045cb7b5e:opensea-6529internjpg'
@@ -229,18 +216,150 @@ export class OtherService {
           '114495225433585396360028190551351025332882118060143334094864210829510638043137,114495225433585396360028190551351025332882118060143334094864210830610149670913,114495225433585396360028190551351025332882118060143334094864210831709661298689,114495225433585396360028190551351025332882118060143334094864210832809172926465,114495225433585396360028190551351025332882118060143334094864210833908684554241,114495225433585396360028190551351025332882118060143334094864210835008196182017,114495225433585396360028190551351025332882118060143334094864210836107707809793,114495225433585396360028190551351025332882118060143334094864210837207219437569,114495225433585396360028190551351025332882118060143334094864210838306731065345,114495225433585396360028190551351025332882118060143334094864210839406242693121,114495225433585396360028190551351025332882118060143334094864210840505754320897,114495225433585396360028190551351025332882118060143334094864210841605265948673,114495225433585396360028190551351025332882118060143334094864210842704777576449,114495225433585396360028190551351025332882118060143334094864210843804289204225,114495225433585396360028190551351025332882118060143334094864210844903800832001,114495225433585396360028190551351025332882118060143334094864210846003312459777,114495225433585396360028190551351025332882118060143334094864210847102824087553,114495225433585396360028190551351025332882118060143334094864210848202335715329,114495225433585396360028190551351025332882118060143334094864210849301847343105,114495225433585396360028190551351025332882118060143334094864210850401358970881',
       };
     }
-    do {
-      const response = await this.transposeApiService.getContractTokenIds({
-        address: contractId,
-        continuation,
-      });
-      tokenIds.push(...response.tokens);
-      continuation = response.continuation;
-    } while (continuation);
+    let tokenIds: string[];
+    try {
+      tokenIds = await this.collectTokenIds((continuation) =>
+        this.transposeApiService.getContractTokenIds({
+          address: contractId,
+          continuation,
+        }),
+      );
+    } catch (transposeError) {
+      if (transposeError instanceof BadRequestException) {
+        throw transposeError;
+      }
+      this.logProviderFallback('Transpose', transposeError);
+      try {
+        tokenIds = await this.collectTokenIds((continuation) =>
+          this.alchemyApiService.getContractTokenIds({
+            address: contractId,
+            continuation,
+          }),
+        );
+      } catch (alchemyError) {
+        this.logProviderFallback('Alchemy', alchemyError);
+        throw this.mapProviderError(alchemyError, 'Token ID providers');
+      }
+    }
 
     return {
       tokenIds: tokenIds.length ? formatNumberRange(tokenIds) : '',
     };
+  }
+
+  private async createBlockPredictionContext({
+    now,
+    maxTimestamp,
+  }: {
+    now: number;
+    maxTimestamp: number;
+  }): Promise<BlockPredictionContext> {
+    let currentBlock: number;
+    try {
+      currentBlock = await this.alchemyApiService.getBlockNumber();
+    } catch (error) {
+      this.logProviderFallback('Alchemy', error);
+      throw this.mapProviderError(error, 'Alchemy');
+    }
+
+    const naiveTargetBlock =
+      currentBlock + Math.max(1, Math.ceil((maxTimestamp - now) / 12_000));
+    let blockTimeMillis: number;
+    try {
+      blockTimeMillis = await this.etherscanApiService.getBlockTimeMillis({
+        blockNumber: naiveTargetBlock,
+      });
+    } catch (error) {
+      this.logProviderFallback('Etherscan', error);
+      throw this.mapProviderError(error, 'Etherscan');
+    }
+
+    return { now, currentBlock, blockTimeMillis };
+  }
+
+  private predictBlockFromContext(
+    timestamp: number,
+    context: BlockPredictionContext,
+  ): number {
+    const predictedBlocks = Math.ceil(
+      (timestamp - context.now) / context.blockTimeMillis,
+    );
+    return context.currentBlock + predictedBlocks;
+  }
+
+  private async collectTokenIds(
+    getPage: (continuation: string | null) => Promise<{
+      tokens: string[];
+      continuation: string | null;
+    }>,
+  ): Promise<string[]> {
+    const tokenIds: string[] = [];
+    const seenContinuations = new Set<string>();
+    let continuation: string | null = null;
+
+    for (let page = 0; page < MAX_TOKEN_ID_PAGES; page++) {
+      const response = await getPage(continuation);
+      tokenIds.push(...response.tokens);
+      if (tokenIds.length > MAX_TOKEN_IDS) {
+        throw new UpstreamProviderError(
+          'Token ID pagination',
+          'invalid-response',
+          undefined,
+          undefined,
+          `Exceeded ${MAX_TOKEN_IDS} token IDs`,
+        );
+      }
+
+      continuation = response.continuation;
+      if (!continuation) {
+        return tokenIds;
+      }
+      if (seenContinuations.has(continuation)) {
+        throw new UpstreamProviderError(
+          'Token ID pagination',
+          'invalid-response',
+          undefined,
+          undefined,
+          'Provider repeated a pagination token',
+        );
+      }
+      seenContinuations.add(continuation);
+    }
+
+    throw new UpstreamProviderError(
+      'Token ID pagination',
+      'invalid-response',
+      undefined,
+      undefined,
+      `Exceeded ${MAX_TOKEN_ID_PAGES} pages`,
+    );
+  }
+
+  private mapProviderError(error: unknown, provider: string) {
+    if (error instanceof UpstreamProviderError && !error.isTemporary) {
+      return new BadGatewayException(
+        `${provider} returned an invalid response`,
+      );
+    }
+    return new ServiceUnavailableException(
+      `${provider} is temporarily unavailable`,
+    );
+  }
+
+  private logProviderFallback(provider: string, error: unknown): void {
+    if (error instanceof UpstreamProviderError) {
+      this.logger.warn(
+        `[UPSTREAM_PROVIDER_FALLBACK] provider=${provider} kind=${
+          error.kind
+        } status=${error.upstreamStatus ?? 'none'} requestId=${
+          error.requestId ?? 'none'
+        } message=${error.providerMessage ?? 'none'}`,
+      );
+      return;
+    }
+    this.logger.warn(
+      `[UPSTREAM_PROVIDER_FALLBACK] provider=${provider} kind=unknown status=none requestId=none`,
+    );
   }
 
   async getMemesSeasons(): Promise<MemesSeasonResponseApiModel[]> {

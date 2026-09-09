@@ -239,30 +239,33 @@ describe(AlchemyApiClient.name, () => {
     ).rejects.toThrow('Invalid Alchemy owners response');
   });
 
-  it('preserves contract token pagination semantics', async () => {
+  it('preserves precision-safe contract token pagination semantics', async () => {
+    const pageKey =
+      '0x0000000000000000000000000000000000000000000000000000000000000003';
     axiosGet.mockResolvedValue({
       data: {
         nfts: [{ tokenId: '10' }, { tokenId: '42' }],
-        pageKey: 'opaque-next-page',
+        pageKey,
       },
     });
 
     await expect(
       client.getContractTokenIds({
         address: '0x1111111111111111111111111111111111111111',
-        continuation: '10',
+        continuation: pageKey,
       }),
     ).resolves.toEqual({
       tokens: ['10', '42'],
-      continuation: 'opaque-next-page',
+      continuation: pageKey,
     });
     expect(axiosGet).toHaveBeenCalledWith(
       'https://eth-mainnet.g.alchemy.com/nft/v3/api%20key%2Fwith-special-characters/getNFTsForContract',
       {
         params: {
-          withMetadata: 'false',
+          withMetadata: false,
           contractAddress: '0x1111111111111111111111111111111111111111',
-          startToken: '10',
+          startToken: pageKey,
+          limit: 100,
         },
         headers: { accept: '*/*' },
       },
