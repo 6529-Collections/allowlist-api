@@ -12,9 +12,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - name: Enable Yarn
+        run: corepack enable
       - name: Install node gyp
-        run: yarn global add node-gyp
+        run: yarn global add node-gyp@12
       - name: Install dependencies
         run: yarn install --frozen-lockfile --registry=https://registry.npmjs.org/
       - name: Build
