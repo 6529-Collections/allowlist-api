@@ -65,6 +65,7 @@ for (const prefix of requiredPrefixes) {
 const forbiddenPrefixes = [
   'node_modules/@nestjs/cli/',
   'node_modules/@sentry/cli/',
+  'node_modules/esbuild/',
   'node_modules/eslint/',
   'node_modules/jest/',
   'node_modules/serverless/',
@@ -130,7 +131,16 @@ try {
     ],
     {
       cwd: extractionDirectory,
-      env: { ...process.env, SENTRY_DSN: '' },
+      env: {
+        ...process.env,
+        NODE_OPTIONS: [
+          '--no-experimental-require-module',
+          process.env.NODE_OPTIONS,
+        ]
+          .filter(Boolean)
+          .join(' '),
+        SENTRY_DSN: '',
+      },
       stdio: 'inherit',
     },
   );
