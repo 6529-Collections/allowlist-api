@@ -80,8 +80,11 @@ All three managed Lambda functions use the `nodejs24.x` runtime, which is based
 on Amazon Linux 2023. Build and package deployments with Node.js 24 so native
 dependencies, if introduced, target the same runtime generation.
 
-`yarn lambda:package` creates one reproducible `.serverless/allowlist-api.zip`
-from the compiled `dist/` tree, migrations, configuration, and a frozen
+`yarn build` first uses the Nest compiler to preserve decorator metadata, then
+esbuild bundles the resulting entrypoints and their ESM dependencies into
+Node.js 24 CommonJS handlers. `yarn lambda:package` creates one reproducible
+`.serverless/allowlist-api.zip` from that `dist/` tree, migrations,
+configuration, and a frozen
 production-only dependency install. The artifact contains no compiler, test,
 Serverless Framework, or optimizer dependencies. Run
 `yarn lambda:package:verify` before deployment; it checks both handler paths,
