@@ -112,6 +112,7 @@ for (const lambda of functions) {
   const environmentChanged = Object.entries(desiredEnvironment).some(
     ([key, value]) => configuration.environment?.[key] !== value,
   );
+  let expectedRevisionId = configuration.revisionId;
   if (
     configuration.handler !== lambda.handler ||
     configuration.runtime !== 'nodejs24.x' ||
@@ -125,24 +126,27 @@ for (const lambda of functions) {
         JSON.stringify({ Variables: desiredEnvironment }),
         { mode: 0o600 },
       );
-      aws([
-        'lambda',
-        'update-function-configuration',
-        '--function-name',
-        lambda.name,
-        '--handler',
-        lambda.handler,
-        '--runtime',
-        'nodejs24.x',
-        '--environment',
-        `file://${environmentFile}`,
-        '--revision-id',
-        configuration.revisionId,
-        '--query',
-        '[FunctionArn,Runtime,Handler,LastUpdateStatus]',
-        '--output',
-        'text',
-      ]);
+      expectedRevisionId = aws(
+        [
+          'lambda',
+          'update-function-configuration',
+          '--function-name',
+          lambda.name,
+          '--handler',
+          lambda.handler,
+          '--runtime',
+          'nodejs24.x',
+          '--environment',
+          `file://${environmentFile}`,
+          '--revision-id',
+          configuration.revisionId,
+          '--query',
+          'RevisionId',
+          '--output',
+          'text',
+        ],
+        true,
+      ).trim();
     } finally {
       rmSync(secretsDirectory, { recursive: true, force: true });
     }
@@ -162,7 +166,7 @@ for (const lambda of functions) {
         '--function-name',
         lambda.name,
         '--query',
-        '{codeSize:CodeSize,environment:Environment.Variables,handler:Handler,lastUpdateStatus:LastUpdateStatus,runtime:Runtime,state:State}',
+        '{codeSize:CodeSize,environment:Environment.Variables,handler:Handler,lastUpdateStatus:LastUpdateStatus,revisionId:RevisionId,runtime:Runtime,state:State}',
         '--output',
         'json',
       ],
@@ -177,6 +181,7 @@ for (const lambda of functions) {
   if (
     finalConfiguration.state !== 'Active' ||
     finalConfiguration.lastUpdateStatus !== 'Successful' ||
+    finalConfiguration.revisionId !== expectedRevisionId ||
     finalConfiguration.runtime !== 'nodejs24.x' ||
     finalConfiguration.handler !== lambda.handler ||
     changedEnvironmentKeys.length > 0

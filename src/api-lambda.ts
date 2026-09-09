@@ -22,6 +22,7 @@ async function bootstrap(): Promise<ServerlessExpressHandler> {
   await initEnv();
   await migrateDb();
   const expressApp = express();
+  expressApp.disable('x-powered-by');
   const nestApp = await NestFactory.create(
     AppModule,
     new ExpressAdapter(expressApp),
