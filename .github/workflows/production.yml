@@ -49,6 +49,8 @@ jobs:
           aws-region: us-east-1
       - name: Deploy Lambdas sequentially
         run: yarn lambda:deploy:prod
+      - name: Cold-start smoke test Lambdas
+        run: yarn lambda:smoke:prod
       - name: Notify about failure
         uses: sarisia/actions-status-discord@v1
         if: failure()

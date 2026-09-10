@@ -100,11 +100,14 @@ before the API can enqueue new work. Compatibility handlers under `src/` are
 included in the artifact, so changing the configured handlers to `dist/` cannot
 create a code/config transition outage.
 
-After a staging deploy, `yarn lambda:smoke:staging` directly invokes all three
-functions. The worker events use a reserved, side-effect-free bootstrap probe;
-the API probe requests `/api-json`. The command requires a successful cold-start
-`Init Duration`, rejects Lambda function errors or missing-module/runtime-entry
-errors in the returned log tail, and validates each response payload.
+After staging and production deploys, `yarn lambda:smoke:staging` and
+`yarn lambda:smoke:prod` directly invoke all three functions in their respective
+regions. The worker events use a reserved, side-effect-free bootstrap probe; the
+API probe requests `/api-json`. Each command requires a successful cold-start
+`Init Duration`, rejects Lambda function errors and sanitized log evidence of
+missing modules, invalid entrypoints, ESM/CommonJS incompatibility, failed
+Sentry/bootstrap initialization, or an unsupported Node.js runtime, and validates
+each response payload.
 
 Sentry source-map debug IDs are injected before packaging. The matching maps
 are uploaded before the Lambda code update, ensuring the deployed JavaScript

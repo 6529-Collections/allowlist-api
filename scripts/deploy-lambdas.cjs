@@ -184,7 +184,8 @@ for (const lambda of functions) {
     .map(([key]) => key);
   const mismatches = [];
   // Long-idle functions can legitimately be Inactive after a successful
-  // update. The staging smoke invocation below reactivates and exercises them.
+  // update. The environment-specific smoke invocation that follows deployment
+  // reactivates and exercises them.
   if (!['Active', 'Inactive'].includes(finalConfiguration.state)) {
     mismatches.push(`state=${finalConfiguration.state}`);
   }
