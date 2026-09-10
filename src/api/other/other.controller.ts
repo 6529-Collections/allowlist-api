@@ -3,7 +3,6 @@ import { OtherService } from './other.service';
 import { OperationDescriptionsResponseApiModel } from './model/operation-descriptions-response-api.model';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { SearchContractMetadataResponseApiModel } from './model/search-contract-metadata-response-api.model';
-import { SearchContractMetadataRequestApiModel } from './model/search-contract-metadata-request-api.model';
 import { ContractTokenIdsAsStringResponseApiModel } from './model/contract-token-ids-as-string-response-api.model';
 import { MemesSeasonResponseApiModel } from './model/memes-season-response-api.model';
 import { ResolveEnsResponseApiModel } from './model/resolve-ens-response-api.model';
@@ -41,20 +40,6 @@ export class OtherController {
     @Param('operationType') operationType: string,
   ): Promise<OperationDescriptionsResponseApiModel[]> {
     return this.otherService.getOperationDescriptionsForType(operationType);
-  }
-
-  @ApiOperation({
-    summary: 'Search contract metadata',
-  })
-  @ApiOkResponse({
-    type: SearchContractMetadataResponseApiModel,
-    isArray: true,
-  })
-  @Post('search-contract-metadata')
-  async searchContractMetadata(
-    @Body() { keyword }: SearchContractMetadataRequestApiModel,
-  ): Promise<SearchContractMetadataResponseApiModel[]> {
-    return await this.otherService.searchContractMetadata(keyword);
   }
 
   @ApiOperation({

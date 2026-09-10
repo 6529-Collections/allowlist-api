@@ -95,13 +95,6 @@ export class OtherService {
     };
   }
 
-  async searchContractMetadata(
-    kw: string,
-  ): Promise<SearchContractMetadataResponseApiModel[]> {
-    const contracts = await this.alchemyApiService.searchContractMetadata(kw);
-    return (contracts ?? []).map(this.mapContractMetadata);
-  }
-
   async getLatestBlockNumber(): Promise<number> {
     return await this.alchemyApiService.getBlockNumber();
   }

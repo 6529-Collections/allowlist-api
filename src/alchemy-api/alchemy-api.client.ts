@@ -47,16 +47,6 @@ export interface AlchemyContractMetadata {
 
 type RawOpenSeaMetadata = AlchemyOpenSeaMetadata;
 
-interface RawV2ContractMetadata {
-  address: string;
-  contractMetadata?: {
-    name?: string;
-    tokenType?: string;
-    openSea?: RawOpenSeaMetadata;
-    opensea?: RawOpenSeaMetadata;
-  };
-}
-
 interface RawV3ContractMetadata {
   address: string;
   name?: string;
@@ -99,7 +89,7 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
     private readonly provider: AlchemyJsonRpcProvider,
   ) {
     const encodedApiKey = encodeURIComponent(alchemyConfig.key);
-    // Keyword search and historical owner snapshots still use the v2 contracts;
+    // Historical owner snapshots still use the v2 contracts;
     // maintained metadata and token-list operations use v3.
     this.nftV2BaseUrl = `https://eth-mainnet.g.alchemy.com/nft/v2/${encodedApiKey}`;
     this.nftV3BaseUrl = `https://eth-mainnet.g.alchemy.com/nft/v3/${encodedApiKey}`;
@@ -139,34 +129,6 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
       tokenType: this.normalizeTokenType(response.tokenType),
       openSea: this.normalizeOpenSeaMetadata(response.openseaMetadata),
     };
-  }
-
-  async searchContractMetadata(
-    query: string,
-  ): Promise<AlchemyContractMetadata[]> {
-    const response = await this.alchemyGet<RawV2ContractMetadata[]>(
-      `${this.nftV2BaseUrl}/searchContractMetadata`,
-      { query },
-    );
-    if (!Array.isArray(response)) {
-      throw new Error('Invalid Alchemy contract search response');
-    }
-    return response.flatMap((contract) => {
-      const metadata = contract?.contractMetadata;
-      if (!metadata || typeof contract.address !== 'string') {
-        return [];
-      }
-      return [
-        {
-          address: contract.address,
-          name: metadata.name,
-          tokenType: this.normalizeTokenType(metadata.tokenType),
-          openSea: this.normalizeOpenSeaMetadata(
-            metadata.openSea ?? metadata.opensea,
-          ),
-        },
-      ];
-    });
   }
 
   async getContractTokenIds({

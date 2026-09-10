@@ -121,6 +121,21 @@ In production the app is ran in 3 lambas:
 2. Worker lambda - Does the actual final allowlist creation (handler: `dist/worker-lambda.handler`)
 3. Tokenpool downloader lambda - Helps to get aggregated tokenpool data needed for worker lambda (handler: `dist/token-pool-downloader-lambda.handler`)
 
+## Collection metadata
+
+EMMA offers five fixed 6529 collection shortcuts and manual contract entry.
+`GET /other/memes-collections` and
+`GET /other/contract-metadata/:contract` remain supported, including canonical
+fallback metadata for 6529 collections. Both retain their existing response
+schema. Exact-address lookup uses Alchemy V3 `getContractMetadata`; historical
+owner snapshots still use V2 `getOwnersForCollection`.
+
+The retired `POST /other/search-contract-metadata` route is no longer available.
+Deploy the compatible frontend before this API cleanup, verify the collection
+and manual-entry flows, then confirm the old route is unused through request
+telemetry or allow a compatibility window for older clients. Deploy staging
+before production using the existing Lambda workflows described above.
+
 ## Dependency security policy
 
 CI and both deployment workflows run two independent audits:
