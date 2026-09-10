@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
+// Keep the existing OpenAPI schema name for exact-address metadata and the
+// ecosystem collections endpoint, which share this response contract.
 export class SearchContractMetadataResponseApiModel {
   @ApiProperty({
     description: 'ID of the contract',

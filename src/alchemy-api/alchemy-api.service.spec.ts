@@ -45,7 +45,6 @@ const CANONICAL_COLLECTIONS = [
 
 describe(AlchemyApiService.name, () => {
   const getContractMetadata = jest.fn();
-  const searchContractMetadata = jest.fn();
   const getBlockNumber = jest.fn();
   const getContractTokenIds = jest.fn();
   const resolveName = jest.fn();
@@ -57,7 +56,6 @@ describe(AlchemyApiService.name, () => {
     warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     service = new AlchemyApiService({
       getContractMetadata,
-      searchContractMetadata,
       getBlockNumber,
       getContractTokenIds,
       core: { resolveName },
@@ -203,65 +201,28 @@ describe(AlchemyApiService.name, () => {
     );
   });
 
-  it('applies the canonical fallback to configured collection search results', async () => {
-    searchContractMetadata.mockResolvedValue([
-      {
-        address: MEME_LAB_CONTRACT,
-        name: 'N/A',
-        tokenType: 'UNKNOWN',
-        openSea: null,
-      },
-    ]);
-
-    await expect(service.searchContractMetadata('memes')).resolves.toEqual([
-      expect.objectContaining({
-        id: MEME_LAB_CONTRACT,
-        address: MEME_LAB_CONTRACT,
-        name: 'Meme Lab',
-        tokenType: 'ERC1155',
-        imageUrl: CANONICAL_COLLECTIONS[1].imageUrl,
-      }),
-    ]);
-  });
-
-  it('maps only the OpenSea verified status to true in search results', async () => {
-    searchContractMetadata.mockResolvedValue([
-      {
-        address: '0x1111111111111111111111111111111111111111',
-        name: 'Verified',
+  it.each([
+    ['verified', true],
+    ['approved', false],
+  ])(
+    'maps OpenSea status %s to verified=%s for exact-address metadata',
+    async (status, verified) => {
+      const address = '0x1111111111111111111111111111111111111111';
+      getContractMetadata.mockResolvedValue({
+        address,
+        name: 'Collection',
         tokenType: 'ERC721',
-        openSea: { safelistRequestStatus: 'verified' },
-      },
-      {
-        address: '0x2222222222222222222222222222222222222222',
-        name: 'Approved',
-        tokenType: 'ERC721',
-        openSea: { safelistRequestStatus: 'approved' },
-      },
-    ]);
+        openSea: { safelistRequestStatus: status },
+      });
 
-    await expect(service.searchContractMetadata('collection')).resolves.toEqual(
-      [
-        expect.objectContaining({
-          address: '0x1111111111111111111111111111111111111111',
-          openseaVerified: true,
-        }),
-        expect.objectContaining({
-          address: '0x2222222222222222222222222222222222222222',
-          openseaVerified: false,
-        }),
-      ],
-    );
-  });
-
-  it('propagates contract metadata search provider errors', async () => {
-    const providerError = new Error('provider unavailable');
-    searchContractMetadata.mockRejectedValue(providerError);
-
-    await expect(service.searchContractMetadata('collection')).rejects.toBe(
-      providerError,
-    );
-  });
+      await expect(service.getContractMetadata(address)).resolves.toMatchObject(
+        {
+          address,
+          openseaVerified: verified,
+        },
+      );
+    },
+  );
 
   it('returns the Ethereum mainnet block number from the client', async () => {
     getBlockNumber.mockResolvedValue(24_123_456);
