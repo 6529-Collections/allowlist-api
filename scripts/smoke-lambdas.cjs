@@ -1,17 +1,21 @@
 const { execFileSync, spawnSync } = require('node:child_process');
-const {
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} = require('node:fs');
+const { mkdtempSync, readFileSync, rmSync, writeFileSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join } = require('node:path');
 
-const region = 'eu-west-1';
+const environment = process.argv[2];
+const regions = {
+  staging: 'eu-west-1',
+  production: 'us-east-1',
+};
+const region = regions[environment];
+
+if (!region) {
+  throw new Error('Expected smoke environment `staging` or `production`.');
+}
 if (process.env.AWS_REGION && process.env.AWS_REGION !== region) {
   throw new Error(
-    `AWS_REGION ${process.env.AWS_REGION} does not match staging region ${region}.`,
+    `AWS_REGION ${process.env.AWS_REGION} does not match ${environment} region ${region}.`,
   );
 }
 
@@ -63,11 +67,19 @@ const functions = [
 const forbiddenLogPatterns = [
   /Runtime\.ImportModuleError/i,
   /Runtime\.InvalidEntrypoint/i,
+  /Runtime\.HandlerNotFound/i,
   /Cannot find module/i,
   /error while loading shared libraries/i,
+  /ERR_REQUIRE_ESM/i,
+  /require\(\) of ES Module/i,
+  /Sentry[^\n]{0,120}(?:failed|error|exception)/i,
+  /bootstrap[^\n]{0,120}(?:failed|error|exception)/i,
+  /nodejs\d+\.x[^\n]{0,120}(?:unsupported|not supported)/i,
 ];
 
-const scratchDirectory = mkdtempSync(join(tmpdir(), 'allowlist-smoke-'));
+const scratchDirectory = mkdtempSync(
+  join(tmpdir(), `allowlist-${environment}-smoke-`),
+);
 
 function invoke(lambda, responseFile) {
   const args = [
