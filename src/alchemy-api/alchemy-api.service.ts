@@ -134,25 +134,6 @@ export class AlchemyApiService {
     });
   }
 
-  async searchContractMetadata(
-    kw: string,
-  ): Promise<ContractMetadataResponse[]> {
-    const contracts = await this.alchemyClient.searchContractMetadata(kw);
-
-    return contracts.map((metadata) =>
-      this.applyCanonicalFallback({
-        id: metadata.address,
-        address: metadata.address,
-        name: metadata?.name ?? 'N/A',
-        tokenType: metadata?.tokenType ?? 'N/A',
-        description: metadata?.openSea?.description ?? 'N/A',
-        imageUrl: metadata?.openSea?.imageUrl ?? null, // optional
-        openseaVerified:
-          metadata?.openSea?.safelistRequestStatus === OPENSEA_VERIFIED_STATUS,
-      }),
-    );
-  }
-
   private applyCanonicalFallback(
     metadata: ContractMetadataResponse,
   ): ContractMetadataResponse {

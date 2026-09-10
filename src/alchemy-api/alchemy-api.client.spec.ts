@@ -116,72 +116,22 @@ describe(AlchemyApiClient.name, () => {
     ).resolves.toBeNull();
   });
 
-  it('maps v2 contract search results and filters unknown verification statuses', async () => {
+  it('filters unknown verification statuses in exact-address metadata', async () => {
     axiosGet.mockResolvedValue({
-      data: [
-        {
-          address: '0x1111111111111111111111111111111111111111',
-          contractMetadata: {
-            name: 'Collection',
-            tokenType: 'ERC1155',
-            opensea: {
-              safelistRequestStatus: 'unrecognized',
-              description: 'Description',
-            },
-          },
-        },
-      ],
-    });
-
-    await expect(client.searchContractMetadata('collect')).resolves.toEqual([
-      {
+      data: {
         address: '0x1111111111111111111111111111111111111111',
         name: 'Collection',
         tokenType: 'ERC1155',
-        openSea: {
-          collectionName: undefined,
-          safelistRequestStatus: undefined,
-          imageUrl: undefined,
-          description: 'Description',
-        },
+        openseaMetadata: { safelistRequestStatus: 'unrecognized' },
       },
-    ]);
-    expect(axiosGet).toHaveBeenCalledWith(
-      'https://eth-mainnet.g.alchemy.com/nft/v2/api%20key%2Fwith-special-characters/searchContractMetadata',
-      {
-        params: { query: 'collect' },
-        headers: { accept: '*/*' },
-      },
-    );
-  });
-
-  it('skips malformed contract search entries without discarding valid results', async () => {
-    axiosGet.mockResolvedValue({
-      data: [
-        {
-          address: '0x1111111111111111111111111111111111111111',
-          contractMetadata: { name: 'Collection', tokenType: 'ERC721' },
-        },
-        { address: '0x2222222222222222222222222222222222222222' },
-      ],
     });
 
-    await expect(client.searchContractMetadata('collect')).resolves.toEqual([
-      {
-        address: '0x1111111111111111111111111111111111111111',
-        name: 'Collection',
-        tokenType: 'ERC721',
-        openSea: undefined,
-      },
-    ]);
-  });
-
-  it('rejects malformed contract search responses', async () => {
-    axiosGet.mockResolvedValue({ data: { contracts: [] } });
-
-    await expect(client.searchContractMetadata('collect')).rejects.toThrow(
-      'Invalid Alchemy contract search response',
-    );
+    await expect(
+      client.getContractMetadata('0x1111111111111111111111111111111111111111'),
+    ).resolves.toMatchObject({
+      tokenType: 'ERC1155',
+      openSea: { safelistRequestStatus: undefined },
+    });
   });
 
   it('preserves historical owner options, token balances, and page keys', async () => {
@@ -317,9 +267,9 @@ describe(AlchemyApiClient.name, () => {
       response: { status: 400, data: 'invalid request' },
     });
 
-    await expect(client.searchContractMetadata('collection')).rejects.toThrow(
-      '400: invalid request',
-    );
+    await expect(
+      client.getContractMetadata('0x1111111111111111111111111111111111111111'),
+    ).rejects.toThrow('400: invalid request');
     expect(axiosGet).toHaveBeenCalledTimes(1);
   });
 
@@ -333,9 +283,9 @@ describe(AlchemyApiClient.name, () => {
     });
     jest.spyOn(client as any, 'sleep').mockResolvedValue(undefined);
 
-    await expect(client.searchContractMetadata('collection')).rejects.toThrow(
-      '429: {"code":-32000,"message":"rate limited"}',
-    );
+    await expect(
+      client.getContractMetadata('0x1111111111111111111111111111111111111111'),
+    ).rejects.toThrow('429: {"code":-32000,"message":"rate limited"}');
     expect(axiosGet).toHaveBeenCalledTimes(5);
   });
 
@@ -346,11 +296,11 @@ describe(AlchemyApiClient.name, () => {
         isAxiosError: true,
         response: { status: 429, data: 'rate limited' },
       })
-      .mockResolvedValueOnce({ data: [] });
+      .mockResolvedValueOnce({ data: null });
 
-    await expect(client.searchContractMetadata('collection')).resolves.toEqual(
-      [],
-    );
+    await expect(
+      client.getContractMetadata('0x1111111111111111111111111111111111111111'),
+    ).resolves.toBeNull();
     expect(axiosGet).toHaveBeenCalledTimes(2);
     expect((client as any).sleep).toHaveBeenCalledWith(1_000);
   });
@@ -363,11 +313,11 @@ describe(AlchemyApiClient.name, () => {
         isAxiosError: true,
         response: { status: 503, data: 'provider unavailable' },
       })
-      .mockResolvedValueOnce({ data: [] });
+      .mockResolvedValueOnce({ data: null });
 
-    await expect(client.searchContractMetadata('collection')).resolves.toEqual(
-      [],
-    );
+    await expect(
+      client.getContractMetadata('0x1111111111111111111111111111111111111111'),
+    ).resolves.toBeNull();
     expect(axiosGet).toHaveBeenCalledTimes(3);
   });
 });
