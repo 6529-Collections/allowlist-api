@@ -1,4 +1,5 @@
 import { HttpService } from '@nestjs/axios';
+import { jest } from '@jest/globals';
 import { UpstreamProviderError } from '../common/upstream-provider.error';
 import { EtherscanApiService } from './etherscan-api.service';
 

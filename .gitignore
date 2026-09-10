@@ -3,6 +3,7 @@ serverless.yaml
 /transfers-data
 
 /.serverless
+/.lambda-package
 
 # compiled output
 /dist

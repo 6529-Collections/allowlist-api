@@ -10,9 +10,8 @@ export class PhaseComponentService {
   ) {}
 
   async getByAllowlistId(allowlistId: string) {
-    const entities = await this.phaseComponentRepository.getByAllowlistId(
-      allowlistId,
-    );
+    const entities =
+      await this.phaseComponentRepository.getByAllowlistId(allowlistId);
     return entities.map(this.phaseComponentEntityToResponseApiModel);
   }
 

@@ -1,4 +1,5 @@
 import { HttpService } from '@nestjs/axios';
+import { jest } from '@jest/globals';
 import { AlchemyClient as AllowlistAlchemyClient } from '@6529-collections/allowlist-lib';
 import { AlchemyService } from '@6529-collections/allowlist-lib/services/alchemy.service';
 import { AlchemyApiClient, AlchemyJsonRpcProvider } from './alchemy-api.client';

@@ -1,5 +1,7 @@
+import './sentry/instrument';
 import { NestFactory } from '@nestjs/core';
 import { INestApplication } from '@nestjs/common';
+import type { Handler } from 'aws-lambda';
 import { initEnv } from './env';
 import { migrateDb } from './migrate';
 import { DB } from './repository/db';
@@ -7,12 +9,7 @@ import { TokenPoolDownloaderService } from './token-pool/token-pool-downloader.s
 import { TokenDownloaderModule } from './token-downloader.module';
 import { TokenPoolAsyncDownloader } from './token-pool/token-pool-async-downloader';
 import { TokenPoolDownloaderParams } from './token-pool/token-pool.types';
-import * as Sentry from '@sentry/serverless';
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.SENTRY_ENV,
-});
+import * as Sentry from '@sentry/aws-serverless';
 
 async function bootstrap(): Promise<INestApplication> {
   await initEnv();
@@ -23,9 +20,14 @@ async function bootstrap(): Promise<INestApplication> {
   return nestApp;
 }
 
-export const handler = Sentry.AWSLambda.wrapHandler(async (event: any) => {
+export const handler: Handler = Sentry.wrapHandler(async (event: any) => {
   const nestApp = await bootstrap();
   const service = nestApp.get(TokenPoolDownloaderService);
+  if (event?.__allowlistLambdaSmokeTest === true) {
+    await nestApp.get(DB).close();
+    await nestApp.close();
+    return { ok: true };
+  }
   console.log('Received event', event);
   const message = event.Records[0];
   const params: TokenPoolDownloaderParams = JSON.parse(

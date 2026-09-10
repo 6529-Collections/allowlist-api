@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CustomTokenPool } from '@6529-collections/allowlist-lib/allowlist/state-types/custom-token-pool';
 
-export class CustomTokenPoolResponseApiModel
-  implements Omit<CustomTokenPool, 'tokens'>
-{
+export class CustomTokenPoolResponseApiModel implements Omit<
+  CustomTokenPool,
+  'tokens'
+> {
   @ApiProperty({
     description: 'ID',
   })

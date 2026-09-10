@@ -1,13 +1,10 @@
 import { SecretsManager } from '@aws-sdk/client-secrets-manager';
 import { Logger } from '@nestjs/common';
+import * as dotenv from 'dotenv';
+import { join } from 'node:path';
 
 const envs = ['local', 'development', 'production'];
 const SECRET = 'prod/lambdas';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const dotenv = require('dotenv');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const path = require('path');
 
 const logger = new Logger('env');
 
@@ -60,7 +57,7 @@ async function initEnvFromSecrets() {
 }
 
 async function initEnvFromLocal() {
-  const envPath = path.join(__dirname, '..', `.env.${nodeEnv}`);
+  const envPath = join(__dirname, '..', `.env.${nodeEnv}`);
   const dotenvConfigOutput = dotenv.config({
     path: envPath,
   });

@@ -22,7 +22,17 @@ jobs:
         run: corepack enable
       - name: Install dependencies
         run: yarn install --frozen-lockfile --registry=https://registry.npmjs.org/
+      - name: Audit production dependencies
+        run: yarn audit:production
+      - name: Audit full dependency graph
+        run: yarn audit:all
       - name: Build
         run: yarn build
       - name: Run unit tests
         run: yarn test
+      - name: Inject Sentry source-map metadata
+        run: yarn sentry:sourcemaps:inject
+      - name: Package Lambdas
+        run: yarn lambda:package
+      - name: Verify Lambda artifact
+        run: yarn lambda:package:verify

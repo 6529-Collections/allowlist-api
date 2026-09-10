@@ -2,6 +2,7 @@ import {
   BadGatewayException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { jest } from '@jest/globals';
 import { AlchemyApiService } from '../../alchemy-api/alchemy-api.service';
 import { UpstreamProviderError } from '../../common/upstream-provider.error';
 import { EtherscanApiService } from '../../etherscan-api/etherscan-api.service';

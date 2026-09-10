@@ -2,9 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Pool } from '@6529-collections/allowlist-lib/app-types';
 import { AllowlistItem } from '@6529-collections/allowlist-lib/allowlist/state-types/allowlist-item';
 
-export class PhaseComponentItemResponseApiModel
-  implements Omit<AllowlistItem, 'tokens' | '_insertionOrder'>
-{
+export class PhaseComponentItemResponseApiModel implements Omit<
+  AllowlistItem,
+  'tokens' | '_insertionOrder'
+> {
   @ApiProperty({
     description: 'Contract address.',
   })

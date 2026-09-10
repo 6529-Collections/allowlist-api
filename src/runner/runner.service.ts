@@ -189,7 +189,7 @@ export class RunnerService {
         ),
         this.phaseComponentRepository.createMany(
           Object.values(phases).flatMap((phase) =>
-            Object.values(phase.components).map((component, i) => ({
+            Object.values(phase.components).map((component) => ({
               id: component.id,
               allowlist_id: allowlist.id,
               phase_id: phase.id,

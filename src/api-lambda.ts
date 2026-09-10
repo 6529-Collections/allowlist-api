@@ -1,59 +1,44 @@
+import './sentry/instrument';
 import { NestFactory } from '@nestjs/core';
-import { createServer, proxy } from 'aws-serverless-express';
+import serverlessExpress from '@codegenie/serverless-express';
 import type { Context, Handler } from 'aws-lambda';
 import { AppModule } from './app.module';
-import { Server } from 'http';
-import { ValidationPipe } from '@nestjs/common';
 import { initEnv } from './env';
 import { migrateDb } from './migrate';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as Sentry from '@sentry/serverless';
-import express, { json, urlencoded } from 'express';
+import * as Sentry from '@sentry/aws-serverless';
+import express from 'express';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import { eventContext } from 'aws-serverless-express/middleware';
-import { REQUEST_BODY_LIMIT } from './common/request-body-limit';
+import { configureApiApplication } from './api-bootstrap';
 
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.SENTRY_ENV,
-});
+type ServerlessExpressHandler = ReturnType<typeof serverlessExpress>;
+type PromiseServerlessExpressHandler = (
+  event: unknown,
+  context: Context,
+) => Promise<unknown>;
 
-let server: Server;
+let serverlessExpressInstance: ServerlessExpressHandler;
 
-async function bootstrap(): Promise<Server> {
+async function bootstrap(): Promise<ServerlessExpressHandler> {
   await initEnv();
   await migrateDb();
   const expressApp = express();
-  expressApp.use(json({ limit: REQUEST_BODY_LIMIT }));
-  expressApp.use(
-    urlencoded({
-      extended: true,
-      limit: REQUEST_BODY_LIMIT,
-    }),
-  );
+  expressApp.disable('x-powered-by');
   const nestApp = await NestFactory.create(
     AppModule,
     new ExpressAdapter(expressApp),
   );
-  nestApp.use(eventContext());
-  nestApp.enableCors();
-  nestApp.useGlobalPipes(new ValidationPipe());
-  const config = new DocumentBuilder()
-    .setTitle('Allowlist API')
-    .setDescription('REST API for creating NFT allowlists')
-    .setBasePath('/staging')
-    .setVersion('1.0')
-    .build();
-  const document = SwaggerModule.createDocument(nestApp, config);
-  SwaggerModule.setup('api', nestApp, document);
+  configureApiApplication(nestApp);
   await nestApp.init();
 
-  return createServer(expressApp, undefined, undefined);
+  return serverlessExpress({ app: expressApp });
 }
 
-export const handler: Handler = Sentry.AWSLambda.wrapHandler(
+export const handler: Handler = Sentry.wrapHandler(
   async (event: any, context: Context) => {
-    server = server ?? (await bootstrap());
-    return proxy(server, event, context, 'PROMISE').promise;
+    serverlessExpressInstance =
+      serverlessExpressInstance ?? (await bootstrap());
+    return (
+      serverlessExpressInstance as unknown as PromiseServerlessExpressHandler
+    )(event, context);
   },
 );

@@ -1,18 +1,17 @@
 import { Transfer } from '@6529-collections/allowlist-lib/allowlist/state-types/transfer';
 
-export interface TransferEntity
-  extends Omit<
-    Transfer,
-    | 'amount'
-    | 'logIndex'
-    | 'timeStamp'
-    | 'tokenID'
-    | 'transactionHash'
-    | 'transactionIndex'
-    | 'transferType'
-    | 'to'
-    | 'from'
-  > {
+export interface TransferEntity extends Omit<
+  Transfer,
+  | 'amount'
+  | 'logIndex'
+  | 'timeStamp'
+  | 'tokenID'
+  | 'transactionHash'
+  | 'transactionIndex'
+  | 'transferType'
+  | 'to'
+  | 'from'
+> {
   readonly amount: bigint;
   readonly block_number: number;
   readonly contract: string;
