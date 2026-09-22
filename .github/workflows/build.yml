@@ -30,6 +30,8 @@ jobs:
         run: yarn build
       - name: Run unit tests
         run: yarn test
+      - name: Test deployment selection
+        run: node --test scripts/lambda-services.test.cjs
       - name: Inject Sentry source-map metadata
         run: yarn sentry:sourcemaps:inject
       - name: Package Lambdas
