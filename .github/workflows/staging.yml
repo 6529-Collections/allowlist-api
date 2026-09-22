@@ -1,6 +1,21 @@
 name: Allowlist API Staging CI
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Deploy one service; run downloader, worker, then API in order
+        required: true
+        default: allowlist-token-pool-downloader
+        type: choice
+        options:
+          - allowlist-token-pool-downloader
+          - allowlist-worker
+          - allowlist-api
+
+concurrency:
+  group: allowlist-staging-deploy
+  cancel-in-progress: false
 
 env:
   AWS_REGION: eu-west-1
@@ -33,6 +48,8 @@ jobs:
         run: yarn build
       - name: Run unit tests
         run: yarn test
+      - name: Test deployment selection
+        run: node --test scripts/lambda-services.test.cjs
       - name: Inject Sentry source-map metadata
         run: yarn sentry:sourcemaps:inject
       - name: Package Lambdas
@@ -47,10 +64,14 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
-      - name: Deploy Lambdas sequentially
-        run: yarn lambda:deploy:staging
-      - name: Cold-start smoke test Lambdas
-        run: yarn lambda:smoke:staging
+      - name: Deploy selected Lambda
+        env:
+          LAMBDA_SERVICE: ${{ inputs.service }}
+        run: yarn lambda:deploy:staging "$LAMBDA_SERVICE"
+      - name: Cold-start smoke test selected Lambda
+        env:
+          LAMBDA_SERVICE: ${{ inputs.service }}
+        run: yarn lambda:smoke:staging "$LAMBDA_SERVICE"
       - name: Notify about failure
         uses: sarisia/actions-status-discord@v1
         if: failure()
