@@ -100,8 +100,10 @@ before the API can enqueue new work. Compatibility handlers under `src/` are
 included in the artifact, so changing the configured handlers to `dist/` cannot
 create a code/config transition outage.
 
-For staging, dispatch `staging.yml` on `1a-staging` once per Lambda using its
-`service` input. Wait for each deployment and smoke test to pass before
+For staging, dispatch `staging.yml` on `1a-staging`; for production, dispatch
+`production.yml` on `main`. Each dispatch deploys one Lambda using its `service`
+input. The production workflow rejects non-main refs. Wait for each deployment
+and smoke test to pass before
 dispatching the next service: `allowlist-token-pool-downloader`,
 `allowlist-worker`, then `allowlist-api`. The deploy and smoke commands also
 accept this optional service name; omitting it retains the all-service behavior.
