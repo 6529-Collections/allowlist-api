@@ -24,6 +24,7 @@ const OPENSEA_SAFELIST_STATUSES = new Set([
 const MAX_HTTP_ATTEMPTS = 5;
 const INITIAL_RETRY_DELAY_MS = 1_000;
 const RETRY_MULTIPLIER = 1.5;
+const UINT256_LIMIT = 2n ** 256n;
 
 export interface AlchemyJsonRpcProvider {
   getBlockNumber(): Promise<number>;
@@ -182,19 +183,31 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
       throw new Error('Invalid Alchemy owners response');
     }
     return {
-      owners: response.ownerAddresses.map((owner) => ({
-        ...owner,
-        tokenBalances: owner.tokenBalances.map((token) => ({
-          ...token,
-          tokenId: this.normalizeOwnerTokenId(token.tokenId),
-        })),
-      })),
+      owners: response.ownerAddresses.map((owner) => {
+        if (!owner || !Array.isArray(owner.tokenBalances)) {
+          throw new UpstreamProviderError(
+            'Alchemy',
+            'invalid-response',
+            200,
+            undefined,
+            'Invalid owners token balances',
+            'Invalid Alchemy owners token balances',
+          );
+        }
+        return {
+          ...owner,
+          tokenBalances: owner.tokenBalances.map((token) => ({
+            ...token,
+            tokenId: this.normalizeOwnerTokenId(token?.tokenId),
+          })),
+        };
+      }),
       ...(response.pageKey !== undefined && { pageKey: response.pageKey }),
     };
   }
 
   private normalizeOwnerTokenId(value: unknown): string {
-    if (!this.isTokenId(value) || BigInt(value) >= 2n ** 256n) {
+    if (!this.isTokenId(value) || BigInt(value) >= UINT256_LIMIT) {
       throw new UpstreamProviderError(
         'Alchemy',
         'invalid-response',

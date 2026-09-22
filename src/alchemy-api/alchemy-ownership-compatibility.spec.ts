@@ -99,6 +99,19 @@ describe('Alchemy ownership compatibility with the published library', () => {
     ).rejects.toThrow('Invalid Alchemy owners token ID');
   });
 
+  it.each([null, {}, { tokenBalances: null }, { tokenBalances: {} }])(
+    'rejects malformed owner entry %j with a controlled provider error',
+    async (owner) => {
+      axiosGet.mockResolvedValue({ data: { ownerAddresses: [owner] } });
+      await expect(
+        client.nft.getOwnersForContract(CONTRACT, {
+          withTokenBalances: true,
+          block: '26031727',
+        }),
+      ).rejects.toThrow('Invalid Alchemy owners token balances');
+    },
+  );
+
   it.each([
     ['10', OWNER_10, 2],
     ['16', OWNER_16, 1],
