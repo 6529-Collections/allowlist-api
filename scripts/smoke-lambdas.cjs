@@ -2,6 +2,7 @@ const { execFileSync, spawnSync } = require('node:child_process');
 const { mkdtempSync, readFileSync, rmSync, writeFileSync } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join } = require('node:path');
+const { selectFunctions } = require('./lambda-services.cjs');
 
 const environment = process.argv[2];
 const regions = {
@@ -133,7 +134,7 @@ function invoke(lambda, responseFile) {
 }
 
 try {
-  for (const lambda of functions) {
+  for (const lambda of selectFunctions(functions, process.argv[3])) {
     const responseFile = join(scratchDirectory, `${lambda.name}.json`);
     writeFileSync(responseFile, '', { mode: 0o600 });
     const metadata = invoke(lambda, responseFile);

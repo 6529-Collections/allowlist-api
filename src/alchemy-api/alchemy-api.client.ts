@@ -24,6 +24,7 @@ const OPENSEA_SAFELIST_STATUSES = new Set([
 const MAX_HTTP_ATTEMPTS = 5;
 const INITIAL_RETRY_DELAY_MS = 1_000;
 const RETRY_MULTIPLIER = 1.5;
+const UINT256_LIMIT = 2n ** 256n;
 
 export interface AlchemyJsonRpcProvider {
   getBlockNumber(): Promise<number>;
@@ -182,9 +183,44 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
       throw new Error('Invalid Alchemy owners response');
     }
     return {
-      owners: response.ownerAddresses,
+      owners: response.ownerAddresses.map((owner) => {
+        if (!owner || !Array.isArray(owner.tokenBalances)) {
+          throw new UpstreamProviderError(
+            'Alchemy',
+            'invalid-response',
+            200,
+            undefined,
+            'Invalid owners token balances',
+            'Invalid Alchemy owners token balances',
+          );
+        }
+        return {
+          ...owner,
+          tokenBalances: owner.tokenBalances.map((token) => ({
+            ...token,
+            tokenId: this.normalizeOwnerTokenId(token?.tokenId),
+          })),
+        };
+      }),
       ...(response.pageKey !== undefined && { pageKey: response.pageKey }),
     };
+  }
+
+  private normalizeOwnerTokenId(value: unknown): string {
+    if (!this.isTokenId(value) || BigInt(value) >= UINT256_LIMIT) {
+      throw new UpstreamProviderError(
+        'Alchemy',
+        'invalid-response',
+        200,
+        undefined,
+        'Invalid owners token ID',
+        'Invalid Alchemy owners token ID',
+      );
+    }
+    // The published allowlist-lib still interprets every ID as hexadecimal.
+    // Explicit hex also works with the corrected library, allowing either order
+    // of deployment without confusing decimal token 10 with token 16.
+    return `0x${BigInt(value).toString(16)}`;
   }
 
   private normalizeTokenType(tokenType?: string): string {
@@ -207,7 +243,7 @@ export class AlchemyApiClient implements AllowlistAlchemyClient {
   }
 
   private isTokenId(value: unknown): value is string {
-    return typeof value === 'string' && /^(?:\d+|0x[0-9a-fA-F]+)$/.test(value);
+    return typeof value === 'string' && /^(?:\d+|0x[0-9a-f]+)$/i.test(value);
   }
 
   private normalizeOpenSeaMetadata(

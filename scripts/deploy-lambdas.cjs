@@ -7,6 +7,7 @@ const {
 } = require('node:fs');
 const { tmpdir } = require('node:os');
 const { join, resolve } = require('node:path');
+const { selectFunctions } = require('./lambda-services.cjs');
 
 const environment = process.argv[2];
 const regions = {
@@ -51,7 +52,7 @@ function aws(args, capture = false) {
   );
 }
 
-for (const lambda of functions) {
+for (const lambda of selectFunctions(functions, process.argv[3])) {
   console.log(`Deploying ${lambda.name} to ${environment} (${region})`);
   const revisionId = aws(
     [

@@ -100,6 +100,13 @@ before the API can enqueue new work. Compatibility handlers under `src/` are
 included in the artifact, so changing the configured handlers to `dist/` cannot
 create a code/config transition outage.
 
+For staging, dispatch `staging.yml` on `1a-staging` once per Lambda using its
+`service` input. Wait for each deployment and smoke test to pass before
+dispatching the next service: `allowlist-token-pool-downloader`,
+`allowlist-worker`, then `allowlist-api`. The deploy and smoke commands also
+accept this optional service name; omitting it retains the all-service behavior.
+An invalid service name fails without deploying anything.
+
 After staging and production deploys, `yarn lambda:smoke:staging` and
 `yarn lambda:smoke:prod` directly invoke all three functions in their respective
 regions. The worker events use a reserved, side-effect-free bootstrap probe; the
@@ -129,6 +136,13 @@ EMMA offers five fixed 6529 collection shortcuts and manual contract entry.
 fallback metadata for 6529 collections. Both retain their existing response
 schema. Exact-address lookup uses Alchemy V3 `getContractMetadata`; historical
 owner snapshots still use V2 `getOwnersForCollection`.
+
+Owner token IDs may be decimal strings or explicitly `0x`-prefixed hexadecimal
+strings. The API adapter validates them as uint256 values and passes canonical
+hexadecimal IDs to the library. This preserves exact IDs with published
+`allowlist-lib` 0.0.136 as well as the corrected decimal-aware library parser;
+the API fix can therefore deploy before a new library release. Existing stored
+snapshots are unchanged and affected empty snapshots must be recreated.
 
 The retired `POST /other/search-contract-metadata` route is no longer available.
 Deploy the compatible frontend before this API cleanup, verify the collection
