@@ -27,6 +27,12 @@ jobs:
   build-test-and-deploy:
     name: Build, test and deploy
     runs-on: ubuntu-latest
+    # The OIDC token subject becomes repo:<repo>:environment:staging, which the
+    # staging deploy role trusts regardless of the dispatched ref (1a-staging).
+    environment: staging
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout
@@ -58,12 +64,23 @@ jobs:
         run: yarn lambda:package:verify
       - name: Upload Sentry source maps
         run: yarn sentry:sourcemaps:upload
+      - name: Validate staging deploy role
+        id: deploy-role
+        env:
+          ROLE_ARN: ${{ vars.STAGING_AWS_DEPLOY_ROLE_ARN }}
+        run: |
+          if [[ ! "$ROLE_ARN" =~ ^arn:aws:iam::([0-9]{12}):role/[A-Za-z0-9+=,.@_/-]+$ ]]; then
+            echo "::error::Repository variable STAGING_AWS_DEPLOY_ROLE_ARN must be set to an arn:aws:iam::<12-digit account>:role/<name> ARN."
+            exit 1
+          fi
+          echo "account-id=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ vars.STAGING_AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: allowlist-staging-${{ github.run_id }}
           aws-region: eu-west-1
+          allowed-account-ids: ${{ steps.deploy-role.outputs.account-id }}
       - name: Deploy selected Lambda
         env:
           LAMBDA_SERVICE: ${{ inputs.service }}
